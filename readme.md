@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides a brief overview of the essential procedures for securing various open ports and configuring event logging on a intentionally vulnerable Windows 10 system. It covers the hardening steps for different ports, including SSH, RPC, NetBIOS, SMB, RDP, and HTTP, as well as the critical logging practices to enhance system security.
+This document provides a brief overview of the essential procedures for securing various open ports and configuring event logging on vulnerable operating systems. I will continue to include hardening procedures for all operating systems and provide detailed notes associated with each.
 
 ## Key Areas Covered
 
@@ -15,3 +15,4 @@ This document provides a brief overview of the essential procedures for securing
 2. **Security Log Configuration:** Proper tuning of the Security log for effective system monitoring.
 3. **PowerShell Logging:** Enabling Module and ScriptBlock logging to detect and respond to PowerShell abuse.
 4. **Sysmon and Additional Logs:** Utilizing Sysmon events and other critical logs for comprehensive security oversight.
+
