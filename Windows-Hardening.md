@@ -962,33 +962,3 @@
 1. Press `Windows + I` to open Settings.
 2. Navigate to *Update & Security*.
 3. Click *Check for updates*.
-
-# Hardening Procedures II
-
-## NIST Hardening Framework
-
-- **NIST National Checklist Program (NCP)**: The NCP is a U.S. government repository of publicly available security checklists, providing detailed guidance on security configurations for operating systems and applications. These checklists conform to the Security Content Automation Protocol (SCAP), allowing automated configuration checks by validated security products. [Visit the NCP Repository](https://ncp.nist.gov/repository) for more information.
-
-## STIG Compliance
-
-- **STIG Viewer**: A tool provided by the Department of Defense to view Security Technical Implementation Guides (STIGs), which are essential for ensuring compliance with security standards. [Access the STIG Viewer](https://public.cyber.mil/stigs/srg-stig-tools/).
-
-## Additional Reading
-
-- **Cyber Security Blue Team Toolkit**: A comprehensive guide for blue teams to enhance their cybersecurity defenses. [Explore the Toolkit](https://www.oreilly.com/library/view/cybersecurity-blue-team/9781119552932/).
-- **The Tao of Network Security Monitoring**: An insightful resource on network security monitoring techniques. [Learn More](https://www.oreilly.com/library/view/the-tao-of/0321246772/).
-- **Best Practices for Mapping to MITRE ATT&CK**: This document highlights the fundamentals of using MITRE ATT&CK to create narrative-based accounts of adversary actions. It emphasizes the importance of a well-configured and tuned SIEM for effective visualization and identification of security events. [Read the Best Practices](https://www.cisa.gov/news-events/news/best-practices-mitre-attckr-mapping).
-
-### Yamato-Security Resources
-
-- **Enabling Windows Log Settings**: Guidance on configuring Windows logs for enhanced security monitoring. [View on GitHub](https://github.com/Yamato-Security/EnableWindowsLogSettings?tab=readme-ov-file).
-- **Hayabusa**: A tool for analyzing Windows event logs to detect suspicious activities. [Explore Hayabusa](https://github.com/Yamato-Security/hayabusa).
-- **Sysmon Configurations**: Recommended configurations for Sysmon to improve system monitoring and threat detection capabilities. [Check the Configurations](https://github.com/SwiftOnSecurity/sysmon-config/tree/master).
-
-## Useful Concepts
-
-- **Rule of Thumb for Network Security (Defense Triad)**:
-  - **Enumeration**: Identifying network resources and vulnerabilities.
-  - **Detection**: Monitoring network activities to identify potential threats.
-  - **Protection**: Implementing measures to safeguard against identified threats.
-  
