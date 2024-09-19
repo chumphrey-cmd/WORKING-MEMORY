@@ -1,4 +1,4 @@
-# Useful Host Enumeration Commands (Windows and Linux)
+# Useful Host Enumeration Commands (Windows)
 
 ## Hidden File and Folder identification within the last XX-Hours/XX-Days
 
