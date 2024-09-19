@@ -1,4 +1,4 @@
-# Useful Host Enumeration Commands
+# Useful Host Enumeration Commands (Linux)
 
 ## Determining if History Configuration has been Modified or Deleted
 
