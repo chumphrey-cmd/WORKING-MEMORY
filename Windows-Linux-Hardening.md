@@ -963,7 +963,6 @@
 2. Navigate to *Update & Security*.
 3. Click *Check for updates*.
 
-```markdown
 # Hardening Procedures II
 
 ## NIST Hardening Framework
