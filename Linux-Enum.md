@@ -2,7 +2,7 @@
 
 ## Determining if History Configuration has been Modified or Deleted
 
-1. **Check for History File**:
+### Check for History File:
    
 ```bash
 more ~/.bash_history
@@ -10,7 +10,7 @@ more ~/.bash_history
 **Indicators of Modified History File**:
    - `.bash_history` does not exist or is empty = history logging is disabled or has been cleared.
 
-2. **Review Shell Configuration Files**:
+### Review Shell Configuration File:
 
 - Check the user's **`.bashrc`** or **`.bash_profile`** files for settings that control history behavior:
 
