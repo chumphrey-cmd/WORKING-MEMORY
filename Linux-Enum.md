@@ -7,8 +7,8 @@
 ```bash
 more ~/.bash_history
 ```
-
-- If the file does not exist or is empty, it could indicate that history logging is disabled or has been cleared.
+**Indicators of Modified History File**:
+   - `.bash_history` does not exist or is empty = history logging is disabled or has been cleared.
 
 2. **Review Shell Configuration Files**:
 
@@ -20,7 +20,7 @@ grep 'HISTSIZE\|HISTFILESIZE\|HISTIGNORE\|HISTCONTROL' ~/.bashrc ~/.bash_profile
 
 - `HISTSIZE` and `HISTFILESIZE`: These control the number of commands stored in memory and on disk, respectively.
   
-   NOTE: **Indicators of Disabled History**:
+   **Indicators of Disabled History**:
   - `HISTSIZE` or `HISTFILESIZE` = 0, disables history logging
   - `unset HISTFILE` = prevents the history from being saved to a file.
   
