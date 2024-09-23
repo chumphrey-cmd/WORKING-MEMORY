@@ -1,4 +1,4 @@
-# Windows Hardening Procedures I
+# Windows Hardening Procedures 🪟
 
 ## Linksys Router
 
