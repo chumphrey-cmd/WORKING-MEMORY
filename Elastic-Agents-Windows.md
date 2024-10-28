@@ -1,4 +1,4 @@
-# Comprehensive Guide to Elastic Agent Deployment and Windows Event Monitoring
+# Elastic Agent Deployment and Windows Event Monitoring 🪂
 
 ## **WireShark Filter for DeAuth Frames**
 
