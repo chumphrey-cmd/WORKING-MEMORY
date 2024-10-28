@@ -2,8 +2,6 @@
 
 ## Linksys Router
 
-80/tcp: HTTP (Tomato WAP firmware httpd, Linksys WRT54GL WAP)
-
 ### **Securing Port 80/tcp: HTTP (Tomato WAP Firmware)**
 
 #### **1. Change the Default Router Admin Password**
