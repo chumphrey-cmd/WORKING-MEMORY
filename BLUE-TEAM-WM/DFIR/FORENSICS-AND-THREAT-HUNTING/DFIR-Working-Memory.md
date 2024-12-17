@@ -2460,6 +2460,8 @@ Invoke-Command –ComputerName host –ScriptBlock {Start-Process c:\temp\evil.e
 - Available in Windows 7+
 - Records account used, process info, and full command line
 - Command line capture requires Process Tracking to be enabled (not on by default)
+  - To Enable Recoding Full Command Lines in Process Reporting:
+    - `Group Policy Management > Edit Policy > Computer Configuration > Policies > Administrative Templates > System > Audit Process Creation`
 - Logon ID value can be used to link processes to a user session
 - Note Parent/Child Process relationships
 
