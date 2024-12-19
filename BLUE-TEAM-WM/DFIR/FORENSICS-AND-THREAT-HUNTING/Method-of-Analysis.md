@@ -1,6 +1,20 @@
-# Method of Analysis Playbook  
+# Method of Analysis: DFIR Playbook  
 
-## General Overview  
+## Intrusion Metholodgy Roadmap
+
+### Threat Hunting & Assessment
+
+We will start our process by looking at the network using tools that can scale collection and analysis, focusing on occurrence stacking and outlier analysis. Most attendees have thousands of endpoints necessitating broad scoping techniques at the start of an investigation.
+
+### Triage Collection & Analysis
+
+As systems of interest are identified, we will perform targeted triage collection to acquire a deeper understanding of attacker activity. Triage data can include traditional forensic artifacts like application execution data, file system information, and in-memory artifacts such as process trees.
+
+### Deep-Dive Forensics
+
+Finally, we will reserve our limited analyst time for performing deep-dive forensics on only a handful of systems having the best chance to help us understand attacker tools and tradecraft and craft better indicators to assist with scoping additional compromised systems.
+
+---
 
 ### **1. Network Analysis – Surveying Stone Deposits** 
  

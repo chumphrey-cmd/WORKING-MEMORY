@@ -114,6 +114,7 @@
     - [Quick Wins - PowerShell](#quick-wins---powershell)
     - [PowerShell Transcript Logs](#powershell-transcript-logs)
     - [PSReadline](#psreadline)
+    - [System Monitor (Sysmon) Logging](#system-monitor-sysmon-logging)
 - [(3) Memory Forensics](#3-memory-forensics)
   - [Acquiring Memory](#acquiring-memory)
     - [Live System](#live-system)
@@ -2532,6 +2533,8 @@ Invoke-Command –ComputerName host –ScriptBlock {Start-Process c:\temp\evil.e
 - Available in Windows 7+
 - Records account used, process info, and full command line
 - Command line capture requires Process Tracking to be enabled (not on by default)
+  - To Enable Recoding Full Command Lines in Process Reporting:
+    - `Group Policy Management > Edit Policy > Computer Configuration > Policies > Administrative Templates > System > Audit Process Creation`
 - Logon ID value can be used to link processes to a user session
 - Note Parent/Child Process relationships
 
@@ -2658,7 +2661,7 @@ powershell -w Hidden -nop -noni -exec bypass IEX (New-ObjectSystem.Net.WebClient
 	- Reflection
 	- powershell -version
 	- Invoke-WmiMethod
-	- Invoke-CimMethos
+	- Invoke-CimMethod
 - Look for encoding and obfuscation
 	- Character frequency analysis [Revoke-Obfuscation](https://github.com/danielbohannon/Revoke-Obfuscation)
 	- [CyberChef](https://github.com/gchq/CyberChef)
@@ -2684,7 +2687,25 @@ powershell -w Hidden -nop -noni -exec bypass IEX (New-ObjectSystem.Net.WebClient
 	- ```Set-PSReadLineOption -HistorySaveStyle SaveNothing```
 	- ```Remove-Module -Name PsReadline```
 
-
+### System Monitor (Sysmon) Logging
+- Free Logging extention
+- Built for DFIR investigations
+- Easy configuration + pre-filtering
+- Designed to scale and integrate with SIEMs:
+  - Network activity
+  - Process execution
+  - Command lines
+  - File hashes
+  - File cration 
+  - Creation time changes
+  - Registry changes
+  - DLL and driver loading
+  - Remote thread creation (injection)
+  - Named pipe creation
+  - Alternate data streams
+  - WMI Event Consumers
+  - Raw disk access
+- **ESSENTIALLY: the best set of logging you can have**, a light weight endpoint detection tool available for free.
 
 ---
 
