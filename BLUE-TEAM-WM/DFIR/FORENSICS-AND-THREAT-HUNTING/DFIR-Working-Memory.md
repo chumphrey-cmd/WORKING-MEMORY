@@ -4032,7 +4032,40 @@ densityscout.exe -r -pe -p 0.1 -o 'C:\Tools\densityscout-results.txt' G:\
 ### Windows Artifacts
 - [SANS Windows Forensic Analysis Poster](https://github.com/w00d33/w00d33.github.io/blob/main/_files/SANS_Windows_Forensics_Poster.pdf)
 
+- **Program Execution**
+  - Prefetch
+  - ShimCache
+  - AmCache
+  - UserAssist
+  - SRUM
 
+- **File Opening**
+  - Shortcut Files
+  - Jump Lists
+  - ShellBags
+  - Prefetch
+  - OpenSaveMRU
+
+- **File Knowledge**
+  - WordWheelQuery
+  - Last Visited MRU
+  - Shortcut Files
+  - Recycle Bin
+  - Typed Paths
+
+- **Event Logs**
+  - User Logons
+  - RDP Usage
+  - RunAs Events
+  - Process Tracking
+  - PowerShell Logs
+
+- **Browser Usage**
+  - History
+  - Cookies
+  - Cache
+  - Session Restore
+  - TypedURLs
 
 ### The Pivot Point
 - Challenge: Where do I begin to look?
