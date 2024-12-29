@@ -203,11 +203,18 @@
     - [Analysis Process](#analysis-process)
   - [Filesystem Timeline Creation and Analysis](#filesystem-timeline-creation-and-analysis)
     - [NTFS Timestamps](#ntfs-timestamps)
+    - [Windows Time Rules](#windows-time-rules)
+      - [Windows 10 Time Rules](#windows-10-time-rules)
+      - [Windows 11 Time Rules](#windows-11-time-rules)
     - [Timestamp Rules Exceptions](#timestamp-rules-exceptions)
     - [Understanding Timestamps - Lateral Movement Analysis](#understanding-timestamps---lateral-movement-analysis)
     - [Filesystem Timeline Format](#filesystem-timeline-format)
     - [Create Triage Timeline Bodyfile Step 1 - MFTECmd.exe](#create-triage-timeline-bodyfile-step-1---mftecmdexe)
-    - [Create Triage Timeline Body File Step 1 - fls](#create-triage-timeline-body-file-step-1---fls)
+      - [TOOL: MFTECmd.exe](#tool-mftecmdexe)
+      - [Usage](#usage)
+    - [Create Triage Timeline Body File Step 1 - fls (optional)](#create-triage-timeline-body-file-step-1---fls-optional)
+      - [TOOL: fls -m](#tool-fls--m)
+      - [Usage](#usage-1)
     - [Create Triage Image Timeline Step 2 - mactime](#create-triage-image-timeline-step-2---mactime)
 - [Super Timelines](#super-timelines)
   - [Lateral Movement Example](#lateral-movement-example)
@@ -3875,7 +3882,7 @@ voly.py -f memory.img dumpfiles -n -Q 0x09135278 --dump-dir=.
 - Software\Microsoft\Windows\CurrentVersion\policies\Explorer\Run
 - Software\Microsoft\Windows\CurrentVersion\Run
 - (Services) SYSTEM\CurrentControlSet\Services
-- IF start set to 0x02, then service application will start at boot (0x00 for drivers)(
+- IF start set to 0x02, then service application will start at boot (0x00 for drivers)
 - Determine programs that start automatically
 - Useful for finding malware on a machine that installs on boot such as a rootkit
 - Look at when the time key was last updated; generally last boot time of the system
@@ -4118,19 +4125,7 @@ densityscout.exe -r -pe -p 0.1 -o 'C:\Tools\densityscout-results.txt' G:\
 
 
 ### Analysis Process
-1. Determine Timeline Scope: What questions do you need to answer?
-2. Narrow Pivot Points
-  - Time-based
-  - Artifact based
-3. Determine the Best Process for Timeline Creation
-  - Filesystem-Based Timeline Creation -- FLS or MFTECmd - Fast (Triage Mode)
-  - Super Timeline Creation - Automated or Targeted - LOG2TIMELINE
-4. Filter Timeline
-5. Analyze Timeline
-  - Focus on the context of evidence
-  - Use Windows Forensic Analysis Poster "Evidence of..."
-
-
+- **UPDATE WITH PERSONAL NOTES HERE:** See "Timeline Analytic Process"
 
 ## Filesystem Timeline Creation and Analysis
 
@@ -4171,10 +4166,15 @@ densityscout.exe -r -pe -p 0.1 -o 'C:\Tools\densityscout-results.txt' G:\
 - Local Time (FAT)
 
 
+### Windows Time Rules
 
-<img alt="Micosoft's Attack Lifecycle" src="https://raw.githubusercontent.com/w00d33/w00d33.github.io/main/_files/macb.PNG" />
+#### Windows 10 Time Rules
+<img alt="Micosoft's Attack Lifecycle" src="./files/Win10_Timeline_Rules.png"/>
 
+#### Windows 11 Time Rules
+<img alt="Micosoft's Attack Lifecycle" src="./files/Win11_Timeline_Rules.png"/>
 
+**ANALYST NOTE:** **Creation** (a new file appeared) and **modified** (a file was updated) time rules are sufficient to answer most forensic questions. Only use the remaining rules if there are more granular questions that need to be answered.
 
 ### Timestamp Rules Exceptions
 - Applications
@@ -4192,15 +4192,15 @@ densityscout.exe -r -pe -p 0.1 -o 'C:\Tools\densityscout-results.txt' G:\
 - Scanning
   - Depends on how well the A/V is written
 
-
+**OVERALL:** timestamp interpretation should always be done in context with any any other actions that can help explain changes.
 
 ### Understanding Timestamps - Lateral Movement Analysis
-- File copied to remote system
-  - Created time: Time of copy (possible time of lateral movement)
-  - Modification time: maintains the original modification time
-  - Use as a "Pivot Point"
 
+- **Time Paradox:** a file is modified before it is creates, indicative of lateral movement and copying of files from a remote system!
 
+  - **Creation time:** Time of copy (possible time of lateral movement)
+  - **Modification time:** maintains the original modification time from the source machine
+  - Always use **creation time** as a "Pivot Point" in timeline
 
 ### Filesystem Timeline Format
 - Columns
@@ -4216,7 +4216,17 @@ densityscout.exe -r -pe -p 0.1 -o 'C:\Tools\densityscout-results.txt' G:\
 
 
 ### Create Triage Timeline Bodyfile Step 1 - MFTECmd.exe
-- -f "filename" ($MFT, $J, $BOOT, $SDS)
+
+#### TOOL: [MFTECmd.exe](https://github.com/EricZimmerman/MFTECmd)
+
+Used to extrat data from the Master File Table (\$MFT) files, filesystem, journals, and other NTFS system files. Will be used to extract data into **timeline (bodyfile)** format.
+
+#### Usage
+
+```bash
+MFTECmd.exe -f "E:\C\$MFT --body "G:\timeline" --bodyf mft.body --blf --bdl C:
+```
+- -f "filename" (\$MFT, \$J, \$BOOT, \$SDS)
 - --csv "dir" (directory to save csv, tab separated)
 - --csvf name (Dir to save csv)
 - --body "dir" (Dir to save CSV)
@@ -4224,28 +4234,48 @@ densityscout.exe -r -pe -p 0.1 -o 'C:\Tools\densityscout-results.txt' G:\
 - --bdl "name" Drive letter (C, D, etc.) to use with body file
 - --blf (When true, use LF vs CRLF for newlines. Default is false)
 
-```bash
-MFTECmd.exe -f "E:\C\$MFT --body "G:\timeline" --bodyf mft.body --blf --bdl C:
-```
 
 
+### Create Triage Timeline Body File Step 1 - fls (optional)
 
-### Create Triage Timeline Body File Step 1 - fls
+#### TOOL: fls -m
+
 - The fls tool allows use to interact with a forensics image as though it were a normal filesystem
 - The fls tool in the Sleuth Kit can be used to collect timeline information from the filename layer
 - It take the inode value of a directory, processes the contents, and displays the filenames in the directory (including deleted items)
 
+#### Usage
+
+`fls [options] image [inode]`
+
+* `-d`: Display deleted entries only
+* `-r`: Recurse on directories
+* `-p`: Display full path when recursing
+* `-m`: Display in timeline bodyfile format
+* `-s <sec>`: Timeskew of system in seconds
+
+```bash
+fls -r -m C: /cases/cdrive/cdrive.E01 > /cases/cdrive/out.bodyfile
+```
 
 
 ### Create Triage Image Timeline Step 2 - mactime
-- The mactime tool is a perl script that takes bodyfile formatted files as input
+- **ESSENTIALLY:** used to take generated bodyfiles and convert into a organized and human-readable timeline
+  
 - It can be given a date range to restrict itself or it can cover the entire time range
-- "-z" i the output time zone to use. We highly recommend standardizing on UTC to match other artifacts and eliminate timezone and daylight savings challenges 
 
 ```bash
-mactime [options] -d -b boddyfile -z timezone > timeline.csv
+mactime [options] -d -b [BODY_FILE] -z [TIMEZONE] > timeline.csv
 ```
+* `-b`: Bodyfile location (data file)
+* `-y`: Dates are displayed in ISO 8601 format
+* `-z`: Specify the time zone (UTC is preferred)
+* `-d`: Comma-delimited format
 
+**Optional Date Range:**
+
+* Format: `yyyy-mm-dd..yyyy-mm-dd`
+* Example: `2020-01-01..2020-06-01`
 
 
 # Super Timelines
