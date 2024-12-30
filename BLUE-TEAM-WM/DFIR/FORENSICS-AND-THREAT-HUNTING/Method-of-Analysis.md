@@ -80,3 +80,114 @@ Analysis is often performed in reverse of collection order, starting with low-ef
    - Tools: Volatility, MemProcFS, MemoryBaseliner.py  
 
 ---
+
+## Triage Timeline Creation
+
+### 0. KAPE Artifact Extraction
+- Place all collected artifacts into local directory (e.g., "G:\timeline")
+
+### 1. Creating Bodyfile
+
+```bash
+MFTECmd.exe -f "E:\C\$MFT --body "G:\timeline" --bodyf [FILE_NAME].body --blf --bdl C:
+```
+- -f "filename" (\$MFT, \$J, \$BOOT, \$SDS)
+- --csv "dir" (directory to save csv, tab separated)
+- --csvf name (Dir to save csv)
+- --body "dir" (Dir to save CSV)
+- --bodyf "name" (File name to save CSV)
+- --bdl "name" Drive letter (C, D, etc.) to use with body file
+- --blf (When true, use LF vs CRLF for newlines. Default is false)
+
+
+### 2. Enrich Bodyfile with mactime and convert into .csv
+   
+```bash
+mactime -z [TIMEZONE] -y -d -b /path/to/[BODY_FILE].body  > timeline.csv
+```
+**NOTE:** Used to capture entire timeline, no dates  ranges specified.
+
+```bash
+mactime -z [TIMEZONE] -y -d -b /path/to/[BODY_FILE].body [yyyy-mm-dd..yyyy-mm-dd]  > timeline.csv
+```
+
+**NOTE:** Used to capture specified time range. 
+
+* `-b`: Bodyfile location (data file)
+* `-y`: Dates are displayed in ISO 8601 format
+* `-z`: Specify the time zone (UTC is preferred)
+* `-d`: Comma-delimited format
+
+**Optional Date Range:**
+
+* Format: `yyyy-mm-dd..yyyy-mm-dd`
+* Example: `2020-01-01..2020-06-01`
+
+
+### 3. Tune out unnecessary noise
+```bash
+grep -v -i -f timeline_noise.txt timeline.csv > timeline-final.csv
+```  
+
+---
+
+## Super Timeline Creation - Partial Disk Analysis
+
+### 1. List Timezones
+```bash
+log2timeline.py -z list
+```
+
+
+
+### 2. Timeline Windows artifacts
+```bash
+log2timeline.py --timezone 'EST5EDT' --parsers 'winevtx, winiis' --storage-file out.plaso [/cases/artifact_directory]
+``` 
+
+### 3. Add Master File Table
+```bash
+log2timeline.py --parsers 'mactime' --storage-file out.plaso [/cases/timeline_mftecmd.body]
+```  
+
+### 4. Convert Super Timeline to CSV and Filter
+```bash
+psort.py --output-time-zone 'UTC' -o l2tcsv -w supertimeline.csv out.plaso "date > datetime('2023-01-01T00:00:00') AND date < datetime('2023-01-27T00:00:00')"
+``` 
+
+
+
+```bash
+grep -a -v -i -f timeline_noise.txt supertimeline.csv > supertimeline_final.csv
+```  
+
+---
+
+
+## Super Timeline Creation - Full Disk Analysis
+
+### 1. List Timezones
+```bash
+log2timeline.py -z list
+```
+
+### 2. Parse Full Triage Image
+```bash
+log2timeline.py --timezone 'EST5EDT' -f filter_windows.yaml --parsers 'win7,!filestat' --storage-file out.plaso [/cases/cdrive/YOUR_DISK.E01]
+``` 
+
+### 3. Add full MFT Metadata (Bodyfile for Timeline)
+```bash
+log2timeline.py --parsers 'mactime' --storage-file out.plaso [/cases/mftecmd.body]
+```
+Adding the mactime parser based on your the file system data from `mftecmd.body`  
+
+### 4. Convert Super Timeline to CSV and Filter
+
+```bash
+psort.py --output-time-zone 'UTC' -o l2tcsv -w supertimeline.csv out.plaso "date > datetime('2023-01-01T00:00:00') AND date < datetime('2023-01-27T00:00:00')"
+``` 
+
+```bash
+grep -a -v -i -f timeline_noise.txt supertimeline.csv > supertimeline_final.csv
+```  
