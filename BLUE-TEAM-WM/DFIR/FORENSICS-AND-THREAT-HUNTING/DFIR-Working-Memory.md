@@ -234,7 +234,7 @@
     - [METHOD OF ATTACK: Full Disk Super Timeline Creation](#method-of-attack-full-disk-super-timeline-creation)
     - [Most Essential Super Timeine Columns](#most-essential-super-timeine-columns)
     - [Colorize Timeline](#colorize-timeline)
-    - [Super Timeline Creation](#super-timeline-creation)
+    - [Super Timeline Creation - SECTION NEEDS TO BE UPDATED (SEE LAB 4.3 A/B)](#super-timeline-creation---section-needs-to-be-updated-see-lab-43-ab)
       - [1. Create Body File of Master File Table](#1-create-body-file-of-master-file-table)
       - [2. Convert body file to csv (triage timeline)](#2-convert-body-file-to-csv-triage-timeline)
       - [3. Tune out unnecessary noise](#3-tune-out-unnecessary-noise)
@@ -4469,7 +4469,8 @@ psort.py --output-time-zone 'UTC' -o 12tcsv -w supertimeline.csv out.plaso "date
 * **time:** Time of day, expressed in a 24h format, HH:MM:SS
 * **MACB:** MACB timestamps, typically only relevant for filesystem artifacts (files and directories)
 * **sourcetype:** More comprehensive description of the source
-* **source:** Short name for the source
+* **type:** type of an artifact timestamp, e.g., Creation Time for files or Last Time Visited for website history
+* **short:** short description of the entry
 * **desc:** Long description field; this is where most of the information is stored
 * **filename:** Filename with the full path of the artifact which was parsed
 * **inode:** Meta-data address of file being parsed
@@ -4524,7 +4525,7 @@ psort.py --output-time-zone 'UTC' -o 12tcsv -w supertimeline.csv out.plaso "date
 
 
 
-### Super Timeline Creation
+### Super Timeline Creation - SECTION NEEDS TO BE UPDATED (SEE LAB 4.3 A/B)
 
 * **Determine Timeline Scope:** What questions do you need to answer?
 
