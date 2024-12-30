@@ -200,7 +200,6 @@
     - [The Pivot Point](#the-pivot-point)
     - [Contect Clues](#contect-clues)
     - [Timeline Capabilities](#timeline-capabilities)
-    - [Analysis Process](#analysis-process)
   - [Filesystem Timeline Creation and Analysis](#filesystem-timeline-creation-and-analysis)
     - [NTFS Timestamps](#ntfs-timestamps)
     - [Windows Time Rules](#windows-time-rules)
@@ -216,21 +215,33 @@
       - [TOOL: fls -m](#tool-fls--m)
       - [Usage](#usage-1)
     - [Create Triage Image Timeline Step 2 - mactime](#create-triage-image-timeline-step-2---mactime)
-- [Super Timelines](#super-timelines)
-  - [Lateral Movement Example](#lateral-movement-example)
-  - [Malware Execution Example](#malware-execution-example)
-  - [Process](#process)
-  - [log2timeline usage](#log2timeline-usage)
+  - [Super Timelines](#super-timelines)
+    - [Process](#process)
+  - [TOOL: log2timeline](#tool-log2timeline)
+    - [Usage](#usage-2)
   - [Target Examples](#target-examples)
-  - [Targeted Timeline Creation](#targeted-timeline-creation)
+  - [Targeted Super Timeline Creation](#targeted-super-timeline-creation)
+    - [`log2timeline.py` Parser Presets](#log2timelinepy-parser-presets)
+    - [`log2timeline.py` Filter Files](#log2timelinepy-filter-files)
+  - [Essential Artifact List for Fast Forensics/Triage Extraction](#essential-artifact-list-for-fast-forensicstriage-extraction)
+    - [`log2timeline.py` + KAPE Triage Collection](#log2timelinepy--kape-triage-collection)
   - [Filtering Super Timelines](#filtering-super-timelines)
-    - [pinfo.py](#pinfopy)
-    - [psort.py](#psortpy)
-    - [Case Study: Web Server Intrusion](#case-study-web-server-intrusion)
-  - [Super Timeline Analysis](#super-timeline-analysis)
-    - [Recommended Columns](#recommended-columns)
+    - [1. `pinfo.py`](#1-pinfopy)
+    - [2. `psort.py`](#2-psortpy)
+      - [General Format](#general-format)
+      - [Time Slice Format](#time-slice-format)
+    - [METHOD OF ATTACK: Partial Disk Analysis Web Server Intrusion Timeline Creation](#method-of-attack-partial-disk-analysis-web-server-intrusion-timeline-creation)
+    - [METHOD OF ATTACK: Full Disk Super Timeline Creation](#method-of-attack-full-disk-super-timeline-creation)
+    - [Most Essential Super Timeine Columns](#most-essential-super-timeine-columns)
     - [Colorize Timeline](#colorize-timeline)
     - [Super Timeline Creation](#super-timeline-creation)
+      - [1. Create Body File of Master File Table](#1-create-body-file-of-master-file-table)
+      - [2. Convert body file to csv (triage timeline)](#2-convert-body-file-to-csv-triage-timeline)
+      - [3. Tune out unnecessary noise](#3-tune-out-unnecessary-noise)
+      - [4. List Timezones](#4-list-timezones)
+      - [5. Timeline Windows artifacts](#5-timeline-windows-artifacts)
+      - [6. Add Master File Table](#6-add-master-file-table)
+      - [7. Convert Super Timeline to CSV](#7-convert-super-timeline-to-csv)
   - [Supertimeline Analysis](#supertimeline-analysis)
     - [Questions to Answer](#questions-to-answer)
     - [Filtering](#filtering)
@@ -4122,48 +4133,24 @@ densityscout.exe -r -pe -p 0.1 -o 'C:\Tools\densityscout-results.txt' G:\
   - Artifact timestamps
   - Registry timestamps
 
-
-
-### Analysis Process
-- **UPDATE WITH PERSONAL NOTES HERE:** See "Timeline Analytic Process"
-
 ## Filesystem Timeline Creation and Analysis
-
-**Tools Will Parse**
-- Filesystem Metadata
-  - Directories
-  - Files
-    - Deleted Files
-    - Unallocated Metadata
-
-**Collect Times From**
-- Data Modified (M)
-- Data Access (A)
-- Metadata Change (C)
-- File Creation (B)
-
-**Timelines Can Be Created For Many Filesystem Types**
-- NTFS
-- FAT12/16/32
-- EXT2/3/4
-- ISO9660 -CDROM
-- HFS+
-- UFS1&2
-
 
 
 ### NTFS Timestamps
 - **M: Data Content Change Time (Focus)**
   - Time the data content of a file was modified
+  - **Last Execution Time**
+
 - A: Data Last Access Time
   - Approximate Time when the file data last accessed
+
 - C: Metadata Change Time
   - Time this MFT record was last modified
   - When a file is renamed, size changes, security permissions update, or if file ownership is changed
+
 - **B: File Creation Time (Focus)**
   - Time file was created in the volume
-- UTC Time Format (NTFS)
-- Local Time (FAT)
+  - **First Execution Time**
 
 
 ### Windows Time Rules
@@ -4224,7 +4211,7 @@ Used to extrat data from the Master File Table (\$MFT) files, filesystem, journa
 #### Usage
 
 ```bash
-MFTECmd.exe -f "E:\C\$MFT --body "G:\timeline" --bodyf mft.body --blf --bdl C:
+MFTECmd.exe -f "E:\C\$MFT --body "G:\timeline" --bodyf [FILE_NAME].body --blf --bdl C:
 ```
 - -f "filename" (\$MFT, \$J, \$BOOT, \$SDS)
 - --csv "dir" (directory to save csv, tab separated)
@@ -4265,8 +4252,16 @@ fls -r -m C: /cases/cdrive/cdrive.E01 > /cases/cdrive/out.bodyfile
 - It can be given a date range to restrict itself or it can cover the entire time range
 
 ```bash
-mactime [options] -d -b [BODY_FILE] -z [TIMEZONE] > timeline.csv
+mactime -z [TIMEZONE] -y -d -b /path/to/[BODY_FILE].body  > timeline.csv
 ```
+**NOTE:** Used to capture entire timeline, no dates  ranges specified.
+
+```bash
+mactime -z [TIMEZONE] -y -d -b /path/to/[BODY_FILE].body [yyyy-mm-dd..yyyy-mm-dd]  > timeline.csv
+```
+
+**NOTE:** Used to capture specified time range. 
+
 * `-b`: Bodyfile location (data file)
 * `-y`: Dates are displayed in ISO 8601 format
 * `-z`: Specify the time zone (UTC is preferred)
@@ -4278,67 +4273,32 @@ mactime [options] -d -b [BODY_FILE] -z [TIMEZONE] > timeline.csv
 * Example: `2020-01-01..2020-06-01`
 
 
-# Super Timelines
-
-## Lateral Movement Example
-0.  Found a suspicious prefetch file (evil.exe) and birth timestammp (first time executed)
-1. Scroll Up and find an authentication event (annotate account)
-  - 4672 (Admin Logon)
-  - 4624 (Login Successful)
-  - 4776
-  - Logon Type 3 (network)
-2. Focus on M times and B times
-  - Evidence of File Copy (evil.exe M time older than B)
-3. Execution event
-  - Prefetch (B - First Run, M - Additional Run Times)
-  - Identify time gaps in between file transfers and execution
-4. Directory creation event (...b)
-5. Regisitry Modification
-  - "REG"
-  - Example: ```HKLM\...\services\Netman\domain] home: http://13.192.235/ads pause: 64```
-  - M...
-6. More File Execution
-  - .A.B (first executed)
+## Super Timelines
 
 
-
-## Malware Execution Example
-0. Identify suspicious execution event
-1. Scroll Up and find an authentication event (annotate account)
-  - 4672 (Admin Logon)
-  - 4624 (Login Successful)
-2. File Creation
-  - .A.B
-  - Run capa, sigcheck, yara, densityscout
-3. New Service Created
-  - 7045 Created
-  - 7036 Started
-4. File Execution
-5. File Creation
-  - .A.B
-6. Logoff
-  - 4634
-
-
-
-## Process
+### Process
 1. log2timeline - Extract timeline
 2. psort - Post processing and output
 3. pinfo - Display storage metadata
 
 
 
-## log2timeline usage
+## TOOL: [log2timeline](https://github.com/log2timeline/plaso)
+
+### Usage
+
 ```bash
-log2timeline.py [STORAGE FILE] [SOURCE]
+log2timeline.py  --storage-file [STORAGE_FILE] [SOURCE]
 ```  
 
-- STORAGE FILE: Plaso output database file ```/path/to/output.dump```
-- SOURCE: Device, image, or directory of files to be parsed ```/path/to/image/dd```
-- -z: Define the timezone of the system being investigated (not the output). IF a forensic image is provided (e.g. E01, raw), the timezone wil lbe identified automatically
-- --z "timezone": list of available timezones
-- --help: list all options with usage descriptions
-- [Plaso](https://plaso.readthedocs.io/en/latest/)
+**Arguments**
+
+* `--storage-file [STORAGE_FILE]`: Plaso output database file (e.g., `/path/to/out.plaso`)
+* `[SOURCE]`: Device, image, or directory of files to be parsed (e.g., `/path/to/image.E01`)
+* `--timezone <TZ>`: Define time zone of the system being investigated (not the output). If a forensic image is provided (e.g., E01, raw), the timezone is identified automatically.
+* `--timezone list`: List available time zones
+* `--help`: List all options with usage descriptions
+* [Plaso Documentation](https://plaso.readthedocs.io/en/latest/)
 
 
 
@@ -4369,86 +4329,191 @@ log2timeline.py /path-to/plaso.dump/ /triage-output/
 ```  
 
 
-## Targeted Timeline Creation
-- Parsers
-  - [Plaso Parsers](https://plaso.readthedocs.io/en/latest/sources/user/Parsers-and-plugins.html)
-  - ```log2timeline.py --parsers "win7,!filestat" plaso.dump <target>```  
-- Filter Files
-  - Allows for targeted analysis
-  - Supports text-based or YAML
-    - Regex
-    - Wildcards
-    - Path recursions
-    - Path variables
-  - [Filter Files](https://plaso.readthedocs.io/en/latest/sources/user/Collection-Filters.html)
-  - [Filter Files Plaso Github](https://github.com/log2timeline/plaso/tree/main/data)
-- Grab Kape Triage Image -> Run through plaso: ```log2timeline.py /path-to/plaso.dump/ /triage-output/```  
+## Targeted Super Timeline Creation
 
+### `log2timeline.py` Parser Presets
+
+```bash
+log2timeline.py --parsers "win7,!filestat" --storage-file out.plaso <target>
+```
+
+**Arguments**
+- [Plaso Parsers](https://plaso.readthedocs.io/en/latest/sources/user/Parsers-and-plugins.html)
+
+- `--parsers list`: to get a list of available presets on a given installation of log2timeline
+
+
+### `log2timeline.py` Filter Files
+
+- Allows for targeted analysis, supports text-based or YAML, regex, wildcards, path recursions and path variables
+
+```bash
+log2timeline.py -f [FILTER_FILE.txt] OR [FILTER_FILE.yaml]
+```
+
+**Arguments**
+  - [Filter Files](https://plaso.readthedocs.io/en/latest/sources/user/Collection-Filters.html)
+
+
+## Essential Artifact List for Fast Forensics/Triage Extraction
+
+* Memory
+* Registry Hives and Backups
+* LNK Files
+* Jump Lists
+* Prefetch
+* Event Logs and Windows Logs
+* Browser Data (IE, Firefox, Chrome)
+* Master File Table ($MFT)
+* Log Files and Journal Log
+* Pagefile and Hibernation Files
+
+### `log2timeline.py` + KAPE Triage Collection
+
+**OVERALL:** full disk imaging takes a very long time and is not efficient. The more efficient approach is to begin the investigation with the "Essential Artifact List" and then collecect full disk images if further investigations are needed!
+
+1. Collect only the **ESSENTIAL** using [KAPE](https://ericzimmerman.github.io/KapeDocs/#!index.md) for targeted collection
+2. Use `log2timeline.py` to develop the initial Triage Timeline Image.
+
+```bash
+log2timeline.py --storage-file [OUTPUT.plaso] /artifact_output_directory/
+```
 
 
 ## Filtering Super Timelines
 
-### pinfo.py
-- Displays contents of Plaso database
-  - -v for "verbose" information
-- Information stored inside the plaso.dump storage container
+### 1. `pinfo.py`
+- Displays contents of Plaso database. Used to validate the plaso database.
+- Information stored inside the `out.plaso` storage container
   - Info on when and how the tool was run
-- List of all plugins/parsers used
-- Filter file information (if applicable)
-- Information gathered during the preprocessing stage
-- A count of each artifact parsed
-- Errors and storage container metadata
+  - List of all plugins/parsers used
+  - Filter file information (if applicable)
+  - Information gathered during the preprocessing stage
+  - A count of each artifact parsed
+  - Errors and storage container metadata
 
 ```bash
-pinfo.py -v plaso.dump
+pinfo.py -v out.plaso
 ```  
+- -v for "verbose" information
 
 
 
-### psort.py
-- --output-time-zone ZONE - Converts stored times to specified time zone
-- -o FORMAT: -  Chose the output modile (default is "dynamic" minimal CSV)
-  - l2tcsv - Traditional CSV format used by log2timeline
-  - elastic - Sends result into an Elasticsearch database
-- -w FILE - Name of output file to be written
-- FILTER - Filter arguement (e.g., provide a date range filter)
-  - ```date > datetime ('2018-08-23T00:00:00') AND date < datetime ('2018-09-07T00:00:00')``` 
+### 2. `psort.py`
+
+Command line tool used to post-process the Plaso storage database, the tool creates the timeline from a set of extracted data.
+
+#### General Format
+```bash
+psort.py --output-time-zone 'UTC' -o 12tcsv -w supertimeline.csv out.plaso [FILTER]
+```
+
+- `--output-time-zone ZONE`: Converts stored times to specified time zone
+- `-o FORMAT`: Chose the output modile (default is "dynamic" minimal CSV)
+  - `l2tcsv`:Traditional CSV format used by log2timeline
+  - `opensearch`: Sends result into an OpenSerach database
+- `-w FILE`: Name of output file to be written
+- `FILTER`: Filter arguement (e.g., provide a date range filter) 
+`date > datetime('2023-01-01T00:00:00') AND date < datetime('2023-01-27T00:00:00')`
+
+#### Time Slice Format
+
+- Used to investigate a specific pivot in the system and drill down by grabbing a "slice" from that point in time (e.g., 5 mins before or after an event)
 
 ```bash
-psort.py --output-time-zone 'UTC' -o l2tcsv -w supertimeline.csv plaso.dump FILTER
-```  
+psort.py --slice '2023-08-30T20:00:00' -w slice.csv [out.plaso]
+```
+
+- `--slice_size`: can be used to extend the slice range beyond the default 5 mins.
 
 
-### Case Study: Web Server Intrusion
+### METHOD OF ATTACK: Partial Disk Analysis Web Server Intrusion Timeline Creation
+
+Example incident where you recieve an alert from your IDS and you need to act fast with minimal threat intel. You extract the **"Essential Artifact List for Fast Forensics/Triage Extraction"** from compromised machine and begin the timeline creation:
+
 - Step 1: Parse Triage Image from Web Server
 ```bash
-log2timeline.py 'EST5EDT' --parsers 'winevtx, winiis' plaso.dump /cases/IIS_Triage_Files
-```  
-- Step 2: Add fill MFT Metadata
-```bash
-log2timeline.py 'EST5EDT' --parsers 'mactime' plaso.dump /cases/IIS/mftecmd.body
-```  
-- Step 3: Filter Timeline
-```bash
-psort.py  --output-time-zone 'UTC' -o l2tcsv -w supertimeline.csv plaso.dump "date > datetime ('2018-08-23T00:00:00') AND date < datetime ('2018-09-07T00:00:00')"
+log2timeline.py --timezone 'EST5EDT' --parsers 'winevtx, winiis' --storage-file out.plaso [/cases/artifact_directory]
 ``` 
 
-## Super Timeline Analysis
+- Step 2: Add full MFT Metadata (Bodyfile for Timeline)
+```bash
+log2timeline.py --parsers 'mactime' --storage-file out.plaso [/cases/timeline_mftecmd.body]
+```  
 
-### Recommended Columns
-- date
-- time
-- MACB
-- sourcetype
-- source
-- desc
-- filename
-- inode
-- extra
+- Step 3: Filter Timeline
+```bash
+psort.py --output-time-zone 'UTC' -o l2tcsv -w supertimeline.csv out.plaso "date > datetime('2023-01-01T00:00:00') AND date < datetime('2023-01-27T00:00:00')"
+``` 
+
+### METHOD OF ATTACK: Full Disk Super Timeline Creation
+
+- Step 1: Parse Triage Image from Web Server
+```bash
+log2timeline.py --timezone 'EST5EDT' -f filter_windows.yaml --parsers 'win7,!filestat' --storage-file out.plaso [/cases/cdrive/YOUR_DISK.E01]
+``` 
+
+- Step 2: Add full MFT Metadata (Bodyfile for Timeline)
+```bash
+log2timeline.py --parsers 'mactime' --storage-file out.plaso [/cases/mftecmd.body]
+```
+Adding the mactime parser based on your the file system data from `mftecmd.body`  
+
+- Step 3: Filter Timeline
+```bash
+psort.py --output-time-zone 'UTC' -o 12tcsv -w supertimeline.csv out.plaso "date > datetime('2023-01-01T00:00:00') AND date < datetime('2023-01-27T00:00:00')"
+``` 
+
+### Most Essential Super Timeine Columns
+* **date:** Date of the event, in the format of MM/DD/YYYY
+* **time:** Time of day, expressed in a 24h format, HH:MM:SS
+* **MACB:** MACB timestamps, typically only relevant for filesystem artifacts (files and directories)
+* **sourcetype:** More comprehensive description of the source
+* **source:** Short name for the source
+* **desc:** Long description field; this is where most of the information is stored
+* **filename:** Filename with the full path of the artifact which was parsed
+* **inode:** Meta-data address of file being parsed
+* **extra:** Additional information parsed from the artifact is included here
+
 
 ### Colorize Timeline
-- Automatically colorized in Timeline Explorer
+**NOTE:** Automatically colorized in Timeline Explorer
+- Also see `Help > Legend` for color codes
+
+<table>
+  <tr style="background-color: #82e0aa;">
+    <td><b>FILE OPENING<b\></td>
+    <td><b>LIGHT GREEN<b\>
+  </tr>
+  <tr style="background-color: #e67e22;">
+    <td><b>WEB HISTORY<b\></td>
+    <td><b>ORANGE<b\>
+  </tr>
+  <tr style="background-color: black; color: white;">
+    <td><b>DELETED DATA<b\></td>
+    <td><b>BLACK<b\>
+  </tr>
+  <tr style="background-color: #c0392b; color: white;">
+    <td><b>EXECUTION<b\></td>
+    <td><b>RED<b\>
+  </tr>
+  <tr style="background-color: #2e86c1;">
+    <td><b>DEVICE OR USB USAGE<b\></td>
+    <td><b>BLUE<b\>
+  </tr>
+  <tr style="background-color: #145a32; color: white;">
+    <td><b>FOLDER OPENING<b\></td>
+    <td><b>DARK GREEN<b\>
+  </tr>
+  <tr style="background-color: lightyellow; color: black;">
+    <td><b>LOG FILE<b\></td>
+    <td><b>DEFAULT<b\>
+  </tr>
+</table>
+
+- CTRL-E: Clear filters
 - CTRL-T: Tag or untag selected rows
+- CTRL-R: Reset column widths
 - CTRL-D: Bring up details (for use with supertimelines)
 - CTRL-C: Copy selected cells (and headers) to clipboard
 - CTRL-F: Show Find dialog
@@ -4461,45 +4526,62 @@ psort.py  --output-time-zone 'UTC' -o l2tcsv -w supertimeline.csv plaso.dump "da
 
 ### Super Timeline Creation
 
-- Create Body File of Master File Table
+* **Determine Timeline Scope:** What questions do you need to answer?
+
+* **Narrow Pivot Points:**
+  * Time-based
+  * Artifact-based
+
+* **Determine the Best Process for Timeline Creation:**
+  * Filesystem-Based Timeline Creation - FLS or MFTECmd - FAST (TRIAGE MODE)
+  * Super Timeline Creation - Automated or Targeted - LOG2TIMELINE
+
+* **Filter Timeline**
+
+* **Analyze Timeline:**
+  * Focus on the context of evidence
+  * Use Windows Forensic Analysis Poster "Evidence of..."
+
+
+#### 1. Create Body File of Master File Table
 ```bash
 MFTECmd.exe -f '.\Location\C\$MFT' --body 'D:\Path\To Save\Timeline' --bodyf hostname-mftecmd.body --blf --bdl C:
 ```  
 
 
 
-- Convert body file to csv (triage timeline)
+#### 2. Convert body file to csv (triage timeline)
 ```bash
 mactime -z UTC -y -d -b hostname-mftecmd.body > hostname-filesystem-timeline.csv
 ```  
 
 
 
-- Tune out unnecessary noise
+#### 3. Tune out unnecessary noise
 ```bash
 grep -v -i -f timeline_noise.txt hostname-filesystem-timeline.csv > hostname-filesystem-timeline-final.csv
 ```  
 
 
 
-- List Timezones
+#### 4. List Timezones
 ```bash
 log2timeline.py -z list
 ```
 
 
 
-- Timeline Windows artifacts
+#### 5. Timeline Windows artifacts
 ```bash
 log2timeline.py -z 'PST8PDT' --parsers 'win7,!filestat' --storage-file ../plaso.dump triage_image/2021-11-20T012359_hostname.vhdx
 ```  
 
-- Add Master File Table
+#### 6. Add Master File Table
 ```bash
 log2timeline.py --parsers 'mactime' --storage-file ../plaso.dump ./hostname-mftecmd.body
 ```  
 
-- Convert Super Timeline to CSV
+#### 7. Convert Super Timeline to CSV
 ```bash
 psort.py --output-time-zone 'UTC' -o l2tcsv -w ./plaso.csv ./plaso.dump "(((parser == 'winevtx') and (timestamp_desc == 'Creation Time')) or (parser != 'winevtx'))"
 ```  
