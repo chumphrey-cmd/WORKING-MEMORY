@@ -225,16 +225,19 @@
     - [`log2timeline.py` Filter Files](#log2timelinepy-filter-files)
   - [Essential Artifact List for Fast Forensics/Triage Extraction](#essential-artifact-list-for-fast-forensicstriage-extraction)
     - [`log2timeline.py` + KAPE Triage Collection](#log2timelinepy--kape-triage-collection)
-  - [Filtering Super Timelines](#filtering-super-timelines)
-    - [1. `pinfo.py`](#1-pinfopy)
-    - [2. `psort.py`](#2-psortpy)
-      - [General Format](#general-format)
-      - [Time Slice Format](#time-slice-format)
-    - [METHOD OF ATTACK: Partial Disk Analysis Web Server Intrusion Timeline Creation](#method-of-attack-partial-disk-analysis-web-server-intrusion-timeline-creation)
-    - [METHOD OF ATTACK: Full Disk Super Timeline Creation](#method-of-attack-full-disk-super-timeline-creation)
-    - [Most Essential Super Timeine Columns](#most-essential-super-timeine-columns)
+    - [Filtering Super Timelines](#filtering-super-timelines)
+      - [1. `pinfo.py`](#1-pinfopy)
+      - [2. `psort.py`](#2-psortpy)
+        - [General Format](#general-format)
+        - [Time Slice Format](#time-slice-format)
+      - [METHOD OF ATTACK: Partial Disk Analysis Web Server Intrusion Timeline Creation](#method-of-attack-partial-disk-analysis-web-server-intrusion-timeline-creation)
+      - [METHOD OF ATTACK: Full Disk Super Timeline Creation](#method-of-attack-full-disk-super-timeline-creation)
     - [Timeline Analysis Tips and Tricks](#timeline-analysis-tips-and-tricks)
-      - [Colorize Timeline](#colorize-timeline)
+      - [Timeline Analysis Process](#timeline-analysis-process)
+      - [Timeline Explorer Hot Keys](#timeline-explorer-hot-keys)
+      - [Timeline Explorer Shortcuts](#timeline-explorer-shortcuts)
+      - [Most Essential Super Timeine Columns](#most-essential-super-timeine-columns)
+      - [Timeline Explorer Color Legend](#timeline-explorer-color-legend)
     - [Triage Timeline Creation](#triage-timeline-creation)
       - [0. KAPE Artifact Extraction](#0-kape-artifact-extraction)
       - [1. Creating Bodyfile](#1-creating-bodyfile)
@@ -250,9 +253,12 @@
       - [2. Parse Full Triage Image](#2-parse-full-triage-image)
       - [3. Add full MFT Metadata (Bodyfile for Timeline)](#3-add-full-mft-metadata-bodyfile-for-timeline)
       - [4. Convert Super Timeline to CSV and Filter](#4-convert-super-timeline-to-csv-and-filter-1)
-  - [Supertimeline Analysis](#supertimeline-analysis)
-    - [Questions to Answer](#questions-to-answer)
-    - [Filtering](#filtering)
+  - [Scaling Timeline Analysis](#scaling-timeline-analysis)
+    - [Timesketch](#timesketch)
+    - [yara\_match.py](#yara_matchpy)
+  - [Supertimeline Analytic Process](#supertimeline-analytic-process)
+    - [Sanity Check Questions](#sanity-check-questions)
+    - [Filtering Tips and Tricks](#filtering-tips-and-tricks)
 - [(5) Anti-Forensics Detection](#5-anti-forensics-detection)
   - [Overview](#overview-1)
     - [Filesystem](#filesystem)
@@ -4388,9 +4394,10 @@ log2timeline.py --storage-file [OUTPUT.plaso] /artifact_output_directory/
 ```
 
 
-## Filtering Super Timelines
+### Filtering Super Timelines
 
-### 1. `pinfo.py`
+
+#### 1. `pinfo.py`
 - Displays contents of Plaso database. Used to validate the plaso database.
 - Information stored inside the `out.plaso` storage container
   - Info on when and how the tool was run
@@ -4407,11 +4414,11 @@ pinfo.py -v out.plaso
 
 
 
-### 2. `psort.py`
+#### 2. `psort.py`
 
 Command line tool used to post-process the Plaso storage database, the tool creates the timeline from a set of extracted data.
 
-#### General Format
+##### General Format
 ```bash
 psort.py --output-time-zone 'UTC' -o l2tcsv -w supertimeline.csv out.plaso [FILTER]
 ```
@@ -4424,7 +4431,7 @@ psort.py --output-time-zone 'UTC' -o l2tcsv -w supertimeline.csv out.plaso [FILT
 - `FILTER`: Filter arguement (e.g., provide a date range filter) 
 `date > datetime('2023-01-01T00:00:00') AND date < datetime('2023-01-27T00:00:00')`
 
-#### Time Slice Format
+##### Time Slice Format
 
 - Used to investigate a specific pivot in the system and drill down by grabbing a "slice" from that point in time (e.g., 5 mins before or after an event)
 
@@ -4435,7 +4442,7 @@ psort.py --slice '2023-08-30T20:00:00' -w slice.csv [out.plaso]
 - `--slice_size`: can be used to extend the slice range beyond the default 5 mins.
 
 
-### METHOD OF ATTACK: Partial Disk Analysis Web Server Intrusion Timeline Creation
+#### METHOD OF ATTACK: Partial Disk Analysis Web Server Intrusion Timeline Creation
 
 Example incident where you recieve an alert from your IDS and you need to act fast with minimal threat intel. You extract the **"Essential Artifact List for Fast Forensics/Triage Extraction"** from compromised machine and begin the timeline creation:
 
@@ -4454,7 +4461,7 @@ log2timeline.py --parsers 'mactime' --storage-file out.plaso [/cases/timeline_mf
 psort.py --output-time-zone 'UTC' -o l2tcsv -w supertimeline.csv out.plaso "date > datetime('2023-01-01T00:00:00') AND date < datetime('2023-01-27T00:00:00')"
 ``` 
 
-### METHOD OF ATTACK: Full Disk Super Timeline Creation
+#### METHOD OF ATTACK: Full Disk Super Timeline Creation
 
 - Step 1: Parse Triage Image from Web Server
 ```bash
@@ -4470,43 +4477,17 @@ Adding the mactime parser based on your the file system data from `mftecmd.body`
 - Step 3: Filter Timeline
 ```bash
 psort.py --output-time-zone 'UTC' -o 12tcsv -w supertimeline.csv out.plaso "date > datetime('2023-01-01T00:00:00') AND date < datetime('2023-01-27T00:00:00')"
-``` 
-
-### Most Essential Super Timeine Columns
-* **date:** Date of the event, in the format of MM/DD/YYYY
-* **time:** Time of day, expressed in a 24h format, HH:MM:SS
-* **MACB:** MACB timestamps, typically only relevant for filesystem artifacts (files and directories)
-* **sourcetype:** More comprehensive description of the source
-* **type:** type of an artifact timestamp, e.g., Creation Time for files or Last Time Visited for website history
-* **short:** short description of the entry
-* **desc:** Long description field; this is where most of the information is stored
-* **filename:** Filename with the full path of the artifact which was parsed
-* **inode:** Meta-data address of file being parsed
-* **extra:** Additional information parsed from the artifact is included here
+```
 
 
 
 ### Timeline Analysis Tips and Tricks
 
-- CTRL-E: Clear filters
-- CTRL-T: Tag or untag selected rows
-- CTRL-R: Reset column widths
-- CTRL-D: Bring up details (for use with supertimelines)
-- CTRL-C: Copy selected cells (and headers) to clipboard
-- CTRL-F: Show Find dialog
-- CTRL-Down: Select Last Row
-- CTRL-Shift-A: Select all values in current column
-- Wildcards are supported in column filters
-- [Colorized Super Timeline Template for Log2timeline Output Files](https://www.sans.org/blog/digital-forensic-sifting-colorized-super-timeline-template-for-log2timeline-output-files/)
 
-- `Search options` (bottom right-hand side of screen allows you to pin specific columns)
+#### Timeline Analysis Process
 
-- Ideal column setup:
-  - `Timestamp`, `Source Description`, `macb`, `Short Description`, `Long Description` 
 
-- When conducting analysis, focus on the **Bodyfile** (the Master File Table) + **Specific Timestamp (macb)** to identify the last modified time
-
-SECTION NEEDS TO BE UPDATED (SEE LAB 4.3 A/B)
+**NOTE:** SECTION NEEDS TO BE UPDATED (SEE LAB 4.3 A/B)
 
 * **Determine Timeline Scope:** What questions do you need to answer?
 
@@ -4525,8 +4506,49 @@ SECTION NEEDS TO BE UPDATED (SEE LAB 4.3 A/B)
   * Use Windows Forensic Analysis Poster "Evidence of..."
 
 
-#### Colorize Timeline
-**NOTE:** Automatically colorized in Timeline Explorer
+#### Timeline Explorer Hot Keys
+
+
+- CTRL-E: Clear filters
+- CTRL-T: Tag or untag selected rows
+- CTRL-R: Reset column widths
+- CTRL-D: Bring up details (for use with supertimelines)
+- CTRL-C: Copy selected cells (and headers) to clipboard
+- CTRL-F: Show Find dialog
+- CTRL-Down: Select Last Row
+- CTRL-Shift-A: Select all values in current column
+- Wildcards are supported in column filters
+
+
+#### Timeline Explorer Shortcuts 
+
+- `Search options` (bottom right-hand side of screen allows you to pin specific columns)
+
+- Ideal column setup:
+  - `Timestamp`, `Source Description`, `macb`, `Short Description`, `Long Description` 
+
+- When conducting analysis, focus on the **Bodyfile** (the Master File Table) + **Specific Timestamp (macb)** to identify the last modified time
+
+
+#### Most Essential Super Timeine Columns
+
+
+* **date:** Date of the event, in the format of MM/DD/YYYY
+* **time:** Time of day, expressed in a 24h format, HH:MM:SS
+* **MACB:** MACB timestamps, typically only relevant for filesystem artifacts (files and directories)
+* **sourcetype:** More comprehensive description of the source
+* **type:** type of an artifact timestamp, e.g., Creation Time for files or Last Time Visited for website history
+* **short:** short description of the entry
+* **desc:** Long description field; this is where most of the information is stored
+* **filename:** Filename with the full path of the artifact which was parsed
+* **inode:** Meta-data address of file being parsed
+* **extra:** Additional information parsed from the artifact is included here
+
+
+#### Timeline Explorer Color Legend
+
+- [Colorized Super Timeline Template for Log2timeline Output Files](https://www.sans.org/blog/digital-forensic-sifting-colorized-super-timeline-template-for-log2timeline-output-files/)
+
 - Also see `Help > Legend` for color codes
 
 | Category        | Color       |
@@ -4538,6 +4560,7 @@ SECTION NEEDS TO BE UPDATED (SEE LAB 4.3 A/B)
 | **USB USAGE**       | Blue        |
 | **FOLDER OPENING**  | Dark Green  |
 
+**NOTE:** Automatically colorized in Timeline Explorer
 
 
 
@@ -4662,9 +4685,26 @@ grep -a -v -i -f timeline_noise.txt supertimeline.csv > supertimeline_final.csv
 ``` 
 
 
-## Supertimeline Analysis
+## Scaling Timeline Analysis
 
-### Questions to Answer
+
+### [Timesketch](https://github.com/google/timesketch)
+
+- An open-source tool for collaborative forensic timeline analysis. Using sketches you and your collaborators can easily organize your timelines and analyze them all at the same time. Add meaning to your raw data with rich annotations, comments, tags and stars.
+
+
+
+### [yara_match.py](https://github.com/kiddinn/l2t-tools/blob/master/plugins/yara_match.py)
+
+- Plugin embeddded within the `log2timeline.py` parser/tool that loads up a YARA rule file and runs it against each line in the CSV file and if there is a match it will fire up an alert. Used to facilitate searching a super timeline for a list of YARA signature matches.
+
+
+## Supertimeline Analytic Process
+
+
+### Sanity Check Questions
+
+
 - When were suspicous directories created?
 - What is the MFT-Entry value (from the "Meta" column)?
 - What is the last modification time for the folder?
@@ -4680,18 +4720,28 @@ grep -a -v -i -f timeline_noise.txt supertimeline.csv > supertimeline_final.csv
 
 
 
-### Filtering
+### Filtering Tips and Tricks
+
+
+- Be sure to search context before and after the highlighted event using 
+
 - Filter for "AppCompatCache Registry Entry" in the "Source Description" column
   - Adding the "Type" column can help with interpretation of the timestamps
+
 - Use the Power Filter to find all rows with the value "/filename"
   - Click Line showing the creation of indicator
   - Clear your Power Filter ("X"), allowing you to see all of the activity around the creation of that suspicious file
+
 - Select "Registry Key: RDP Connection", and examine the output
   - Notice that the "File Name" column identifies this data as coming from the NTUSER.DAT registry file
+
 - Search for "Recycle" in your Power Filter
   - What user RID (the last 3-4 digits of the SID) is responsible for all of the Recycle Bin activity
+
 - Filter for "Registry Key: BagMRU" (Folder Opening)
+
 - GUI program execution using a filter for the artifact "Registry Key: UserAssist"
+
 
 
 
