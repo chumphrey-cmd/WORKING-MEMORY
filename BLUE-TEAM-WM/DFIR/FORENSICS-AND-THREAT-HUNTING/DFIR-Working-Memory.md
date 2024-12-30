@@ -234,6 +234,7 @@
     - [METHOD OF ATTACK: Full Disk Super Timeline Creation](#method-of-attack-full-disk-super-timeline-creation)
     - [Most Essential Super Timeine Columns](#most-essential-super-timeine-columns)
     - [Colorize Timeline](#colorize-timeline)
+    - [Super Timeline Analysis Tips and Tricks](#super-timeline-analysis-tips-and-tricks)
     - [Super Timeline Creation - SECTION NEEDS TO BE UPDATED (SEE LAB 4.3 A/B)](#super-timeline-creation---section-needs-to-be-updated-see-lab-43-ab)
       - [1. Create Body File of Master File Table](#1-create-body-file-of-master-file-table)
       - [2. Convert body file to csv (triage timeline)](#2-convert-body-file-to-csv-triage-timeline)
@@ -4512,6 +4513,8 @@ psort.py --output-time-zone 'UTC' -o 12tcsv -w supertimeline.csv out.plaso "date
   </tr>
 </table>
 
+### Super Timeline Analysis Tips and Tricks
+
 - CTRL-E: Clear filters
 - CTRL-T: Tag or untag selected rows
 - CTRL-R: Reset column widths
@@ -4523,6 +4526,12 @@ psort.py --output-time-zone 'UTC' -o 12tcsv -w supertimeline.csv out.plaso "date
 - Wildcards are supported in column filters
 - [Colorized Super Timeline Template for Log2timeline Output Files](https://www.sans.org/blog/digital-forensic-sifting-colorized-super-timeline-template-for-log2timeline-output-files/)
 
+- `Search options` (bottom right-hand side of screen allows you to pin specific columns)
+
+- Ideal column setup:
+  - `Timestamp`, `Source Description`, `macb`, `Short Description`, `Long Description` 
+
+- When conducting analysis, focus on the **Bodyfile** (the Master File Table) + **Specific Timestamp (macb)** to identify the last modified time
 
 
 ### Super Timeline Creation - SECTION NEEDS TO BE UPDATED (SEE LAB 4.3 A/B)
