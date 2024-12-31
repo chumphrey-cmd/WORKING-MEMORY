@@ -176,23 +176,22 @@
     - [Registry Artifacts - shimcachemem](#registry-artifacts---shimcachemem)
     - [Extracted File Analysis](#extracted-file-analysis)
     - [Live Analysis](#live-analysis)
-- [Windows Forensics](#windows-forensics)
+  - [Windows Forensics](#windows-forensics)
   - [SANS Windows Forensic Analysis Poster](#sans-windows-forensic-analysis-poster)
   - [Registy Overview](#registy-overview)
   - [Users and Groups](#users-and-groups)
   - [System Configuration](#system-configuration)
-- [Malware Discovery](#malware-discovery)
+- [(4) Timeline Analysis](#4-timeline-analysis)
+  - [Malware Discovery (Field Triage)](#malware-discovery-field-triage)
     - [YARA](#yara)
     - [Sigcheck](#sigcheck)
     - [DensityScout](#densityscout)
     - [capa](#capa)
     - [UPX](#upx)
     - [Putting It All Together](#putting-it-all-together)
-  - [Malware Discovery Process](#malware-discovery-process)
     - [yara](#yara-1)
     - [Sigcheck](#sigcheck-1)
     - [DensityScout](#densityscout-1)
-- [(4) Timeline Analysis](#4-timeline-analysis)
   - [Overview](#overview)
     - [Benefits](#benefits)
     - [Forensic Trinity](#forensic-trinity)
@@ -230,7 +229,7 @@
       - [2. `psort.py`](#2-psortpy)
         - [General Format](#general-format)
         - [Time Slice Format](#time-slice-format)
-      - [METHOD OF ATTACK: Partial Disk Analysis Web Server Intrusion Timeline Creation](#method-of-attack-partial-disk-analysis-web-server-intrusion-timeline-creation)
+      - [METHOD OF ATTACK: Partial Disk Super Timeline Creation](#method-of-attack-partial-disk-super-timeline-creation)
       - [METHOD OF ATTACK: Full Disk Super Timeline Creation](#method-of-attack-full-disk-super-timeline-creation)
     - [Timeline Analysis Tips and Tricks](#timeline-analysis-tips-and-tricks)
       - [Timeline Analysis Process](#timeline-analysis-process)
@@ -3759,7 +3758,7 @@ voly.py -f memory.img dumpfiles -n -Q 0x09135278 --dump-dir=.
 
 
 
-# Windows Forensics
+## Windows Forensics
 
 ## SANS Windows Forensic Analysis Poster
 * [Link](https://github.com/w00d33/w00d33.github.io/blob/main/_files/SANS_Windows_Forensics_Poster.pdf)
@@ -3927,7 +3926,14 @@ voly.py -f memory.img dumpfiles -n -Q 0x09135278 --dump-dir=.
 
 
 
-# Malware Discovery
+# (4) Timeline Analysis
+
+
+
+## Malware Discovery (Field Triage)
+**UPDATE WITH PERSONAL NOTES [HERE](https://docs.google.com/document/d/1zADzm1b56wPJELMJumbIdkMErHTIEAfP3YMIECPKykk/edit?tab=t.0#heading=h.m6rgbu7qmw1q)**
+
+
 
 ### YARA
 - Search for string and header based signatures
@@ -4000,9 +4006,6 @@ upx -d p_exe -o p_exe_unpacked
 - Poor Density Score + No Digital Signature + Anomalistic Behavior - Known Good = Suspicious Files
 
 
-
-## Malware Discovery Process
-
 ### yara
 
 - Compile yara rules
@@ -4042,9 +4045,6 @@ sigcheck.exe -s -c -e -h -v -vt -w 'C:\Tools\Malware Analysis\sigcheck-results.c
 densityscout.exe -r -pe -p 0.1 -o 'C:\Tools\densityscout-results.txt' G:\
 ```
 
-
-
-# (4) Timeline Analysis
 
 ## Overview
 
@@ -4276,10 +4276,11 @@ mactime -z [TIMEZONE] -y -d -b /path/to/[BODY_FILE].body [yyyy-mm-dd..yyyy-mm-dd
 
 **NOTE:** Used to capture specified time range. 
 
-* `-b`: Bodyfile location (data file)
-* `-y`: Dates are displayed in ISO 8601 format
 * `-z`: Specify the time zone (UTC is preferred)
+* `-y`: Dates are displayed in ISO 8601 format
 * `-d`: Comma-delimited format
+* `-b`: Bodyfile location (data file)
+
 
 **Optional Date Range:**
 
@@ -4319,27 +4320,32 @@ log2timeline.py  --storage-file [STORAGE_FILE] [SOURCE]
 ## Target Examples
 - Raw Image
 ```bash
-log2timeline.py /path-to/plaso.dump /path-to/image.dd
+log2timeline.py --storage-file /path-to/out.plaso image.dd
 ```  
+
 - EWF Image
 ```bash
-log2timeline.py /path-to/plaso.dump /path-to/image.E01
+log2timeline.py --storage-file /path-to/out.plaso image.E01
 ```  
+
 - Virtual Disk Image
 ```bash
-log2timeline.py /path-to/plaso.dump /path-to/triage.vhdx
+log2timeline.py --storage-file /path-to/out.plaso triage.vhdx
 ```  
-- Physical Device
+
+- Physical Device (mounted)
 ```bash
-log2timeline.py /path-to/plaso.dump /dev/sdd
+log2timeline.py --storage-file /path-to/out.plaso /dev/sdd
 ```  
+
 - Volume via Partition Num
 ```bash
-log2timeline.py --partition 2 /path-to/plaso.dump /path-to/image.dd
-```  
+log2timeline.py --partitions 2 --storage-file /path-to/out.plaso /path-to/image.dd
+```
+
 - Triage Folder
 ```bash
-log2timeline.py /path-to/plaso.dump/ /triage-output/
+log2timeline.py --storage-file /path-to/out.plaso /triage/dir/
 ```  
 
 
@@ -4442,7 +4448,7 @@ psort.py --slice '2023-08-30T20:00:00' -w slice.csv [out.plaso]
 - `--slice_size`: can be used to extend the slice range beyond the default 5 mins.
 
 
-#### METHOD OF ATTACK: Partial Disk Analysis Web Server Intrusion Timeline Creation
+#### METHOD OF ATTACK: Partial Disk Super Timeline Creation
 
 Example incident where you recieve an alert from your IDS and you need to act fast with minimal threat intel. You extract the **"Essential Artifact List for Fast Forensics/Triage Extraction"** from compromised machine and begin the timeline creation:
 
@@ -4476,7 +4482,7 @@ Adding the mactime parser based on your the file system data from `mftecmd.body`
 
 - Step 3: Filter Timeline
 ```bash
-psort.py --output-time-zone 'UTC' -o 12tcsv -w supertimeline.csv out.plaso "date > datetime('2023-01-01T00:00:00') AND date < datetime('2023-01-27T00:00:00')"
+psort.py --output-time-zone 'UTC' -o l2tcsv -w supertimeline.csv out.plaso "date > datetime('2023-01-01T00:00:00') AND date < datetime('2023-01-27T00:00:00')"
 ```
 
 
