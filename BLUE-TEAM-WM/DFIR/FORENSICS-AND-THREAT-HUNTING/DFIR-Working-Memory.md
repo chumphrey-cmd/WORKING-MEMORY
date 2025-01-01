@@ -256,8 +256,8 @@
     - [Timesketch](#timesketch)
     - [yara\_match.py](#yara_matchpy)
   - [Supertimeline Analytic Process](#supertimeline-analytic-process)
-    - [Sanity Check Questions](#sanity-check-questions)
-    - [Filtering Tips and Tricks](#filtering-tips-and-tricks)
+    - [Sanity Check Questions - REVIEW AND UPDATE](#sanity-check-questions---review-and-update)
+    - [Filtering Tips and Tricks - REVIEW AND UPDATE](#filtering-tips-and-tricks---review-and-update)
 - [(5) Anti-Forensics Detection](#5-anti-forensics-detection)
   - [Overview](#overview-1)
     - [Filesystem](#filesystem)
@@ -4708,7 +4708,7 @@ grep -a -v -i -f timeline_noise.txt supertimeline.csv > supertimeline_final.csv
 ## Supertimeline Analytic Process
 
 
-### Sanity Check Questions
+### Sanity Check Questions - REVIEW AND UPDATE
 
 
 - When were suspicous directories created?
@@ -4726,10 +4726,10 @@ grep -a -v -i -f timeline_noise.txt supertimeline.csv > supertimeline_final.csv
 
 
 
-### Filtering Tips and Tricks
+### Filtering Tips and Tricks - REVIEW AND UPDATE
 
 
-- Be sure to search context before and after the highlighted event using 
+- Be sure to search context **before** and **after** the highlighted event within Timeline Explorer
 
 - Filter for "AppCompatCache Registry Entry" in the "Source Description" column
   - Adding the "Type" column can help with interpretation of the timestamps
