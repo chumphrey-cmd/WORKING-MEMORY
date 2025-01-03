@@ -266,6 +266,9 @@
   - [Recovery of Deleted Files via VSS](#recovery-of-deleted-files-via-vss)
     - [Volume Shadow Copies](#volume-shadow-copies)
     - [Volume Shadow Examination](#volume-shadow-examination)
+    - [Mount and Serach All Shadow Copies](#mount-and-serach-all-shadow-copies)
+    - [VSS Examination with `log2timeline.py`](#vss-examination-with-log2timelinepy)
+    - [VSS Super Timeline Creation (SEE LAB 5.1/5.2)](#vss-super-timeline-creation-see-lab-5152)
   - [Advanced NTFS Filesystem Tactics](#advanced-ntfs-filesystem-tactics)
     - [Master File Table - MFT](#master-file-table---mft)
     - [MFT Entry Allocated](#mft-entry-allocated)
@@ -4757,7 +4760,13 @@ grep -a -v -i -f timeline_noise.txt supertimeline.csv > supertimeline_final.csv
 
 # (5) Anti-Forensics Detection
 
+**NOTE:** reserved for only a handful of machines as this process is **very time intensive/exhaustive**
+
+
+
 ## Overview
+
+
 
 ### Filesystem
 - Timestomping
@@ -4802,6 +4811,62 @@ grep -a -v -i -f timeline_noise.txt supertimeline.csv > supertimeline_final.csv
 - Analysis on SIFT VM
   - vshadowinfo
   - vshadowmount
+
+```bash
+vshadowinfo /path-to/shadow-copy
+```
+
+**NOTE:** cannot be a E01 image
+- Used to list out each volume snapshot and the date/time it was created on the source system
+
+
+### Mount and Serach All Shadow Copies
+
+**Step 1: Mount disk image**
+
+```bash
+ewfmount rd01-cdrive.E01 /mnt/ewf_mount/
+```
+
+**Step 2: Expose volume snapshots**
+
+```bash
+vshadowmount /mnt/ewf_mount/ewf1 /mnt/vss/
+```
+
+**Step 3: Mount all snapshots as logical file systems via a FOR loop**
+
+```bash
+cd /mnt/vss
+```
+
+```bash
+for i in vss*; do mount -o ro,show_sys_files,streams_interface=windows $i /mnt/shadow_mount/$i; done
+```
+
+**Step 4: Search mounted snapshots**
+
+```bash
+cd /mnt/shadow_mount
+```
+
+```bash
+find . | grep -i <filename>
+```
+
+
+### VSS Examination with `log2timeline.py`
+
+```bash
+log2timeline.py --storage-file plaso.dump [DISK.img]
+``` 
+
+- If `log2timeline.py` identifies a shadow copy, the tool will inform you of its prescence! 
+
+
+
+### VSS Super Timeline Creation (SEE LAB 5.1/5.2)
+**NOTE:** Will take several for the extraction and mounting to complete
 
 
 
