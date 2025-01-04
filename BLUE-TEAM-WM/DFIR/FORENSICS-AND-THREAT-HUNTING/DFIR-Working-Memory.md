@@ -5032,7 +5032,7 @@ Zero Fraction Seconds (`u Sec` Column)
 - Files can have multiple $DATA streams
   - The extra, or "Alternate Data Streams" (ADS), must be named
 
-  
+
 
 ### Extracting Data with The Sleuth Kit - `icat`
 
@@ -5057,7 +5057,6 @@ icat [options] image inode > extracted.data
 ```bash
 icat /cases/cdrive/hostname.E01 132646-128-5
 ```
-
 
 
 
@@ -5088,11 +5087,12 @@ istat hostname.E01 <mft#>
 
 
 ```bash
-icat hostname.E01 39345-128-9 > ads1
-```  
+icat hostname.E01 39345-128-9 > [YOUR_FILE]
+``` 
+- After confirming the information, redirect output into [YOUR_FILE]
 
 ```bash
-file ads1
+file [YOUR_FILE]
 ```  
 
 - Image (Windows)
