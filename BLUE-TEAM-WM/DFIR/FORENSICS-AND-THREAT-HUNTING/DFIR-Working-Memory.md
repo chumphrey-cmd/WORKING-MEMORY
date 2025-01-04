@@ -274,11 +274,12 @@
     - [MFT Entry Allocated](#mft-entry-allocated)
     - [MFT Entry Unallocated](#mft-entry-unallocated)
     - [Sequential MFT Entries](#sequential-mft-entries)
+    - [MFT Entry Hex Overview](#mft-entry-hex-overview)
     - [istat - Analyzing File System Metadata](#istat---analyzing-file-system-metadata)
     - [Detecting Timestamp Manipulation](#detecting-timestamp-manipulation)
-    - [Timestomp Detection](#timestomp-detection)
+    - [Targeted Timestomp Detection Analysis Process](#targeted-timestomp-detection-analysis-process)
     - [Analyzing $DATA](#analyzing-data)
-    - [Extracting Data with The Sleuth Kit - icat](#extracting-data-with-the-sleuth-kit---icat)
+    - [Extracting Data with The Sleuth Kit - `icat`](#extracting-data-with-the-sleuth-kit---icat)
     - [The Zone Identifier ADS -  Evidence of Download](#the-zone-identifier-ads----evidence-of-download)
     - [Filenames](#filenames)
     - [NTFS Directory Attributes](#ntfs-directory-attributes)
@@ -4178,6 +4179,10 @@ densityscout.exe -r -pe -p 0.1 -o 'C:\Tools\densityscout-results.txt' G:\
 #### Windows 11 Time Rules
 <img alt="Micosoft's Attack Lifecycle" src="./files/Win11_Timeline_Rules.png"/>
 
+
+**NOTE:** the Timeline Rules are extracted from the `$Standard_Information` attribute (e.g., the information that is displayed when you **Right-Click > Select Properties** to view file information/metadata) 
+
+
 **ANALYST NOTE:** **Creation** (a new file appeared) and **modified** (a file was updated) time rules are sufficient to answer most forensic questions. Only use the remaining rules if there are more granular questions that need to be answered.
 
 ### Timestamp Rules Exceptions
@@ -4894,15 +4899,30 @@ log2timeline.py --storage-file plaso.dump [DISK.img]
 - The clusters pointed to may or may not still contain the deleted file's data
   - The clusters may have been resused
 
+**NOTE:** a sophisticated adversary may flip this bit in order to remove specific metadata about a file.
+
 
 
 ### Sequential MFT Entries
 - As files are created, regardless of their directories, MFT allocation patterns are generally sequential and not random
-- Use analysis of contiguous metadata values to find files likely created in quick succession, even across different directories
+
+
+**ANALYST NOTE:** Look for "clustering" in the Meta column of MFT entries.  Use analysis of contiguous metadata values to find files likely created in quick succession, even across different directories
+
+
+### MFT Entry Hex Overview
+
+<img alt="MFT Entry Overiew" src="./files/MFT Entry Overview.png">
+
 
 
 
 ### istat - Analyzing File System Metadata
+
+```bash
+istat FILE_NAME.E01 [MFT_ENTRY_#]
+```
+
 - Displays statistics about a given metadata structure (inode), including MFT entries
 - Supports dd, E01, VMDK/VHD
 - Supports NTFS, FAT12/16/32 , ExFAT, EXT2/3/4, HFS, APFS
@@ -4931,97 +4951,141 @@ log2timeline.py --storage-file plaso.dump [DISK.img]
 
 
 
-<img alt="FILE_NAME_MACB" src="https://raw.githubusercontent.com/w00d33/w00d33.github.io/main/_files/FILE_NAME_MACB.PNG" />
+<img src="./files/Win11v22H2_File_Name_Rules.png" />
 
+**NOTE:** the Timeline Rules are extracted from the `$FILE_NAME` attribute
 
+**ANALYST NOTE:** The essential forensic indicator to look for is whether or not the `STANDARD_INFORMATION` and `$FILE_NAME` creation times match (possible indicator of **timestomping**)
 
 ### Detecting Timestamp Manipulation
 - Timestomping is common with attackers and malware authors to make their files hide in plain sight
 - Artifacts from Timestomping vary based on the tool used
-- Anomalies:
-  1. $STANDARD_INFORMATION "B" time prior to $FILE_NAME "B" time
-  2. Fractional second values are all zeros
-  3. $STANDARD_INFORMATION "M" time prior to ShimCache timestamp
-  4. $STANDARD_INFORMATION times prior to executable's compile time
-  5. $STANDARD_INFORMATION times prior to $I30 slack entries
-  6. MFT entry number is significantly out of sequence from expected range
 
 
+| ESSENTIAL ANOMALIES                                                              |
+|-----------------------------------------------------------------------|
+| `$STANDARD_INFORMATION` "B" time prior to `$FILE_NAME` "B" time         |
+| Fractional second values are all zeros                               |
+| `$STANDARD_INFORMATION` "M" time prior to ShimCache/Amcache timestamp |
+| `$STANDARD_INFORMATION` times prior to executable's compile time     |
+| `$STANDARD_INFORMATION` times prior to `$I30` slack entries            |
+| USN Journal records contradict current creation timestamp               |
+| MFT entry number is significantly out of sequence from expected range |
 
-### Timestomp Detection
-- MTFECmd
-  - Created0x10 = $STANDARD_INFORMATION
-  - Created0x30 = $FILE_NAME
-  - Compare and look for mismatches
-  - (1) Column ```SI<FN``` ($FILE_NAME time more recent than $STANDARD_INFORMATION time)
-  - (2) Column ```u Sec``` Checks for zeroed out nano second value
 
-- exiftool
-  - Parse application metadata
-  - (4) Compile time (Time Stamp) more recent than either creation time or modification time
+**ANALYST NOTE:** none of the anomaly checks above are full-proof, SO any deeper forensic investigation should be limited to reviewing files that have already been deemed suspicous!
 
-- AppCompatCacheParser.exe
-  - (3) Compare Last Modificaiton time (more recent) to the file systems last modification time
+### Targeted Timestomp Detection Analysis Process
+
+
+MTFECmd Extraction of `svchost.exe`
+
+- **Created0x10** = `$STANDARD_INFORMATION (SI)`
+  - Easily manipulated via WindowsAPI
+
+- **Created0x30** = `$FILE_NAME (FN)`
+  - More reliable
+
+
+**CHECK 1**
+<img src="./files/Timestop_Detection_Analysis.png">
+
+
+`$SI` and `$FN` mismatch (`SI<FN` Column):
+  - `$FILE_NAME` time more recent than `$STANDARD_INFORMATION` time
+
+---
+
+**CHECK 2**
+<img src="./files/Zero-Fraction-Seconds.png">
+
+
+Zero Fraction Seconds (`u Sec` Column)
+  - Checks for zeroed out nano second value
+
+
+---
+
+**CHECK 3**
+<img src="./files/CompileTime-vs-SI_Time.png">
+
+`exiftool.exe` Time Stamp (.EXE Compile Time) Identification
+- Parses application metadata
+- Determine if **Time Stamp (.EXE Compile Time)** is > either **Creation or Modification time**
+
+
+---
+
+**CHECK 4**
+<img src="./files/ShimCacheTime-vs-FileModTime.png">
+
+`AppCompatCacheParser.exe` (ShimCache time) vs `exiftool.exe` (File Mod time)
+- Generally, executables are rarely modified, so if ShimCache time ≠ File Mod time = **ANOMALOUS** and evidence of backdating
+- **NOTE:** ShimCache Last Modified Times are very reliable!
 
 
 
 ### Analyzing $DATA
 - File data is maintained by the $DATA attribute
-  - Resident: If data is 600 bytes or less, it gets stored inside the $DATA attribute
+  - Resident: If data is ~700 bytes or less, it gets stored inside the $DATA attribute
   - Non-resident: $DATA attribute lists the clusters on disk where the data resides
 - Files can have multiple $DATA streams
   - The extra, or "Alternate Data Streams" (ADS), must be named
 
   
 
-### Extracting Data with The Sleuth Kit - icat
-```
-icat [options] image inode > extracted.data
+### Extracting Data with The Sleuth Kit - `icat`
 
-  -r: Recover deleted file
-  -s: Display slack space at end of file
+```bash
+icat [options] image inode > extracted.data
 ```  
-- Extract Data from a Metadata Address
+
+`-r`: Recover deleted file
+`-s`: Display slack space at end of file
+
+
+- **Extract Data from a Metadata Address**
   - By default, the icat tool extracts data to STDOUT based on a specific metadata entry
   - Able to extract data from metadata entries marked deleted
 
 
 
-- Extracting NTFS $DATA streams
+- **Extracting NTFS $DATA streams**
   - With NTFS, the default will be to extract out the primary $DATA stream
-  - To extract a different stream, such as an Alternate Data Stream, use syntaz:
+  - To extract a different stream, such as an Alternate Data Stream, use syntax: `<mft#>-<AttributeType>-<AttributeID>` 
 
-```
-<mft#>-<AttributeType>-<AttributeID>
-```  
-
-```
+```bash
 icat /cases/cdrive/hostname.E01 132646-128-5
-[Zone Transfer]
-ZoneId=3
-ReferrerURL=https://www.example.com
-HostUrl=https://www.badwebsite.com/most/likely/malware/412341234?journalCode=acmm
 ```
+
 
 
 
 ### The Zone Identifier ADS -  Evidence of Download
 
-- Live System (Enumerate)
+**Live System (Enumerate)**
 
 ```
 dir /r
 ```
 
-- Image (Linux)
+**Image (Linux)**
 
 ```bash
 fls -r hostname.E01 | grep :.*:
 ```  
+- Searching `.E01` image for any file that has a (`:`) followed by another (`:`)
+- Copy the entire MFT record (`<mft#>-<AttributeType>-<AttributeID>`)
+
 
 ```bash
-istat hostname.E01 39345
+istat hostname.E01 <mft#>
 ```  
+
+- Paste `mft#`
+- Extracts all of the essential `$STANDARD_INFORMATION` and `$FILE_NAME` attributes
+- Compare **Created** section for `$STANDARD_INFORMATION` and `$FILE_NAME`
+
 
 ```bash
 icat hostname.E01 39345-128-9 > ads1
