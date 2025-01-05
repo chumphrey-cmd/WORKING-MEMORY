@@ -276,14 +276,16 @@
     - [Sequential MFT Entries](#sequential-mft-entries)
     - [MFT Entry Hex Overview](#mft-entry-hex-overview)
     - [istat - Analyzing File System Metadata](#istat---analyzing-file-system-metadata)
-    - [Detecting Timestamp Manipulation](#detecting-timestamp-manipulation)
-    - [Targeted Timestomp Detection Analysis Process](#targeted-timestomp-detection-analysis-process)
+    - [Detecting Timestamp Manipulation (Lethal DFIR Technique 🎯)](#detecting-timestamp-manipulation-lethal-dfir-technique-)
+    - [Timestomp Detection Analysis Process (Lethal Technique DFIR 🎯)](#timestomp-detection-analysis-process-lethal-technique-dfir-)
     - [Analyzing $DATA](#analyzing-data)
     - [Extracting Data with The Sleuth Kit - `icat`](#extracting-data-with-the-sleuth-kit---icat)
-    - [The Zone Identifier ADS -  Evidence of Download](#the-zone-identifier-ads----evidence-of-download)
-    - [Filenames](#filenames)
-    - [NTFS Directory Attributes](#ntfs-directory-attributes)
-    - [Parsing I30 Directory Indexes](#parsing-i30-directory-indexes)
+    - [The Zone Identifier ADS -  Evidence of Download (Lethal DFIR Technique 🎯)](#the-zone-identifier-ads----evidence-of-download-lethal-dfir-technique-)
+      - [Linux Live System](#linux-live-system)
+      - [Windows Live System](#windows-live-system)
+    - [Filename Layer Analysis (Lethal DFIR Technique 🎯)](#filename-layer-analysis-lethal-dfir-technique-)
+      - [NTFS Directory Attributes](#ntfs-directory-attributes)
+      - [Parsing `$I30` Directory Indexes (Lethal DFIR Technique 🎯)](#parsing-i30-directory-indexes-lethal-dfir-technique-)
     - [File System Jounraling Overview](#file-system-jounraling-overview)
     - [$LogFile Provides File System Resilience](#logfile-provides-file-system-resilience)
     - [UsnJrnl](#usnjrnl)
@@ -4957,7 +4959,7 @@ istat FILE_NAME.E01 [MFT_ENTRY_#]
 
 **ANALYST NOTE:** The essential forensic indicator to look for is whether or not the `STANDARD_INFORMATION` and `$FILE_NAME` creation times match (possible indicator of **timestomping**)
 
-### Detecting Timestamp Manipulation
+### Detecting Timestamp Manipulation (Lethal DFIR Technique 🎯)
 - Timestomping is common with attackers and malware authors to make their files hide in plain sight
 - Artifacts from Timestomping vary based on the tool used
 
@@ -4975,7 +4977,7 @@ istat FILE_NAME.E01 [MFT_ENTRY_#]
 
 **ANALYST NOTE:** none of the anomaly checks above are full-proof, SO any deeper forensic investigation should be limited to reviewing files that have already been deemed suspicous!
 
-### Targeted Timestomp Detection Analysis Process
+### Timestomp Detection Analysis Process (Lethal Technique DFIR 🎯)
 
 
 MTFECmd Extraction of `svchost.exe`
@@ -5060,15 +5062,22 @@ icat /cases/cdrive/hostname.E01 132646-128-5
 
 
 
-### The Zone Identifier ADS -  Evidence of Download
+### The Zone Identifier ADS -  Evidence of Download (Lethal DFIR Technique 🎯)
 
-**Live System (Enumerate)**
+**ANALYST NOTE:** Zone Identifiers (ZoneIDs) can be used as an indicator to determine if a executable was downloaded from the Internet
 
-```
-dir /r
-```
+| ZoneID Values |
+|--------------|
+| NoZone = -1  |
+| MyComputer = 0|
+| Intranet = 1  |
+| Trusted = 2   |
+| Internet = 3  |
+| Untrusted = 4 |
 
-**Image (Linux)**
+
+#### Linux Live System
+
 
 ```bash
 fls -r hostname.E01 | grep :.*:
@@ -5095,11 +5104,16 @@ icat hostname.E01 39345-128-9 > [YOUR_FILE]
 file [YOUR_FILE]
 ```  
 
-- Image (Windows)
+#### Windows Live System
+
+```bash
+dir /r
+```
+- Used to query alternate data streams from commandline
 
 ```bash
 MFTECmd.exe -f 'E:\C\$MFT' --csv 'G:\' --csvf mft.csv
-````
+```
 
  - Open in TimelineExplorer
  - Filter "Has Ads" or "Is Ads"
@@ -5108,33 +5122,28 @@ MFTECmd.exe -f 'E:\C\$MFT' --csv 'G:\' --csvf mft.csv
 
 
 
-### Filenames
+### Filename Layer Analysis (Lethal DFIR Technique 🎯)
 - Filenames potentially sotred in two places:
-  - File System Metadata
-    - MFT Entry
-  - Directory Data
-    - Contains list of children files/directories
+  - **File System Metadata**: MFT Entry|
+
+  - **Directory Data**: contains list of children files/directories, will consume MFT records and contain `$STANDARD_INFORMATION` and `$FILE_NAME` attributes
 
 
-
-**Lethal Technique**
 - Most file wipping software does not wipe directory entries
-- Slack space of directory will contain metadata including file names and timestamps
+- Analyze slack space of a directory, it will contain metadata including file names and timestamps
 - Some forensic tools ignore directory slack entries
 
 
 
-### NTFS Directory Attributes
+#### NTFS Directory Attributes
 - Stored in an index named $I30
-- Index composed of $INDEX_ROOT and optionally $INDEX_ALLOCATION
-  - $INDEX_ROOT -- required (Stored in MFT)
-    - Always resident
-  - $INDEX_ALLOCATION -- required for larger directories (stored in clusters)
-    - Always non-resident
+- Index composed of `$INDEX_ROOT` and optionally `$INDEX_ALLOCATION` attributes
+  - `$INDEX_ROOT`: required (Stored in MFT), **always resident**
+  - `$INDEX_ALLOCATION`: required for larger directories (stored in clusters), **always non-resident**
 
 
 
-### Parsing I30 Directory Indexes
+#### Parsing `$I30` Directory Indexes (Lethal DFIR Technique 🎯)
 
 **Indx2Csv**
   - Parses out active and slack entries
@@ -5143,7 +5152,7 @@ MFTECmd.exe -f 'E:\C\$MFT' --csv 'G:\' --csvf mft.csv
 ```bash
 Indx2Csv /IndxFile:G:\cases\$I30 /OutputPath:G:\cases
 ```  
-
+- Used for deep forensics to extract the `$I30` file and extract slack entries
 
 
 **Velociraptor**
@@ -5151,9 +5160,9 @@ Indx2Csv /IndxFile:G:\cases\$I30 /OutputPath:G:\cases
 - Able to recurse the file system
 
 ```bash
-Velociraptor artifacts collect Windows.NTFS.I30 --args DirectoryGlobs="F:\\Windows\\Temp\\Perfmon\\" --format=csv
+Velociraptor artifacts collect Windows.NTFS.I30 --args DirectoryGlobs="F:\\Windows\\Temp\\Perfmon\\" --format=csv --nobanner > G:\output\I30-Perfmon.csv
 ```
-
+- Can be used to extract slack files out of multiple directories 
 
 
 ### File System Jounraling Overview
