@@ -295,6 +295,9 @@
     - [Useful Filter and Searches in the Journals](#useful-filter-and-searches-in-the-journals)
     - [LogFileParser for $LogFile Analysis (Lethal DFIR Technique 🎯)](#logfileparser-for-logfile-analysis-lethal-dfir-technique-)
     - [MFTECmd for $UsnJrnl Analysis (Lethal DFIR Technique 🎯)](#mftecmd-for-usnjrnl-analysis-lethal-dfir-technique-)
+      - [Tips and Tricks](#tips-and-tricks)
+        - [Timeline Explorer $UsnJrnl Headings:](#timeline-explorer-usnjrnl-headings)
+        - [Tracking Files With No Apparent Creating Time](#tracking-files-with-no-apparent-creating-time)
     - [NTFS: What Happens When a File is Deleted?](#ntfs-what-happens-when-a-file-is-deleted)
   - [Advanced Evidence Recovery](#advanced-evidence-recovery)
     - [SDelete](#sdelete)
@@ -5279,11 +5282,12 @@ LogFileParser.exe /LogFileFile:E: \C\$LogFile /OutputPath:G: \ntfs-anti-forensic
 ### MFTECmd for $UsnJrnl Analysis (Lethal DFIR Technique 🎯)
 
 ```bash
-mftecmd.exe -f E:\C\$Extend\$J -m E:\C\$MFT --csv G:\nfts --csvf mftecmd-usnjrnl.csv
+mftecmd.exe -f E:\C\$Extend\$J -m E:\C\$MFT --csv G:\[ntfs_folder] --csvf mftecmd-usnjrnl.csv
 ``` 
 - `-f`: specifies and points at \$J (Journal) 
-- `-m`: points at the Master File Table correlates the MFT record mentioned in the Journal with the MFT to correlate timelines
+- `-m`: points at the Master File Table to correalate with MFT record mentioned in the Journal with the MFT to correlate timelines
 - `--vss`: to have all volume shadow USN journals parsed automatically
+- `--csvf`: used to ouptut the contents into a CSV located inside of `G:\[ntfs_folder]`
 
 - Add -vss to have all volume shadow USN journals parsed automatically
   - **Name**: File/Directory Name
@@ -5297,6 +5301,28 @@ mftecmd.exe -f E:\C\$Extend\$J -m E:\C\$MFT --csv G:\nfts --csvf mftecmd-usnjrnl
 
 
 - [Windows Journal Parser (jp) Users Guide](https://tzworks.com/prototypes/jp/jp.users.guide.pdf)
+
+
+#### Tips and Tricks
+
+
+
+##### Timeline Explorer \$UsnJrnl Headings:
+- Update Timestamp
+- Parent Path
+- Name
+- File Attributes
+- Entry Number
+- Parent Entry Number
+- Update Reasons
+
+
+##### Tracking Files With No Apparent Creating Time
+
+- Track a specific file's use of an MFT entry by both its `Entry Number` and the `Sequence Number`
+- Allows you to find all changes that have taken place to a file based on Sequence
+- Directory movement/file renames within \$UsnJrnl
+  - `RenameOldName` > `RenameNewName` 
 
 
 
