@@ -284,15 +284,17 @@
       - [Linux Live System](#linux-live-system)
       - [Windows Live System](#windows-live-system)
     - [Filename Layer Analysis (Lethal DFIR Technique 🎯)](#filename-layer-analysis-lethal-dfir-technique-)
-      - [NTFS Directory Attributes](#ntfs-directory-attributes)
+      - [NTFS (New Technology File System) Directory Attributes](#ntfs-new-technology-file-system-directory-attributes)
       - [Parsing `$I30` Directory Indexes (Lethal DFIR Technique 🎯)](#parsing-i30-directory-indexes-lethal-dfir-technique-)
     - [File System Jounraling Overview](#file-system-jounraling-overview)
     - [$LogFile Provides File System Resilience](#logfile-provides-file-system-resilience)
     - [UsnJrnl](#usnjrnl)
     - [Common Activity Patterns in the Journals](#common-activity-patterns-in-the-journals)
+      - [$USN Journal Reason Codes](#usn-journal-reason-codes)
+      - [$LogFile Operation Codes](#logfile-operation-codes)
     - [Useful Filter and Searches in the Journals](#useful-filter-and-searches-in-the-journals)
-    - [LogFileParser for $LogFile Analysis](#logfileparser-for-logfile-analysis)
-    - [MFTECmd for $UsnJrnl Analysis](#mftecmd-for-usnjrnl-analysis)
+    - [LogFileParser for $LogFile Analysis (Lethal DFIR Technique 🎯)](#logfileparser-for-logfile-analysis-lethal-dfir-technique-)
+    - [MFTECmd for $UsnJrnl Analysis (Lethal DFIR Technique 🎯)](#mftecmd-for-usnjrnl-analysis-lethal-dfir-technique-)
     - [NTFS: What Happens When a File is Deleted?](#ntfs-what-happens-when-a-file-is-deleted)
   - [Advanced Evidence Recovery](#advanced-evidence-recovery)
     - [SDelete](#sdelete)
@@ -5135,8 +5137,8 @@ MFTECmd.exe -f 'E:\C\$MFT' --csv 'G:\' --csvf mft.csv
 
 
 
-#### NTFS Directory Attributes
-- Stored in an index named $I30
+#### NTFS (New Technology File System) Directory Attributes
+- Stored in an index named `$I30`
 - Index composed of `$INDEX_ROOT` and optionally `$INDEX_ALLOCATION` attributes
   - `$INDEX_ROOT`: required (Stored in MFT), **always resident**
   - `$INDEX_ALLOCATION`: required for larger directories (stored in clusters), **always non-resident**
@@ -5167,12 +5169,16 @@ Velociraptor artifacts collect Windows.NTFS.I30 --args DirectoryGlobs="F:\\Windo
 
 ### File System Jounraling Overview
 - Records files system metadata changes
-- Two files track these changes: $LogFile and $UsnJrnl
+- Two files track these changes: \$LogFile and $UsnJrnl
 - Primary goal is returning file system to a clean state
 - Secondary goal is providing hints to applications about file changes
 - Forensic examiners can use journals to identify prior state of files, and when their state changed
   - Like VSS, they serve as a time machine, detailing past file system activites
-  - Unlike VSSm the journals are rolling logs, rather than a point in time snapshot
+  - Unlike VSS the journals are rolling logs, rather than a point in time snapshot
+
+**ANALYST NOTE:** 
+- **$LogFile** = Full Packet Capture (detailed tracking of all changes occuring on a system)
+- **$UsnJrnl** = NetFlow Logs (provides a summary of the data and longer time horizon)
 
 
 
@@ -5203,9 +5209,22 @@ Velociraptor artifacts collect Windows.NTFS.I30 --args DirectoryGlobs="F:\\Windo
 | :---------------: | :---------------: | :---------------: |
 |File/Directory Creation|AddIndexEntryAllocation  InitializeFileRecordSegment|FileCreate|
 |File/Directory Deletion|DeleteIndexEntryAllocation  DeallocationFileRecordSegment|FileDelete|
-|File/Directory Rename or Move|DeleteIndexEntryAllocation  AddIndexEntryAllocation|RenameOldName  RenameNewName|
+|File/Directory Rename or Move|DeleteIndexEntryAllocation / AddIndexEntryAllocation|RenameOldName  RenameNewName|
 |ADS Creation|CreateAttribute with name ending in ":ADS"|StreamChange  NamedDataExtend|
-|File Data Modification|* Op codes for $LogFile are not sufficient to determine file modification|DataOverwrite - DataExtend - Data Truncation|
+|File Data Modification|* Op codes for $LogFile are not sufficient to determine file modification|DataOverwrite \| DataExtend \| Data Truncation|
+
+**NOTE:** Identification of File Data Modification isn't very useful within **$LogFiles**
+
+
+#### $USN Journal Reason Codes
+
+<img src="./files/USN_Journal_Reason_Codes.png">
+
+
+
+#### $LogFile Operation Codes
+
+<img src="./files/Log_File_Reason_Codes.png">
 
 
 
@@ -5227,47 +5246,53 @@ Velociraptor artifacts collect Windows.NTFS.I30 --args DirectoryGlobs="F:\\Windo
 
 
 **File Types or Names of Interest Created or Recently Deleted**
-- Executables (.exe, .dll, .sys, .pyd)
-- Archives (.rar, .zip, .cab, .7z)
-- Scripts (.ps1, .vbs, bat)
+- Executables (**.exe, .dll, .sys, .pyd**)
+- Archives (**.rar, .zip, .cab, .7z**)
+- Scripts (**.ps1, .vbs, .bat**)
 - IOC file/directory names
 
 
 
-### LogFileParser for $LogFile Analysis
+### LogFileParser for $LogFile Analysis (Lethal DFIR Technique 🎯)
 
-```
+```bash
 LogFileParser.exe /LogFileFile:E: \C\$LogFile /OutputPath:G: \ntfs-anti-forensics
 ```  
-- Primary output file is "LogFile.csv" (shown below). Many supporting files created with additional details
-  - if_LSN: Log Sequence Number (LSN) orders entries
-  - if_RedoOperation: "Redo" operation is what it's about to do
-  - if_UndoOperation: "Undo" is how to back it out
-  - if_FileName: File or Directory name being updated
-  - if_CurrentAttribute: Identifies which attributes are being changed
-  - if_TextInformation: When applicable, provides pointers to payload data in supporting files
+- Primary output file is "**LogFile.csv**"
+
+**Contains the Following Details:**
+  - `if_LSN`: Log Sequence Number (LSN) orders entries
+  - `if_RedoOperation`: "Redo" operation is what it's about to do
+  - `if_UndoOperation`: "Undo" is how to back it out
+  - `if_FileName`: File or Directory name being updated
+  - `if_CurrentAttribute`: Identifies which attributes are being changed
+  - `if_TextInformation`: When applicable, provides pointers to payload data in supporting files
 
 
-
+**Log File Parser Resources:**
 - [LogFileParser](https://github.com/jschicht/LogFileParser)
-- [$MFT and $LogFile Analysis](https://tzworks.com/prototype_page.php?proto_id=46)
-- [$MFT and $Logfile Analysis User Guide (mala)](https://tzworks.com/prototypes/mala/mala.users.guide.pdf)
+- [\$MFT and $LogFile Analysis](https://tzworks.com/prototype_page.php?proto_id=46)
+- [\$MFT and $Logfile Analysis User Guide (mala)](https://tzworks.com/prototypes/mala/mala.users.guide.pdf)
 
 
 
-### MFTECmd for $UsnJrnl Analysis
+### MFTECmd for $UsnJrnl Analysis (Lethal DFIR Technique 🎯)
 
-```
-mftecmd.exe -f E:\C\$Extend\$J --csv G:\nfts --csvf mftecmd-usnjrnl.csv
-```  
+```bash
+mftecmd.exe -f E:\C\$Extend\$J -m E:\C\$MFT --csv G:\nfts --csvf mftecmd-usnjrnl.csv
+``` 
+- `-f`: specifies and points at \$J (Journal) 
+- `-m`: points at the Master File Table correlates the MFT record mentioned in the Journal with the MFT to correlate timelines
+- `--vss`: to have all volume shadow USN journals parsed automatically
+
 - Add -vss to have all volume shadow USN journals parsed automatically
-  - Name: File/Directory Name
-  - Entry Number: MFT #
-  - Parent Entry Number: Parent MFT #
-  - Update Timestamp: Update Timestamp
-  - Update Reasons: Update Reason Code(s)
-  - Update Sequence Number: Update Seq. Number
-  - File Attributes: Attribute Flags
+  - **Name**: File/Directory Name
+  - **Entry Number**: MFT #
+  - **Parent Entry Number**: Parent MFT #
+  - **Update Timestamp**: Update Timestamp
+  - **Update Reasons**: Update Reason Code(s)
+  - **Update Sequence Number**: Update Seq. Number
+  - **File Attributes**: Attribute Flags
 
 
 
@@ -5277,14 +5302,14 @@ mftecmd.exe -f E:\C\$Extend\$J --csv G:\nfts --csvf mftecmd-usnjrnl.csv
 
 ### NTFS: What Happens When a File is Deleted?
 - Data Layer
-  - Clusters will be marked as unallocated in $Bitmap, but data will be left intact until clusters are reused
+  - Clusters will be marked as unallocated in **$Bitmap**, but data will be left intact until clusters are reused
   - File data as well as slack space will still exist
 - Metadata Layer
-  - A single bit in the file's $MFT record is flipped, so all file metadata will remain until record is reused
-  - $LogFile, $UsnJrnl, and other system logs still reference file
+  - A single bit in the file's **$MFT** record is flipped, so all file metadata will remain until record is reused
+  - **\$LogFile**, **$UsnJrnl**, and other system logs still reference file
 - Filename Layer
-  - $File_Name attribute is preserved until MFT record is reused
-  - $I30 index entry in parent directory may be preserved
+  - **$File_Name** attribute is preserved until MFT record is reused
+  - **$I30** index entry in parent directory may be preserved
 
 
 
