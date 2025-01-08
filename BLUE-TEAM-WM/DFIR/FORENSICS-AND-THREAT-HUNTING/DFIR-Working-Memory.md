@@ -295,9 +295,11 @@
     - [Useful Filter and Searches in the Journals](#useful-filter-and-searches-in-the-journals)
     - [LogFileParser for $LogFile Analysis (Lethal DFIR Technique 🎯)](#logfileparser-for-logfile-analysis-lethal-dfir-technique-)
     - [MFTECmd for $UsnJrnl Analysis (Lethal DFIR Technique 🎯)](#mftecmd-for-usnjrnl-analysis-lethal-dfir-technique-)
-      - [Tips and Tricks](#tips-and-tricks)
+      - [Tips, Tricks, and Analysis](#tips-tricks-and-analysis)
         - [Timeline Explorer $UsnJrnl Headings:](#timeline-explorer-usnjrnl-headings)
+        - [MFT Entry and Sequence Number](#mft-entry-and-sequence-number)
         - [Tracking Files With No Apparent Creating Time](#tracking-files-with-no-apparent-creating-time)
+        - [Searching Sub-directories Within `Parent Entry Number`](#searching-sub-directories-within-parent-entry-number)
     - [NTFS: What Happens When a File is Deleted?](#ntfs-what-happens-when-a-file-is-deleted)
   - [Advanced Evidence Recovery](#advanced-evidence-recovery)
     - [SDelete](#sdelete)
@@ -5303,7 +5305,7 @@ mftecmd.exe -f E:\C\$Extend\$J -m E:\C\$MFT --csv G:\[ntfs_folder] --csvf mftecm
 - [Windows Journal Parser (jp) Users Guide](https://tzworks.com/prototypes/jp/jp.users.guide.pdf)
 
 
-#### Tips and Tricks
+#### Tips, Tricks, and Analysis
 
 
 
@@ -5316,6 +5318,18 @@ mftecmd.exe -f E:\C\$Extend\$J -m E:\C\$MFT --csv G:\[ntfs_folder] --csvf mftecm
 - Parent Entry Number
 - Update Reasons
 
+---
+
+##### MFT Entry and Sequence Number
+
+<img src="./files/MFT_Entry_and_Sequence_Number.png">
+
+
+**NOTE:** `MFT Entry (Record) Numbers` are consistentily assigned and reused based on availability of a specific number. **HOWEVER,** the `Sequence Number` will iterate by **+1** as the type of the file changes allowing you to differentiate between files that share the same `MFT Entry Number`.
+
+- See [File System Forensics](https://repo.zenk-security.com/Forensic/File%20System%20Forensic%20Analysis.pdf) for more information regarding NTFS and comprehensive file system analysis
+
+---
 
 ##### Tracking Files With No Apparent Creating Time
 
@@ -5324,6 +5338,15 @@ mftecmd.exe -f E:\C\$Extend\$J -m E:\C\$MFT --csv G:\[ntfs_folder] --csvf mftecm
 - Directory movement/file renames within \$UsnJrnl
   - `RenameOldName` > `RenameNewName` 
 
+
+---
+
+##### Searching Sub-directories Within `Parent Entry Number`
+
+- You utilize the `Entry (Record) Number` of directory that you want to search the contents off and input the unique Entry Number into the `Parent Entry Number` filter
+
+
+---
 
 
 ### NTFS: What Happens When a File is Deleted?
