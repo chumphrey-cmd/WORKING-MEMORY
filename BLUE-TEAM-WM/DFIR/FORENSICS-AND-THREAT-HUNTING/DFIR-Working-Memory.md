@@ -177,27 +177,26 @@
     - [Extracted File Analysis](#extracted-file-analysis)
     - [Live Analysis](#live-analysis)
   - [Windows Forensics](#windows-forensics)
-  - [SANS Windows Forensic Analysis Poster](#sans-windows-forensic-analysis-poster)
   - [Registy Overview](#registy-overview)
   - [Users and Groups](#users-and-groups)
   - [System Configuration](#system-configuration)
 - [(4) Timeline Analysis](#4-timeline-analysis)
   - [Malware Discovery (Field Triage)](#malware-discovery-field-triage)
-    - [YARA](#yara)
-    - [Sigcheck](#sigcheck)
-    - [DensityScout](#densityscout)
-    - [capa](#capa)
-    - [UPX](#upx)
-    - [Putting It All Together](#putting-it-all-together)
-    - [yara](#yara-1)
-    - [Sigcheck](#sigcheck-1)
-    - [DensityScout](#densityscout-1)
-  - [Overview](#overview)
-    - [Benefits](#benefits)
-    - [Forensic Trinity](#forensic-trinity)
+    - [TOOL: Sigcheck](#tool-sigcheck)
+      - [Usage](#usage)
+    - [TOOL: YARA](#tool-yara)
+      - [Usage](#usage-1)
+        - [1. Download YARA Rules Package](#1-download-yara-rules-package)
+        - [2. Compile Rules](#2-compile-rules)
+        - [3. Scan Targets](#3-scan-targets)
+    - [TOOL: maldump](#tool-maldump)
+      - [Usage](#usage-2)
+    - [TOOL: capa](#tool-capa)
+      - [Usage](#usage-3)
+  - [Timeline Analysis Overview](#timeline-analysis-overview)
     - [Windows Artifacts](#windows-artifacts)
+    - [Timeline Analytic Process](#timeline-analytic-process)
     - [The Pivot Point](#the-pivot-point)
-    - [Contect Clues](#contect-clues)
     - [Timeline Capabilities](#timeline-capabilities)
   - [Filesystem Timeline Creation and Analysis](#filesystem-timeline-creation-and-analysis)
     - [NTFS Timestamps](#ntfs-timestamps)
@@ -209,15 +208,15 @@
     - [Filesystem Timeline Format](#filesystem-timeline-format)
     - [Create Triage Timeline Bodyfile Step 1 - MFTECmd.exe](#create-triage-timeline-bodyfile-step-1---mftecmdexe)
       - [TOOL: MFTECmd.exe](#tool-mftecmdexe)
-      - [Usage](#usage)
+      - [Usage](#usage-4)
     - [Create Triage Timeline Body File Step 1 - fls (optional)](#create-triage-timeline-body-file-step-1---fls-optional)
       - [TOOL: fls -m](#tool-fls--m)
-      - [Usage](#usage-1)
+      - [Usage](#usage-5)
     - [Create Triage Image Timeline Step 2 - mactime](#create-triage-image-timeline-step-2---mactime)
   - [Super Timelines](#super-timelines)
     - [Process](#process)
   - [TOOL: log2timeline](#tool-log2timeline)
-    - [Usage](#usage-2)
+    - [Usage](#usage-6)
   - [Target Examples](#target-examples)
   - [Targeted Super Timeline Creation](#targeted-super-timeline-creation)
     - [`log2timeline.py` Parser Presets](#log2timelinepy-parser-presets)
@@ -259,7 +258,7 @@
     - [Sanity Check Questions - REVIEW AND UPDATE](#sanity-check-questions---review-and-update)
     - [Filtering Tips and Tricks - REVIEW AND UPDATE](#filtering-tips-and-tricks---review-and-update)
 - [(5) Anti-Forensics Detection](#5-anti-forensics-detection)
-  - [Overview](#overview-1)
+  - [Overview](#overview)
     - [Filesystem](#filesystem)
     - [Registry](#registry)
     - [Other](#other)
@@ -3773,8 +3772,7 @@ voly.py -f memory.img dumpfiles -n -Q 0x09135278 --dump-dir=.
 
 ## Windows Forensics
 
-## SANS Windows Forensic Analysis Poster
-* [Link](https://github.com/w00d33/w00d33.github.io/blob/main/_files/SANS_Windows_Forensics_Poster.pdf)
+* [SANS Windows Forensic Analysis Poster](./files/Windows_Forensics_Poster.pdf)
 
 
 
@@ -3944,173 +3942,251 @@ voly.py -f memory.img dumpfiles -n -Q 0x09135278 --dump-dir=.
 
 
 ## Malware Discovery (Field Triage)
-**UPDATE WITH PERSONAL NOTES [HERE](https://docs.google.com/document/d/1zADzm1b56wPJELMJumbIdkMErHTIEAfP3YMIECPKykk/edit?tab=t.0#heading=h.m6rgbu7qmw1q)**
 
 
+### TOOL: Sigcheck
 
-### YARA
-- Search for string and header based signatures
-- Standard IOC sharing
-- Easy to create custom signatures to detect new tools/malware
-- [YARA](http://virustotal.github.io/yara/)
-- Compile multiple rule files with yarac64.exe
+* Microsoft Sysinternals tool designed to validate digital signatures, create file hashes and has Virus Total support. The primary purpose of the tool is to check the code signing characteristics of executable files in a directory.  
+* **See FOR508 Lab 4.1 for more practice!**
+
+**NOTE:** to run Sigcheck against triage evidence, you must import the system’s digital signature catalog files located inside of the **CatRoot (catalog root) folder**. 
+
+* Navigate to the triage image CatRoot folder  
+  * C:\Windows\System32\CatRoot
+
+* Copy and rename files from triage image to the CatRoot folder on analyst VM  
+  * C:\Windows\System32\CatRoot
+
+* Restart Cryptographic Services  
+  * Win+R  
+  * services.msc  
+  * Cryptographic Services > Restart the service
+
+
+<img src="./files/Restart_Cryptographic_Services.png">
+
+
+#### Usage
 
 ```bash
-yara64.exe -C compiled-rules-file <file or directory>
+sigcheck -a -c -e -h -s C:\path\to\file.exe > sigcheck-results.csv
+```
+
+```bash
+sigcheck -a -c -e -h -s -w C:\path\to\output\file.csv (directory_to_scan)
+```
+
+
+```bash
+sigcheck -a -h -v -vt C:\path\to\file.exe
+```
+
+- `-a`: Show extended version information including file entropy
+- `-c`: CSV output
+- `-e`: Scan all files with PE headers (regardless of file extension)
+- `-h`: Show file hashes
+- `-s`: Recurse subdirectories
+- `-u`: Show files that are unknown if VirusTotal check is enabled; otherwise, show only unsigned file
+- `-v [rs]`: Query VirusTotal for malware based on file hash. Add 'r' to open reports for files with non-zero detection. Files reported as not previously scanned will be uploaded to VirusTotal if the 's' option is specified
+- `-w`: Writes output to a specified file
+directory_to_scan: e.g., E:\
+- `-vt`: allows Sigcheck to download the trusted Microsoft root certificate list and only output valid certificates ot rooted to a certificate on that list
+
+
+Sigcheck Analysis via Timeline Explorer  
+
+
+<img src="./files/Sigcheck_Analysis_Timeline_Explorer.png">
+
+
+
+**NOTE:** DO NOT SUBMIT SAMPLE TO VT UNTIL YOU ARE READY FOR THAT INFORMATION TO BE RELEASED
+
+* Sort for **Unsigned** > **High Entropy (6-8)** > **VT Detection**
+
+### TOOL: [YARA](https://yara.readthedocs.io/en/latest/gettingstarted.html)
+
+* IOC tool used to search for string and header-based signatures, standard for IOC sharing, easy to create custom signatures to detect new tools/malware  
+* Comprehensive list of YARA rules can be found [here in the yara directory](https://github.com/Neo23x0/signature-base?tab=readme-ov-file).  
+* [YARA Command Line Examples](https://yara.readthedocs.io/en/latest/commandline.html)  
+* **See FOR508 Lab 4.1 for more practice!**
+
+#### Usage
+
+##### 1. Download [YARA Rules Package](https://yarahq.github.io/)
+
+Select and download preferred package:
+
+* Core: Highest quality, minimal false positives 
+* Extended: Additional threat hunting rules 
+* Full: Complete operational ruleset
+
+##### 2. Compile Rules
+
+```bash
+mkdir compiled_rules
+yarac64.exe [YARA-rules-package] ./compiled_rules/yara-forge.compiled
+```
+
+##### 3. Scan Targets
+
+**Single File Analysis**
+
+```bash
+yara -C compiled_rules/yara-forge.compiled target_file
+```
+
+**Directory Analysis**
+
+```bash
+yara -C compiled_rules/yara-forge.compiled -r target_directory
+```
+
+**Useful Options**
+
+* -C: Load pre-compiled rules 
+* -c: Print only the number of matches 
+* -f: Fast matching mode 
+* -w: Disable warnings 
+* -r: Recursively search directories 
+* -p <threads>: Use the specified number of threads during scanning
+
+
+
+
+### TOOL: [maldump](https://github.com/NUKIB/maldump)
+
+* Used to find and extract quarantine files from multiple AVs from a live system or mounted disk image, metadata and malware from AV repositories. 
+* **See FOR508 Lab 4.1 for more practice!**
+
+**NOTE:** When doing mass collection on endpoints using KAPE, ensure that the KAPE target includes the **quarantine folder** (https://github.com/EricZimmerman/KapeFiles/tree/master/Targets/Antivirus)!
+
+#### Usage
+
+```bash
+maldump [optional_args] [mounted_root_dir]
+```
+
+* Lists identified quarantined files by default.
+
+```bash
+maldump -l [mounted_root_dir]
+```
+
+* List identified quarantined files to screen.
+
+```bash
+maldump -a [mounted_root_dir]
+```
+
+* Dump quarantine files to "quarantine.tar" and metadata to "quarantine.csv".
+
+**Arguments**
+
+* `root_dir`: Root directory where OS is installed (example C:\\).
+* `-h`, `--help`: Show this help message and exit.
+* `-l`, `--list`: List quarantined file(s) to stdout (default action).
+* `-q`, `--quar`: Dump quarantined file(s) to archive 'quarantine.tar'.
+* `-m`, `--meta`: Dump metadata to CSV file 'quarantine.csv'.
+* `-a`, `--all`: Equivalent of running both `-q` and `-m`.
+* `-v`, `--version`: Show program's version number and exit.
+* `-d`, `--dest`: Destination for exported files.
+
+
+
+### TOOL: [capa](https://github.com/mandiant/capa?tab=readme-ov-file)
+
+* Can detect capabilities in executable files. You run it against a PE, ELF, .NET module, shellcode file, or a sandbox report and it tells you what it thinks the program can do. 
+* **See FOR508 Lab 4.1 for more practice!**
+
+#### Usage
+
+```bash
+capa.exe -f pe [single_file]
 ```
 
 
 
-### Sigcheck
-- Microsoft tool designed to validate digital signatures
-- Create file hashes
-- Virus Total Support
+## Timeline Analysis Overview
 
-```bash
-sigcheck -c -e -h -v <dir-of-exe> > sigcheck-results.csv
-```  
+* **ESSENTIALLY**: even if an attacker uses a file wiper to remove the existence of all files, what will the hacker use to remove the wipe the wiper’s presence?
 
-
-
-### DensityScout
-- Checks for possible obfuscation and packing
-- Files receive an entropy score
-- Score can be used to idenitify whether a set of files further investigation
-- [DensityScout](https://www.cert.at/en/downloads/software/software-densityscout)
-
-```bash
-densityscout -pe -r -p 0.1 -o results.txt <directory-of-exe>
-```  
-
-
-
-### capa
-- File capability identification
-- Anti-analysis features?
-- Contains and embedded.exe?
-- Code injection capabilities?
-- Triage detection using crowdsourced code patterns (rules)
-  - File header
-  - API Calls
-  - Strings and Constants
-  - Disassembly
-- Rules match common malware actions
-  - Communication, Host interaction, Persistence, Anti-analysis
-  - ATT&CK technique mapping also included
-- Designed to provide capabilities in plain language to speed-up investigations
-- [capa](https://github.com/mandiant/capa)
-- [capa: Automatically Identify Malware Capabilities](https://www.mandiant.com/resources/capa-automatically-identify-malware-capabilities)
-- [Malware Behavior Catalog](https://github.com/MBCProject/mbc-markdown)
-
-```bash
-capa.exe -f pe -v <file>
-```  
-
-### UPX
-- Unpack execuatbles
-
-```bash
-upx -d p_exe -o p_exe_unpacked
-```  
-
-
-
-### Putting It All Together
-- Poor Density Score + No Digital Signature + Anomalistic Behavior - Known Good = Suspicious Files
-
-
-### yara
-
-- Compile yara rules
-
-```bash
-yarac64.exe '.\rules\index.yar' yara-rules
-```  
-
-- Scan using yara
-
-```bash
-yara64.exe -C yara-rules -rw G:\ > 'C:\Tools\Malware Analysis\yara-rules-out.txt'
-```  
-
-
-
-### Sigcheck
-- Copy the signature file directories from the triage image location ```C\Windows\System32\CatRoot``` to analysis machine location: ```C\Windows\System32\CatRoot```
-- Change the last value from an E to a 9 fo each folder
-- Restart Cryptographic Services
-
-```bash
-sigcheck.exe -s -c -e -h -v -vt -w 'C:\Tools\Malware Analysis\sigcheck-results.csv' G:\
-```  
-
-- Tune Out Known Good
-- Tune Out Verified
-- Tune Out Known Good Publishers
-- Note Any 32 Bit
-- Note n/a Publishers
-- Note recent PE compliation timestamps
-
-
-
-### DensityScout
-```bash
-densityscout.exe -r -pe -p 0.1 -o 'C:\Tools\densityscout-results.txt' G:\
-```
-
-
-## Overview
-
-### Benefits
-- Examine System Activity
-- Detect C2 Channels
-- Extremely Hard for Anti-Forensics to Succeed -- Too many Time Entries
-- Adversaries Leave Footprints Everywhere on System
-
-
-
-### Forensic Trinity
-- Filesystem Metadata
-- Windows Artifacts
-- Registry Keys
+* The three core areas of focus: **filesystem metadata**, **Windows artifacts**, **Windows registry keys**
 
 ### Windows Artifacts
-- [SANS Windows Forensic Analysis Poster](https://github.com/w00d33/w00d33.github.io/blob/main/_files/SANS_Windows_Forensics_Poster.pdf)
 
-- **Program Execution**
-  - Prefetch
-  - ShimCache
-  - AmCache
-  - UserAssist
-  - SRUM
+Program Execution
 
-- **File Opening**
-  - Shortcut Files
-  - Jump Lists
-  - ShellBags
-  - Prefetch
-  - OpenSaveMRU
+* Prefetch  
+* ShimCache  
+* AmCache  
+* UserAssist  
+* SRUM
 
-- **File Knowledge**
-  - WordWheelQuery
-  - Last Visited MRU
-  - Shortcut Files
-  - Recycle Bin
-  - Typed Paths
+File Opening
 
-- **Event Logs**
-  - User Logons
-  - RDP Usage
-  - RunAs Events
-  - Process Tracking
-  - PowerShell Logs
+* Shortcut Files  
+* Jump Lists  
+* ShellBags  
+* Prefetch  
+* OpenSaveMRU
 
-- **Browser Usage**
-  - History
-  - Cookies
-  - Cache
-  - Session Restore
-  - TypedURLs
+File Knowledge
+
+* WordWheelQuery  
+* Last Visited MRU  
+* Shortcut Files  
+* Recycle Bin  
+* Typed Paths
+
+Event Logs
+
+* User Logons  
+* RDP Usage  
+* RunAs Events  
+* Process Tracking  
+* PowerShell Logs
+
+Browser Usage:
+
+* History  
+* Cookies  
+* Cache  
+* Session Restore  
+* TypedURLs
+
+
+### Timeline Analytic Process
+
+**1. Determine Timeline Scope**
+
+* What questions do you need to answer?
+
+**2. Narrow Pivot Points**
+
+* Time-based 
+* Artifact-based
+
+**3. Determine the Best Process for Timeline Creation**
+
+* **Filesystem-Based Timeline Creation:**
+    * FLS or MFTECmd - Fast (Triage Mode)
+
+* **Super Timeline Creation:** Automated or Targeted
+    * LOG2TIMELINE
+
+**NOTE:** Super timeline is to be used if you **DO NOT** know what you are looking for. Target super timeline or filesystem timeline is to be used when you **DO** know what you are looking for.
+
+**4. Filter Timeline**
+
+* Using your scope, perform data validation and elimination as needed.
+
+**5. Analyze Timeline**
+
+* Focus on the context of evidence.
+* See Windows Forensic Analysis Poster "**Evidence of...**"
+
+
 
 ### The Pivot Point
 - Challenge: Where do I begin to look?
@@ -4126,23 +4202,12 @@ densityscout.exe -r -pe -p 0.1 -o 'C:\Tools\densityscout-results.txt' G:\
 
 
 
-<img alt="Micosoft's Attack Lifecycle" src="https://raw.githubusercontent.com/w00d33/w00d33.github.io/main/_files/pivot_points.PNG" />
-
-
-
-### Contect Clues
-- Recovering a single artifact is similar to recovering a single word
-- Seeing the context surrounding the artifact is needed to accurately use timeline
-- Example -> sweet
-  - 1. Sarah is such a sweet little girl; she is always looking after her brother
-    - Sweet = kind and friendly
-  - 2. This tea is too sweet for me to drink! How much sugar is in it?
-    - sweet = a taste similar to sugar
+<img src="./files/Pivot_Points.PNG"/>
 
 
 
 ### Timeline Capabilities
-- Filesystem: ```fls or MFTECmd```  
+- Filesystem: `fls or MFTECmd`
   - Filesystem metadata only
   - More filesystem types
     - Apple (HFS)
@@ -4154,7 +4219,7 @@ densityscout.exe -r -pe -p 0.1 -o 'C:\Tools\densityscout-results.txt' G:\
 
 
 
-- Super Timeline: ```log2timeline```  
+- Super Timeline: `log2timeline`  
   - Obtain everything (Kitchen Sink)
   - Filesystem metadata
   - Artifact timestamps
