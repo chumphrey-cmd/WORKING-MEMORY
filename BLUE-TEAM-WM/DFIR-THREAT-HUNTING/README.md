@@ -1,6 +1,6 @@
 # PURPOSE
 
-- **FORENSICS-AND-THREAT-HUNTING** content forked from: https://github.com/w00d33/w00d33.github.io and is currently being updated.
+- Content here was initially forked from: https://github.com/w00d33/w00d33.github.io. It is now being updated, reorganized, and restructured with new material.
 
 ## An Incident Response Mental Model 🪨 + ⚒️ = 🗿
 
