@@ -1,8 +1,6 @@
-# PURPOSE
+# An Incident Response Mental Model 🪨 + ⚒️ = 🗿
 
-- Content here was initially forked from: https://github.com/w00d33/w00d33.github.io. It is now being updated, reorganized, and restructured with new material.
-
-## An Incident Response Mental Model 🪨 + ⚒️ = 🗿
+**NOTE:** Content here was initially forked from https://github.com/w00d33/w00d33.github.io. It is now being updated, reorganized, and restructured with new material as of 2024.
 
 - I interpret the incident response process as akin to the art of masonry. A **network analyst** scans the network landscape for anomalies, unusual traffic patterns, unauthorized connections, or other signs of compromise. Like a surveyor identifying quality stone deposits, the **network analyst** uncovers leads worth closer examination.  
 
