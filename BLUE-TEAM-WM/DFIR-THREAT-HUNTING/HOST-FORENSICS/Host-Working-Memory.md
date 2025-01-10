@@ -272,7 +272,10 @@
     - [Master File Table - MFT](#master-file-table---mft)
     - [MFT Entry Allocated](#mft-entry-allocated)
     - [MFT Entry Unallocated](#mft-entry-unallocated)
-    - [Sequential MFT Entries](#sequential-mft-entries)
+    - [Sequential MFT Entries (Lethal DFIR Technique 🎯)](#sequential-mft-entries-lethal-dfir-technique-)
+    - [Most Common MFT Entry Attributes within NTFS](#most-common-mft-entry-attributes-within-ntfs)
+      - [Attribute Types: FILES](#attribute-types-files)
+      - [Attribute Types: DIRECTORIES](#attribute-types-directories)
     - [MFT Entry Hex Overview](#mft-entry-hex-overview)
     - [istat - Analyzing File System Metadata](#istat---analyzing-file-system-metadata)
     - [Detecting Timestamp Manipulation (Lethal DFIR Technique 🎯)](#detecting-timestamp-manipulation-lethal-dfir-technique-)
@@ -4933,11 +4936,51 @@ log2timeline.py --storage-file plaso.dump [DISK.img]
 
 
 
-### Sequential MFT Entries
+### Sequential MFT Entries (Lethal DFIR Technique 🎯)
 - As files are created, regardless of their directories, MFT allocation patterns are generally sequential and not random
 
 
+<img src="./files/Sequential_MFT_Entries.png">
+
+
 **ANALYST NOTE:** Look for "clustering" in the Meta column of MFT entries.  Use analysis of contiguous metadata values to find files likely created in quick succession, even across different directories
+
+
+
+### Most Common MFT Entry Attributes within NTFS
+
+
+
+#### Attribute Types: FILES
+
+| Type | Name                 |
+|------|----------------------|
+| **0x10** | `$STANDARD_INFORMATION` |
+| 0x20 | `$ATTRIBUTE_LIST`   |
+| **0x30** | `$FILE_NAME`        |
+| 0x40 | `$OBJECT_ID`        |
+| 0x50 | `$SECURITY_DESCRIPTOR`|
+| 0x60 | `$VOLUME_NAME`      |
+| 0x70 | `$VOLUME_INFORMATION`|
+| **0x80** | `$DATA`              |
+
+
+
+
+#### Attribute Types: DIRECTORIES
+
+| Type  | Name                 |
+|-------|----------------------|
+| **0x90**  | `$INDEX_ROOT`        |
+| **0xA0**  | `$INDEX_ALLOCATION`  |
+| 0xB0  | `$BITMAP`            |
+| 0xC0  | `$REPARSE_POINT`    |
+| 0xD0  | `$EA_INFORMATION`   |
+| 0xE0  | `$EA`                |
+| 0xF0  | `$LOGGED_UTILITY_STREAM` |
+| 0x100 | `M`                  |
+
+
 
 
 ### MFT Entry Hex Overview
