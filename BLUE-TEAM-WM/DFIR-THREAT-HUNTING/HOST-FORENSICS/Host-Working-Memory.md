@@ -5515,11 +5515,15 @@ mftecmd.exe -f E:\C\$Extend\$J -m E:\C\$MFT --csv G:\[ntfs_folder] --csvf mftecm
 ### File Recovery via Metadata Method
 - Extract deleted files individually with icat
 
-```icat -r <image> inode```  
+```bash
+icat -r <image> inode  
+```
 
 - Extract all deleted files with ```tsk_recover```  
 
-```tsk_recover <image> <output-directory>```  
+```bash
+tsk_recover <image> <output-directory>
+```  
 
 - Multiple forensic tools can locate MFT entries marked deleted and allow us to export (FTK Imager)
 
@@ -5542,24 +5546,43 @@ mftecmd.exe -f E:\C\$Extend\$J -m E:\C\$MFT --csv G:\[ntfs_folder] --csvf mftecm
 - [Black Hat Presentation](https://i.blackhat.com/us-18/Thu-August-9/us-18-Kobayashi-Reconstruct-The-World-From-Vanished-Shadow-Recovering-Deleted-VSS-Snapshots.pdf)
 
 
+---
 
-- Step 1: Use vss_carver against the raw image
 
-```vss_carver -t RAW -i /mnt/ewf_mount/ewf1 -o 0 -c ~/vsscarve-basefile/catalog -s ~/vsscarve-basefile/store```  
+**Step 1: Use vss_carver against the raw image**
+```bash
+vss_carver -t RAW -i /mnt/ewf_mount/ewf1 -o 0 -c ~/vsscarve-basefile/catalog -s ~/vsscarve-basefile/store
+```  
 
-- Step 2: Review (and possibly reorder) recovered VSCs
+---
 
-```vss_catalog_manipulator list ~/vsscarve-basefile/catalog```  
 
-- Step 3: Present recovered VSCs as raw disk images
+**Step 2: Review (and possibly reorder) recovered VSCs**
 
-```vshadowmount -o 0 -c ~/vsscarve-basefile/catalog -s ~/vsscarve-basefile/store /mnt/ewf_file/ewf1 /mnt/vsscarve_basefile/```  
+```bash
+vss_catalog_manipulator list ~/vsscarve-basefile/catalog
+```  
 
-- Step 4: Mount all logical filesystems of snapshot
+---
 
-```cd /mnt/vsscarve_basefile/```  
-```for i in vss*; do mountwin $i /mnt/shadowcarve_basefile/$i; done```  
 
+**Step 3: Present recovered VSCs as raw disk images**
+
+```bash
+vshadowmount -o 0 -c ~/vsscarve-basefile/catalog -s ~/vsscarve-basefile/store /mnt/ewf_file/ewf1 /mnt/vsscarve_basefile/
+```  
+
+---
+
+
+**Step 4: Mount all logical filesystems of snapshot**
+
+```bash
+cd /mnt/vsscarve_basefile/
+```  
+```bash 
+for i in vss*; do mountwin $i /mnt/shadowcarve_basefile/$i; done
+```
 
 
 ### Stream Carving for Event Log and File System Records
@@ -5578,10 +5601,13 @@ mftecmd.exe -f E:\C\$Extend\$J -m E:\C\$MFT --csv G:\[ntfs_folder] --csvf mftecm
 
 
 ### Carving for Strings
+
+
+```bash
+bstrings -f image.dd.001 --lr bitlocker # Uses preconfigured "bitlocker" regex pattern
+```
+
 - [bstrings](https://github.com/EricZimmerman/bstrings)
-
-```bstrings -f image.dd.001 --lr bitlocker``` (Find BitLocker Key)
-
 - [Autopsy Keyword Search and Indexing](https://www.sleuthkit.org/autopsy/keyword.php)
 
 
