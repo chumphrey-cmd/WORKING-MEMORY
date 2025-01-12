@@ -53,7 +53,6 @@
 - Clearly define the problem you're solving—break it down into discrete, actionable components. 
 - Invest time upfront in fully understanding the problem, as this will save effort later and streamline the development process.
 
----
 
 ### 2. Devise/Carry Out the Plan
 - Identify the connection between the input data and the desired outcome.
@@ -61,18 +60,17 @@
 - Begin implementing the pseudo-code incrementally. **Take your time** — understand why the model is proposing specific solutions. 
 - If you don’t understand something, **ask the model for clarification** to deepen your understanding.
 
----
 
 ### 3. Examine the Solution Obtained
 - Validate the solutions at each step, ensuring they are reproducible and that you fully understand their output.
 - Testing and debugging should be integral parts of this phase to confirm the solution aligns with the problem requirements.
 
----
 
 ### 4. Refine and Document
 - Once your project is functioning as intended, review it thoroughly to ensure you understand each component.
 - Prioritize clear documentation, as it is crucial for maintaining, scaling, or revisiting the project in the future. 
 - Reflect on what you've learned and ensure clarity in both your code and the associated documentation.
+
 
 ---
 
