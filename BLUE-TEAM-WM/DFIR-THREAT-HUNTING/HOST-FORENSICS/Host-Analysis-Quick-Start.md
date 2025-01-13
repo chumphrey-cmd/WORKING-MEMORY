@@ -1,3 +1,38 @@
+# Host Analysis Quick Start
+
+
+- [Host Analysis Quick Start](#host-analysis-quick-start)
+	- [Malware Persitence Locations](#malware-persitence-locations)
+		- [Common Autostart Locations (Hunting Artifact 🏹)](#common-autostart-locations-hunting-artifact-)
+		- [Services (Hunting Artifact 🏹)](#services-hunting-artifact-)
+		- [Scheduled Tasks (Hunting Artifact 🏹)](#scheduled-tasks-hunting-artifact-)
+		- [DLL Hijacking (Hunting Artifact 🏹)](#dll-hijacking-hunting-artifact-)
+		- [Hunting WMI Persistence (Hunting Artifact 🏹)](#hunting-wmi-persistence-hunting-artifact-)
+	- [Common Malware Names (Hunting Artifact 🏹)](#common-malware-names-hunting-artifact-)
+	- [Credential Theft Detection and Response](#credential-theft-detection-and-response)
+		- [Detecting Credential Harvesting](#detecting-credential-harvesting)
+	- [Event Logs Analysis](#event-logs-analysis)
+		- [Event Log Summary (Hunting Artifact 🏹)](#event-log-summary-hunting-artifact-)
+		- [Profiling Account Usage (Hunting Artifact 🏹)](#profiling-account-usage-hunting-artifact-)
+		- [Brute Force Password Attack](#brute-force-password-attack)
+		- [Built-In Accounts](#built-in-accounts)
+		- [Tracking Administrator Account Activity (Hunting Artifact 🏹)](#tracking-administrator-account-activity-hunting-artifact-)
+		- [Auditing Account Creation (Hunting Artifact 🏹)](#auditing-account-creation-hunting-artifact-)
+		- [Remote Desktop Activity (Hunting Artifact 🏹)](#remote-desktop-activity-hunting-artifact-)
+		- [Privileged Local Account Abuse - Pass the Hash](#privileged-local-account-abuse---pass-the-hash)
+		- [Account and Group Enumeration](#account-and-group-enumeration)
+		- [Lateral Movement - Network Shares (Hunting Artifact 🏹)](#lateral-movement---network-shares-hunting-artifact-)
+		- [Lateral Movement - Explicit Credentials - runas (Hunting Artifact 🏹)](#lateral-movement---explicit-credentials---runas-hunting-artifact-)
+		- [Lateral Movement - Scheduled Tasks](#lateral-movement---scheduled-tasks)
+		- [Suspicious Services](#suspicious-services)
+		- [Event Log Clearing](#event-log-clearing)
+	- [Lateral Movement Tactics and Artifacts](#lateral-movement-tactics-and-artifacts)
+		- [Auditing WMI Peristence (Hunting Artifact 🏹)](#auditing-wmi-peristence-hunting-artifact-)
+		- [Quick Wins - WMI-Activity/Operational Log (Hunting Artifact 🏹)](#quick-wins---wmi-activityoperational-log-hunting-artifact-)
+		- [Quick Wins - PowerShell (Hunting Artifact 🏹)](#quick-wins---powershell-hunting-artifact-)
+
+
+
 ## Malware Persitence Locations
 
 - Most common areas of persistence (~98% of all persistence is captured in the first 6 steps)  
