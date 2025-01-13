@@ -6,11 +6,4 @@
 
 - The process transitions to the **host analyst** or **incident responder**, assuming the role of the sculptor. Starting with a rough evidence, they refine their understanding through successive stages, employing increasingly precise tools and techniques.  
 
-- As the “block” is progressively carved away, the **picture of the compromise** becomes clearer. Each step builds greater certainty about the attacker’s actions, culminating in a detailed “masterpiece” that maps the incident, its artifacts, and its impact.  
-
-## TO-DO
-
-### Generate Quick Start
-
-- Link to `DFIR-Working-Memory.md`: which includes, as the name implies, my current "Working Memory" or respository of resources that I come across during my personal study.
-- Link to `Method-of-Analysis.md`: synthesizing only the essential, core, and actionable concepts that I believe should be conducted when completing an efficent investigation that can be used as a quick referenc or cheat sheet.
+- As the “block” is progressively carved away, the **picture of the compromise** becomes clearer. Each step builds greater certainty about the attacker’s actions, culminating in a detailed “masterpiece” that maps the incident, its artifacts, and its impact. 
