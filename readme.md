@@ -41,9 +41,10 @@ The content here evolves as technology advances and new security challenges emer
 
 
 
-### HOME-LAB - IN PROGRESS...
+### RED-TEAM-WM
 
-- To be updated with folders and current configuration setup.
+- [WIRELESS EXPLOITATION](./RED-TEAM-WM/WIRELESS-EXPLOITATION/)
+  - Contains commands, scripts, procedures, tools, and insights to enumerate Wireless Access Points and IoT devices.
 
 
 
@@ -54,10 +55,10 @@ The content here evolves as technology advances and new security challenges emer
 
 
 
-### RED-TEAM-WM
+### HOME-LAB - IN PROGRESS...
 
-- [WIRELESS EXPLOITATION](./RED-TEAM-WM/WIRELESS-EXPLOITATION/)
-  - Contains commands, scripts, procedures, tools, and insights to enumerate Wireless Access Points and IoT devices.
+- To be updated with folders and current configuration setup.
+
 
 ### TOOLS
 
