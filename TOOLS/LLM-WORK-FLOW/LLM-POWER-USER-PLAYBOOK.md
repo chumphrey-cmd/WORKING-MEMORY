@@ -301,6 +301,7 @@ Understand every piece of code you use. Remember: **YOU** are responsible for yo
 
 ### 12. Combine and Organize Your Codebase  
 Combine your codebase into a single, organized file using tools like [gptree](https://github.com/travisvn/gptree).  
+- **NOTE:** for my use case, I needed to pip install via WSL2.
 - Use the reasoning model to identify which feature or component to implement first.  
 - Instruct the AI to examine your codebase and generate a comprehensive phased plan.  
 - Update your progress files (`IMPLEMENTATION.md` and `PROGRESS.md`) as needed.  
