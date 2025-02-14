@@ -26,6 +26,18 @@
         - [Version Control](#version-control)
         - [Continuous Integration (CI) / Continuous Delivery (CD)](#continuous-integration-ci--continuous-delivery-cd)
         - [Secrets Management](#secrets-management)
+  - [Secuing DevOps Workflows](#secuing-devops-workflows)
+    - [Pre-Commit Security Controls](#pre-commit-security-controls)
+      - [Rapid Risk Assessments (RRA)](#rapid-risk-assessments-rra)
+      - [Threat Modeling in DevOps](#threat-modeling-in-devops)
+        - [Code Analysis Tools](#code-analysis-tools)
+      - [Git Commit/Workflow Hooks](#git-commitworkflow-hooks)
+      - [Pre-Commit framework](#pre-commit-framework)
+      - [Manual Code Reviews](#manual-code-reviews)
+      - [Mandatory Code Reviews: Branch Protections](#mandatory-code-reviews-branch-protections)
+      - [Version Control Security: GitHub Branch Protections](#version-control-security-github-branch-protections)
+      - [Branch Protections: GitLab Branch Protections](#branch-protections-gitlab-branch-protections)
+      - [Detecting High Risk Code Changes: Code Owners](#detecting-high-risk-code-changes-code-owners)
 - [(2) Cloud Infrastructure Security](#2-cloud-infrastructure-security)
 - [(3) Cloud-Native Security Operations](#3-cloud-native-security-operations)
 - [(4) Microservice and Serverless Security](#4-microservice-and-serverless-security)
@@ -159,8 +171,9 @@ git push qa-USER main
 
 * Ensures changes integrate successfully with the rest of the codebase  
 * Executes automated unit tests and other automated checks  
-  * **Red:** no other check-ins are allowed until the build is fixed  
-  * **Green:** creates build artifacts for next steps in CD pipeline  
+  * <span style="color:red"> Red</span>: no other check-ins are allowed until the build is fixed  
+  
+  * <span style="color:green"> Green</span>: creates build artifacts for next steps in CD pipeline  
 * Provides fast feedback - build and test steps need to run in a few minutes to encourage iterative development (small, frequent changes)
 
 #### Continuous Delivery/Deployment (CD)
@@ -279,25 +292,223 @@ JSON Web Tokens (JWT) are signed by the identity provider (IdP) with claims that
 
 1. Threat actor compromises a user's version control credentials and creates an attacker controlled SSH key for accessing source code.
 
-1. Threat actor makes an unauthorized commit, triggering a new release to production that contains a backdoor or trojan.
+2. Threat actor makes an unauthorized commit, triggering a new release to production that contains a backdoor or trojan.
 
-1. Threat actor modifies a high risk code file (e.g. IaC, cryptography library, authentication module, etc.) without approvals from security team. Releasing changes to high risk code without approvals may violate separation of duties and change approval board requirements.
+3. Threat actor modifies a high risk code file (e.g. IaC, cryptography library, authentication module, etc.) without approvals from security team. Releasing changes to high risk code without approvals may violate separation of duties and change approval board requirements.
 
 ##### Continuous Integration (CI) / Continuous Delivery (CD)
 
 1. Threat actor discovers a GitLab CI runner exposed on the Internet, and exploits a vulnerability.
 
-1. Threat actor compromises a GitLab CI workflow job and injects malicious code into the build artifacts.
+2. Threat actor compromises a GitLab CI workflow job and injects malicious code into the build artifacts.
 
-1. User disables a pipeline step enforcing security controls, triggering a release to production that does not meet security or compliance requirements.
+3. User disables a pipeline step enforcing security controls, triggering a release to production that does not meet security or compliance requirements.
 
-1. User approves deployment to production without change approvals.
+4. User approves deployment to production without change approvals.
 
 ##### Secrets Management
 
 1. User commits a secret (private key, API key) to the source code repository, which is later used by a threat actor to gain unauthorized access to the system.
 
-1. Threat actor compromises a secrets manager credential by creating a malicious job on the CI / CD server. The secrets manager credential is used to gain access to secrets, code signing certificates, deployment keys, etc. intended for other pipeline jobs.
+2. Threat actor compromises a secrets manager credential by creating a malicious job on the CI / CD server. The secrets manager credential is used to gain access to secrets, code signing certificates, deployment keys, etc. intended for other pipeline jobs.
+
+
+
+## Secuing DevOps Workflows
+
+
+**DevOps Workflow Phases**
+
+
+<img src="./files/DevOps_Workflow.png">
+
+
+**DevSecOps Critical Security Controls**
+
+
+<img src="./files/DevSecOps_Critical_Security_Controls.png">
+
+
+
+[Artifical Intelligence (AI) in the DevSecOps Workflow](https://drive.google.com/file/d/1DXd1BHp6STMctDVbjnW0jxofWEgau0b-/view)
+
+
+<img src="./files/AI_DevSecOps_Continum.png">
+
+
+
+### Pre-Commit Security Controls
+
+**Pre-Commit:** Activities before code is checked into version control.
+
+**Specific Controls:**
+
+* **Threat Modeling:**
+    * Description: Incremental design review, rapid risk assessment for new services or major changes.
+
+* **IDE Security Plugins:**
+    * Description: Code editor static analysis and linting plugins.
+
+* **Pre-Commit Hooks:**
+    * Description: Commit hooks to check for embedded secrets and enforce review workflows.
+
+* **Peer Code Review:**
+    * Description: Security code reviews.
+
+
+
+#### Rapid Risk Assessments (RRA)
+
+* Process of quickly asssessing the safety and security of legacy or new applications.
+
+* For new systems/services, start with a high-level risk assessment:
+
+  * Classify the data: legal and compliance requirements, sensitivity, etc.
+
+  * Focus on platform, language, and framework risks: is the team using well-understood tools/approach or something new to the organization?
+
+  * Determine a risk rating and next steps: threat modeling, control gate requirements, security training...
+
+  * Continuously reassess as major changes to design or data occur
+
+
+* [Mozilla RRA](https://infosec.mozilla.org/guidelines/risk/rapid_risk_assessment.html)
+
+* [Slack RRA](https://slack.engineering/moving-fast-and-securing-things/)
+
+
+
+#### Threat Modeling in DevOps
+
+* Iterative and lightweight threat modeling based on risk: early in design or when making major changes.
+* Examine trust boundaries and assumptions in architecture.
+* Ask these questions when you are making changes (based on SAFECode's Tactical Threat Modeling Guide):
+    1. Are you changing the attack surface?
+    2. Are you changing the technology stack?
+    3. Are you changing application security controls?
+    4. Are you adding confidential/sensitive data?
+    5. Are you modifying high-risk code?
+
+
+##### Code Analysis Tools
+
+
+
+* [Sloc Cloc and Code (scc)](https://github.com/boyter/scc)
+  * For counting the lines of code, blank lines, comment lines, and physical lines of source code in many programming languages. Used to begin the code analysis process...
+
+* [Semgrep](https://github.com/returntocorp/semgrep): VSCode plugin
+* [Checkov](https://github.com/bridgecrewio/checkov): VSCode plugin
+* [cfn_nag](https://github.com/stelligent/cfn_nag): VSCode plugin
+* [IntelliJ IDEA built-in code analysis](https://www.jetbrains.com/help/idea/code-inspection.html) (Includes some basic security checks)
+* [FindBugs](http://findbugs.sourceforge.net/manual/eclipse.html): Eclipse plugin
+* [FindBugs](https://plugins.jetbrains.com/plugin/3847-findbugs-idea): IntelliJ plugin
+* [SpotBugs](https://spotbugs.github.io/): Eclipse plugin
+* [Find Security Bugs](https://find-sec-bugs.github.io/): (Based on FindBugs/SpotBugs, with additional security checks)
+* [Puma Scan](https://pumasecurity.io/): Visual Studio plugin for C# (Open-source and commercial)
+    * Presentation: [Secure DevOps: A Puma's Tail](https://www.slideshare.net/pumasecurity/secure-devops-a-pumas-tail)
+* [Security Code Scan](https://security-code-scan.github.io/): Visual Studio plugin for C# (Open-source)
+* [Microsoft DevSkim](https://github.com/Microsoft/DevSkim)
+* [SonarLint](https://www.sonarlint.org/)
+* [Trivy](https://marketplace.visualstudio.com/items?itemName=AquaSecurityOfficial.trivy-vulnerability-scanner)
+* [SARIF Viewer](https://marketplace.visualstudio.com/items?itemName=MS-SarifVSCode.sarif-viewer)
+
+
+#### Git Commit/Workflow Hooks
+
+Commit hooks can be used to automatically run scripts checking for embedded secrets, code correctness, etc. at different points in workflows:
+
+* **Local repository:** pre-commit, prepare-commit, commit, post-commit, post-checkout, pre-rebase
+* **Remote repository:** pre-receive, update, post-receive
+* Implement team-wide workflow policies or check code for problems before CI
+* Repo owners can alter/uninstall hooks
+* Hooks cannot be enforced in local clones of the repository
+
+
+#### Pre-Commit framework
+
+Yelp's multi-language pre-commit hook package manager helps install and configure hooks.
+
+* Add a `.pre-commit-config.yaml` in the repository root directory.
+* Configure hooks written in multiple languages (Python, Node, Ruby, Shell scripts, Docker, etc.).
+* Create a default hook configuration for newly cloned local repositories.
+* Re-run and verify hooks in CI/CD pipelines.
+
+**[pre-commit](https://pre-commit.com/#install)**
+* A framework for managing and maintaining multi-language pre-commit hooks
+
+
+
+#### Manual Code Reviews
+
+
+Peer code reviews are required to find problems that automated tools do not find:
+
+* **Security team sets policies and trains developers** on how to do security code reviews. Create checklists for the team.
+* Look for problems that static analysis tools don't find.
+* Developers can easily be taught to find mistakes in using security features/libraries, and security "code smells": backdoors, hardcoded secrets, hand-rolled crypto, suspect code...
+* **Identify and tag high-risk code** (security features and libraries, public APIs...) and ensure that changes are reviewed by experts.
+
+
+
+#### Mandatory Code Reviews: Branch Protections
+
+**Branch Protections** prevent harmful actions and unauthorized commits against release branches (e.g., develop/main).
+
+* Prevent deleting release branches.
+* Prevent pushing commits directly to release branches.
+* Require a pull/merge request to be opened for merging changes into the branch.
+* Define code review/approval review requirements, which can vary by provider.
+
+
+
+
+#### Version Control Security: GitHub Branch Protections
+
+
+* **GitHub Branch Protection Rule**
+    * Require pull request approvals before merging.
+    * Apply restrictions to project administrators.
+    * Require signed commits. (optional)
+    * Disable force pushes.
+    * Disable deletion.
+
+
+
+#### Branch Protections: GitLab Branch Protections
+
+
+* **GitLab Protected Branches**
+    * Require merge requests to commit to the branch.
+    * It defines the role that can complete a merge request.
+    * It prevents all users from pushing to the branch.
+    * It enables the CodeOwners approval workflow.
+
+
+
+#### Detecting High Risk Code Changes: Code Owners
+
+
+**Detecting High Risk Code Changes: Code Owners**
+
+Inventory high risk code and identify groups or individuals responsible for approvals:
+
+* Create a CODEOWNERS file in the repository root directory.
+* Define directories or individual files in the CODEOWNERS file.
+* Require one (or many) approvers during the pull request workflow to review changes to these files.
+* This allows the security team to participate in the GitFlow workflow.
+
+
+**High-risk Code Includes:**
+
+
+* security controls (authentication, password handling, access control, output encoding libraries, data entitlement checks, user management, crypto methods)
+* admin functions
+* application code that works with private data
+* runtime frameworks
+* public network-facing APIs
+* legacy code that is known to be tricky to change (high complexity...) or that is known to be buggy
+* release/deployment scripts or tooling
 
 
 # (2) Cloud Infrastructure Security
