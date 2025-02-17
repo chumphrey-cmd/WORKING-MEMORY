@@ -38,6 +38,17 @@
       - [Version Control Security: GitHub Branch Protections](#version-control-security-github-branch-protections)
       - [Branch Protections: GitLab Branch Protections](#branch-protections-gitlab-branch-protections)
       - [Detecting High Risk Code Changes: Code Owners](#detecting-high-risk-code-changes-code-owners)
+    - [Commit Security Controls (Broad Overview)](#commit-security-controls-broad-overview)
+      - [Continuous Integration (CI) Security Testing Limitations](#continuous-integration-ci-security-testing-limitations)
+      - [Centralized Security Scanning Factory](#centralized-security-scanning-factory)
+      - [Security Factory Integration](#security-factory-integration)
+      - [Automated Security Testing Goals](#automated-security-testing-goals)
+      - [Automated Security Testing: Minimize False Positives](#automated-security-testing-minimize-false-positives)
+      - [Automated Security Testing: Customizing Tools\*](#automated-security-testing-customizing-tools)
+      - [Automated Security Testing: Parsing \& Displaying Results](#automated-security-testing-parsing--displaying-results)
+      - [Automated Code Scanning Technology Landscape](#automated-code-scanning-technology-landscape)
+      - [Semgrep - Secure Code Analysis](#semgrep---secure-code-analysis)
+      - [Semgrep - Scan Command Line Interface](#semgrep---scan-command-line-interface)
 - [(2) Cloud Infrastructure Security](#2-cloud-infrastructure-security)
 - [(3) Cloud-Native Security Operations](#3-cloud-native-security-operations)
 - [(4) Microservice and Serverless Security](#4-microservice-and-serverless-security)
@@ -509,6 +520,197 @@ Inventory high risk code and identify groups or individuals responsible for appr
 * public network-facing APIs
 * legacy code that is known to be tricky to change (high complexity...) or that is known to be buggy
 * release/deployment scripts or tooling
+
+
+### Commit Security Controls (Broad Overview)
+
+
+**COMMIT:** Security checks in automated build and CI steps
+
+**SOURCE CODE ANALYSIS:** Incremental or high-signal code analysis (SAST) using only rules with high confidence / low false positives.
+
+**SOFTWARE SUPPLY CHAIN:** Software bill of materials, provenance, component and dependency analysis. Signing and storing build artifacts in a secure repository (more on this later).
+
+**CLOUD NATIVE SECURITY:** Configuration file analysis and policy enforcement for Dockerfile, container images, Kubernetes manifests, and Kubernetes policy as code (more on this later).
+
+
+#### Continuous Integration (CI) Security Testing Limitations
+
+**Challenges for Inline Security Testing/Scanning in Development-Focused Pipelines:**
+
+* **Rapid CI Cycling:** Demands fast, fully automated, reliable, repeatable, unambiguous, and accurate testing.
+* **Security Testing Requirements:** Must be fast, incremental, and accurate.
+* **Time Constraints:** Development build pipelines typically complete in 5-10 minutes.
+
+**NOTE:**
+
+* Long-running security testing and scanning must be performed outside the CI pipeline (out of band).
+* **TIME, SPEED, AND AGILITY** is of the essence here. If a security scan that is being conducted increases the development build pipeline **greater than** 5-10 mins, you're conducting the scan in the wrong area!
+
+
+
+#### Centralized Security Scanning Factory
+
+Following DevOps patterns, security teams can build their own security focused pipelines for managing their workflow:
+
+* Security teams receive a request (or automated hook) to start their process
+* Engineers conduct penetration tests, code/design reviews, training, deep scanning, tool building/integration, audits
+
+* Leverages workflow automation concepts, patterns, and practices
+* Allows security teams to integrate with engineering CI/CD pipelines
+
+* Centralizes security scanning intelligence for analysis in SIEM systems
+* Validates findings and creates tickets for actionable findings
+
+* Scales across an enterprise for hundreds (or thousands) of pipelines
+
+* [Bag of Holding](https://github.com/aparsons/bag-of-holding)
+  * FOSS App-Sec management tool that you can use to hold an application inventory and classification for secure pipeline development.
+
+
+
+
+#### Security Factory Integration
+
+<img src="./files/Security_Factory_Pipelines.png">
+
+
+Four Distinct Stages: The pipeline is divided into four stages: **Intake**, **Triage**, **Test**, and **Delivered**.
+
+* **Intake**: Customers request security services (dynamic, static, manual assessments) through an application repository. They select an existing application or provide details for a new one. This is the initial interaction or "first impression."
+
+* **Triage**: Determines the appropriate security services to apply based on the request. Automated scans might trigger specific actions, like a ZAP scan. This is the assessment and planning phase.
+
+* **Test**: The core of the pipeline. Automates security tools, collects results in a central repository, and reviews findings for false positives. This is the execution and analysis phase.
+
+* **Delivered**: Results are distributed to the customer. Pipelines often integrate with defect trackers and generate summary metrics/reports for management. This is the reporting and remediation phase.
+
+
+
+#### Automated Security Testing Goals
+
+Provide fast and clear feedback on code commit:
+
+* Run code scans in parallel with unit testing for speed.
+* Run high-risk checks early in the pipeline to "fail fast."
+* Do incremental scanning, if possible, as deep scanning takes too long for CI/CD, especially on large codebases.
+* Set a max time limit with the dev team, alert if the limit is breached and fix it.
+* Select tools with output formats that can be parsed and return results directly to developers using their IDE or backlog ticketing system (JIRA, GitHub, GitLab)
+* Run full/long running scans are scheduled (nightly) or from the security scanning factory.
+
+
+**Deep Scanning vs. Incremental Scanning**
+
+* **Full Scans:** Can take hours or days, unsuitable for CI/CD timeframes.
+* **Incremental Scans:** Many SAST tools offer incremental scanning of changed code, updating a cached abstract model. Limitations may exist in check types or accuracy.
+* **Deeper Scanning:** Should be done periodically, outside the CI/CD pipeline (e.g., overnight, on-demand). Manual review and triage are recommended.
+* **Feedback Mechanisms:** Findings can be delivered to engineers via IDEs, backlog tickets, API integration, or vulnerability managers.
+    * [Archerysec](https://www.archerysec.com/)
+    * [OWASP Defect Dojo](https://www.defectdojo.org/)
+
+
+#### Automated Security Testing: Minimize False Positives
+
+Developers will tune out results if you don't tune out false positives:
+
+* Carefully review rules and identify which checks provide high-confidence results.
+* Configure the pipeline to stop if these checks fail.
+* Turn off noisy, low-confidence checks in the pipeline
+* Run low confidence checks in the security scanning factory, validate the findings manually, and send true positive findings to the development team's backlog.
+* Periodically review and re-tune rules and configurations.
+
+**Pro tip:**
+
+Store tool configurations, disabled rules, and custom rules in version control to keep a history of decisions for compliance and governance.
+
+
+
+#### Automated Security Testing: Customizing Tools*
+
+Security scanning tools have built-in, default rule sets that run out of the box. However, every product uses different naming conventions, patterns, and frameworks:
+
+* Although very few teams do this, you may need to write your own rules using tool plugins or scripts.
+* Custom rules can help to enforce your team's specific guidelines.
+* For maximum coverage, you will need to run multiple tools, such as SAST, Software Supply Chain, Infrastructure as Code (IaC), Kubernetes, and DAST
+* Different scanning approaches find different problems, so make sure you understand what each tool is good at and what its blind spots are.
+* Use a vulnerability manager solution to schedule scans, consolidate results, filter duplicates, perform differential analysis, and identify new risks.
+
+* **Resources:**
+  * [Static Analysis (SAST)](https://github.com/analysis-tools-dev/static-analysis)
+  * [IaC Security Cheatsheet](https://cheatsheetseries.owasp.org/cheatsheets/Infrastructure_as_Code_Security_Cheat_Sheet.html)
+
+
+
+#### Automated Security Testing: Parsing & Displaying Results
+
+Running security tools in CI/CD requires a supported machine-readable output format.
+
+* **xUnit/JUnit**
+    * Standard XML schema for reporting pass/fail unit test results
+* **Checkstyle**
+    * Standard XML schema for reporting static analysis results
+* **SARIF (Static Analysis Results Interchange Format)**
+    * JSON based schema primarily used for displaying results in GitHub
+* **CycloneDX**
+    * OWASP schema for software bill of materials and vulnerability exploitability exchange (VEX)
+* **SPDX (Software Package Data Exchange)**
+    * Open standard for communicating software bill of material provenance, license, and security details
+* **JSON**
+    * Custom schemas are machine readable, but you have work to do!
+
+
+
+#### Automated Code Scanning Technology Landscape
+
+Tool support varies widely, depending on your technology stack:
+
+* **Application source code**: open-source tools are available for common languages and frameworks: JavaScript, Java, Python, C#, C/C++, PHP, Ruby on Rails, Android, Objective C, and Go.
+
+* **Software supply chain**: open-source tools are available for application frameworks (npm, Maven, Nuget, PyPI) and scanning container images (more on this later)
+
+* **Configuration management code**: open-source tools are available for Chef, Puppet, Ansible, but are generally limited to lint checks for good coding/correctness. Custom rules and extensions will be required for security coverage.
+
+* **Infrastructure as Code**: open-source tools are available for Terraform, Docker, Kubernetes, CloudFormation, Bicep, and Helm.
+
+* **Limitations**: New languages, frameworks, and technologies have poor (or no) coverage until open-source projects and vendors build in support.
+
+**Static Analysis Resources**
+* [Grype](https://github.com/anchore/grype)
+* [Sytf](https://github.com/anchore/syft)
+* [Supply Chain Levels for Software Artifacts (SLSA)](https://slsa.dev/)
+* [Trivy](https://github.com/aquasecurity/trivy)
+
+
+#### Semgrep - Secure Code Analysis
+
+Semgrep provides a light-weight, multi-language, extensible static analysis solution. Fast, open-source, static analysis tool that searches code, finds bugs, and enforces secure guardrails and coding standards. Semgrep supports 30+ languages and can run in an IDE, as a pre-commit check, and as part of CI/CD workflows.
+
+* Open-source solution built and maintained by returntocorp (r2c)
+* Community driven rules Semgrep Registry contains over 1,000 rules
+* Language support includes Go, Java, JavaScript, Python, Ruby, TypeScript, C#, and generic markup (JSON, YAML)
+* Cloud offering also supports Secrets and Supply chain scanning
+* Supports automation from the CLI, Docker image, and GitHub Actions
+
+**References:**
+* [Semgrep GitHub](https://github.com/semgrep/semgrep)
+* [Semgrep Website](https://semgrep.dev/explore)
+
+
+
+#### Semgrep - Scan Command Line Interface
+
+Semgrep is a command-line driven tool:
+
+* Scan command performs code scanning
+* Rulesets include r2c-security-audit, r2c-ci, java, jwt, bandit, eslint-security-plugin-security, findsecbugs
+
+| Option | Usage |
+|---|---|
+| `-f \| -c <config>` | YAML configuration file, directory of the YAML files, URL of a configuration file |
+| `-e <pattern>` | Custom code search pattern |
+| `-l <language>` | Parse pattern and all files in a specific language |
+| `-o <output>` | Save search results to a file or POST to a URL, default is stdout |
+
 
 
 # (2) Cloud Infrastructure Security
