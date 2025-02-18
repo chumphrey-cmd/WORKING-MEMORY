@@ -49,6 +49,21 @@
       - [Automated Code Scanning Technology Landscape](#automated-code-scanning-technology-landscape)
       - [Semgrep - Secure Code Analysis](#semgrep---secure-code-analysis)
       - [Semgrep - Scan Command Line Interface](#semgrep---scan-command-line-interface)
+    - [Secrets Management](#secrets-management-1)
+      - [What Are Secrets?](#what-are-secrets)
+      - [How Not to Keep Secrets: In Code](#how-not-to-keep-secrets-in-code)
+      - [Be Especially Careful with GitHub](#be-especially-careful-with-github)
+      - [Preventing Secrets in Code](#preventing-secrets-in-code)
+      - [Using git-secrets](#using-git-secrets)
+      - [Secret Keepers](#secret-keepers)
+      - [Secret Keepers: Open-Source Solutions](#secret-keepers-open-source-solutions)
+      - [Secret Keepers: Commercial](#secret-keepers-commercial)
+      - [Azure Key Vault: Storing Secrets](#azure-key-vault-storing-secrets)
+      - [AWS Secrets Manager Example](#aws-secrets-manager-example)
+      - [HashiCorp Vault](#hashicorp-vault)
+      - [Secret Keepers: Vault Secrets Engines](#secret-keepers-vault-secrets-engines)
+      - [HashiCorp Vault: Configuration](#hashicorp-vault-configuration)
+      - [HashiCorp Vault: CLI Example](#hashicorp-vault-cli-example)
 - [(2) Cloud Infrastructure Security](#2-cloud-infrastructure-security)
 - [(3) Cloud-Native Security Operations](#3-cloud-native-security-operations)
 - [(4) Microservice and Serverless Security](#4-microservice-and-serverless-security)
@@ -713,7 +728,255 @@ Semgrep is a command-line driven tool:
 
 
 
+
+### Secrets Management
+
+
+#### What Are Secrets?
+
+Every system has secrets that need to be kept safe. Automated Configuration Management and Continuous Integration tools will CD require secrets to make changes:
+
+* OS and application passwords
+* SSH keys
+* TLS certificates/keys
+* GPG keys
+* API tokens
+* Database credentials
+* Sensitive runtime variables...
+
+
+#### How Not to Keep Secrets: In Code
+
+Many engineers naturally think of keeping secrets in code as they try to automate builds or operations work. Storing secrets in code is a common anti-pattern:
+
+* Secrets become readable by **anyone** with access to the code repo.
+* Version history ensures that even if you remove a secret from the code, it can still be found.
+* In a distributed VCS like Git, everybody has a copy of the repo (including on their laptops)—you can't track who has it.
+* You must redeploy code every time that you rotate a secret.
+
+
+
+#### Be Especially Careful with GitHub
+
+* It is too easy for someone to accidentally upload code with secrets to a public GitHub repo—especially if your team is contributing back to open-source projects:
+    * Contributing code, such as Slackbot examples containing private Slack API tokens by accident, allows account takeovers.
+    * Uber was attacked via a database key placed in a public repo.
+
+* **Find secrets and sensitive data before attackers do!**
+    * Regularly scan GitHub to check for sensitive information in public repos.
+    * GitGuardian, Gitrob, truffleHog, Git-all-secrets, git-secrets
+
+**References:**
+* [GitGuardian](https://www.gitguardian.com/)
+* [Gitrob](https://github.com/michenriksen/gitrob)
+* [truffleHog](https://github.com/trufflesecurity/trufflehog)
+* [Git-all-secrets](https://github.com/anshumanbh/git-all-secrets)
+
+
+#### Preventing Secrets in Code
+
+* Look for secrets in manual code reviews and scan for secrets in code as part of commit checks:
+    * Custom grep searches
+    * Find Security Bugs plugin
+
+* Prevent secrets from being committed to code repos using pre-commit hooks or plugins. It's easy to do with Git using:
+
+  * [git-secrets](https://github.com/awslabs/git-secrets) is a tool that allows you to prevent secrets from being committed to Git repositories.
+
+  * [Talisman](https://github.com/thoughtworks/talisman), from ThoughtWorks, is a tool to validate code changes that are to be pushed out of a local Git repository on a developer's workstation. By hooking into the pre-push hook provided by Git, it validates the outgoing changeset for things that look suspicious—such as potential SSH keys, authorization tokens, private keys, etc.
+
+  * [SEDATED](https://github.com/OWASP/SEDATED) prevents sensitive data such as credentials from being pushed to a Git server.
+
+  * [Git Hound](https://github.com/ezekg/git-hound) is a Git plugin that prevents sensitive data from being committed to GitHub. It looks for matches to regular expressions specified in a config file and can stop the commit from proceeding. It can "sniff changes since last commit and pass to git-commit when clean."
+
+
+#### Using git-secrets
+
+The git-secrets tool from AWS Labs is a command-line tool designed to run as a local git pre-commit hook:
+
+* Run `git secrets <option>` to perform various tasks
+
+| Option | Usage |
+|---|---|
+| `--install` | Install in the current git repo, setting up the pre-commit hook |
+| `--register-aws` | Activate the "aws" secrets patterns |
+| `--list` | List the active patterns, excludes |
+| `--scan` | Scan the repository for secrets, displaying results to the terminal |
+| `--add <pattern>` | Add a custom pattern to search for |
+
+
+#### Secret Keepers
+
+Secrets Servers or Secret Keepers securely store, manage, and distribute secrets to users, tools, and servers:
+
+* Encrypted storage of credentials, keys, etc.
+* Secure vault management (seal, unseal) functions
+* Secure sharing of secrets
+* API and CLI access for tools like Chef, Docker, and Puppet, and for applications
+* Secrets management functions to enroll, revoke, rotate credentials
+* Auditing of setup and changes to secrets and use of secrets
+* Authentication and access control filtering to the secrets vault
+
+
+**References:**
+* [Turtles All the Way Down](https://www.youtube.com/watch?v=OUSvv2maMYI)
+* [Overview of Secret Management Solutions](https://gist.github.com/maxvt/bb49a6c7243163b8120625fc8ae3f3cd)
+
+
+
+
+#### Secret Keepers: Open-Source Solutions
+
+
+| Tool | Description |
+|---|---|
+| [Vault](https://www.vaultproject.io/) | From HashiCorp: proven secrets manager, the most widely used of these solutions<br>Integrates with multiple backends (including AWS) and data stores through plugins<br>Key rotation, credential leasing, temporary secrets, encryption as a service |
+| [Conjur](https://github.com/cyberark/conjur) | open-source of general-purpose enterprise secrets management and machine identity management system |
+| [Keywhiz](https://square.github.io/keywhiz/) | From Square: provides secure access to secrets through REST API or FUSE filesystem |
+| [Confidant](https://github.com/lyft/confidant) | From Lyft: for AWS, stores secrets in DynamoDB ([Announcement](https://eng.lyft.com/announcing-confidant-an-open-source-secret-management-service-from-lyft-1e256fe628a3?gi=70936180eedc)) |
+| [Knox](https://github.com/pinterest/knox) | From Pinterest: designed to be easy for developers to use |
+
+
+
+#### Secret Keepers: Commercial
+
+| Tool | Description |
+|---|---|
+| [Amazon KMS](https://aws.amazon.com/kms/) | Managed Amazon AWS service to create and manage encryption keys. Uses hardened security appliances (HSAs) to encrypt keys ([Details](https://d0.awsstatic.com/whitepapers/KMS-Cryptographic-Details.pdf)). Integrates with other AWS services and supports auditing through AWS CloudTrail. Includes an SDK for application developers. |
+| [Amazon Secrets Manager](https://aws.amazon.com/secrets-manager/) | Provides APIs to store, retrieve, and rotate secrets, with fine-grained IAM policies. Encrypt keys with Amazon KMS. Use AWS CloudTrail for auditing and AWS CloudWatch Events for change notification. |
+| [CyberArk Application Access Manager](https://www.cyberark.com/products/secrets-manager-enterprise/) | Enterprise edition of Conjur secrets manager, including AD and LDAP integration, multi-data center deployment, permission management, and HSM integration—part of the CyberArk Privileged Account Security Solution. |
+| [Google KMS](https://cloud.google.com/security-key-management) | Highly available key management service for Google Cloud Platform. Integrated with IAM and Cloud Audit Logging. |
+| [Google Secret Manager](https://cloud.google.com/blog/products/identity-security/introducing-google-clouds-secret-manager) | Highly scalable GCP service for storing secrets, with first-class versioning. |
+| [Microsoft Azure Key Vault](https://azure.microsoft.com/en-ca/services/key-vault/) | Safeguards passwords and keys on Azure using FIPS 140-2 Level 2 HSMs. Access is audited through native Azure logging services. |
+| Vault Enterprise | Enterprise editions of HashiCorp open-source secrets Vault |
+
+
+
+#### Azure Key Vault: Storing Secrets
+
+**Azure CLI example storing a secret in a vault:**
+
+```bash
+az keyvault secret set --vault-name dm-infrastructure-vault --name Database --value "Server=172.17.0.2; database=dm; uid=dmuser;pwd=dev$3c0psForTheWin"
+```
+
+**Azure CLI example listing secrets in a vault:**
+
+```bash
+az keyvault secret list --vault-name dm-infrastructure-vault
+```
+
+**Azure CLI example showing a vault secret:**
+
+```bash
+az keyvault secret show --vault-name dm-infrastructure-vault --name Database | jq -r 'value'
+```
+
+
+
+#### AWS Secrets Manager Example
+
+**AWS CLI example storing a secret in Secrets Manager:**
+
+```bash
+aws secretsmanager create-secret --name "dm-database" --secret-string '{"Server":"172.17.0.2", "database":"dm", "uid":"dmuser", "pwd":"dev$3c0psForTheWin"}' --kms-key-id <KMS-KEY-ID>
+```
+
+**AWS CLI example listing secrets in a Secrets Manager:**
+
+```bash
+aws secretsmanager list-secrets
+```
+
+**AWS CLI example to get the secret from Secrets Manager:**
+
+```bash
+aws secretsmanager get-secret-value --secret-id dm-database | jq -r '.SecretString'
+```
+
+
+
+#### HashiCorp Vault
+
+General-purpose secrets manager:
+
+* Provides central, audited access to secrets, including dynamically generated credentials (with automatic, centrally enforced revocation)
+* Secure core with extensible plugin architecture: different data storage backends, auditing backends, authentication backends, secrets engines
+* Can be run on AWS, Google Cloud Platform, Azure, Kubernetes
+* Packaged with Docker
+* Enterprise version is FIPS 140-2 compliant and highly available
+* As of 1.0, both open-source and enterprise versions include a powerful management UI
+
+**HashiCorp's Production Hardening guidelines for deploying Vault:**
+
+* https://learn.hashicorp.com/tutorials/vault/production-hardening
+* Vault can be run on AWS and other cloud platforms. https://aws.amazon.com/quickstart/architecture/vault/
+* Vault is packaged in Docker. https://hub.docker.com/_/vault/
+* Online learning for Vault: https://learn.hashicorp.com/vault/
+* Vault Guides examples, use cases: https://github.com/hashicorp/vault-guides
+
+
+
+
+#### Secret Keepers: Vault Secrets Engines
+
+Vault has different "secrets engines" to support a wide range of use cases and types of secrets, including:
+
+**Secret Keepers: Vault Secrets Engines**
+
+Vault has different "secrets engines" to support a wide range of use cases and types of secrets, including:
+
+* [kv](https://www.vaultproject.io/docs/secrets/kv): simple key value storage (installed by default, v1 and v2)
+* [AWS](https://www.vaultproject.io/docs/secrets/aws): dynamically generate AWS credentials
+* [Cubbyhole](https://www.vaultproject.io/docs/secrets/cubbyhole): temporary storage of secrets, namespaced to a token
+* [Database](https://www.vaultproject.io/docs/secrets/databases): generate dynamic db credentials for SQL/NoSQL platforms
+* [PKI](https://www.vaultproject.io/docs/secrets/pki): internal CA, programmatically generate dynamic x.509 certs
+* [SSH access manager](https://www.vaultproject.io/docs/secrets/ssh): secure/audited management of SSH access
+* [TOTP](https://www.vaultproject.io/docs/secrets/totp): generate time-based one-time passwords (like Google Authenticator)
+* [Transit](https://www.vaultproject.io/docs/secrets/transit): data encryption services on demand (data is not stored in Vault)
+
+
+#### HashiCorp Vault: Configuration
+
+Preparing Vault for use requires some setup work:
+
+* Configure storage backend, TLS certificates, telemetry
+* Launch and Initialize Vault: Securely distribute unseal keys
+* Unseal the Vault: Requires a quorum of unseal keys
+* Enable authentication backend(s): Create users if needed
+* Define access control policies
+* Generate and distribute initial tokens
+* **Revoke root token**: Regenerate via quorum of unseal keys
+
+**Pro tip:**
+
+Follow production hardening guidelines from HashiCorp. Or, use the Vault Cloud service from HashiCorp.
+
+
+
+#### HashiCorp Vault: CLI Example
+
+* Log in to the vault
+* Put a secret using the KV v2 engine
+* Get a secret from the KV v2 engine
+* List policies and display the "gitlab-rw" policy
+* Store a file in vault using KV v2
+
+```bash
+vault login -method=userpass username=student
+vault kv put kv/mscott/things bike-1234 lock-36-41-2 cell=1234
+vault kv get -field=bike kv/mscott/things
+vault policy list
+vault policy read gitlab-rw
+vault kv put kv/cert/www-dm-paper private_key=@www.dm.paper.key
+```
+
+
 # (2) Cloud Infrastructure Security
+
+
+
+
 
 
 # (3) Cloud-Native Security Operations
