@@ -44,7 +44,7 @@
       - [Security Factory Integration](#security-factory-integration)
       - [Automated Security Testing Goals](#automated-security-testing-goals)
       - [Automated Security Testing: Minimize False Positives](#automated-security-testing-minimize-false-positives)
-      - [Automated Security Testing: Customizing Tools\*](#automated-security-testing-customizing-tools)
+      - [Automated Security Testing: Customizing Tools](#automated-security-testing-customizing-tools)
       - [Automated Security Testing: Parsing \& Displaying Results](#automated-security-testing-parsing--displaying-results)
       - [Automated Code Scanning Technology Landscape](#automated-code-scanning-technology-landscape)
       - [Semgrep - Secure Code Analysis](#semgrep---secure-code-analysis)
@@ -65,6 +65,35 @@
       - [HashiCorp Vault: Configuration](#hashicorp-vault-configuration)
       - [HashiCorp Vault: CLI Example](#hashicorp-vault-cli-example)
 - [(2) Cloud Infrastructure Security](#2-cloud-infrastructure-security)
+  - [Software Supply Chain Security](#software-supply-chain-security)
+    - [What Is Infrastructure as Code (IaC)?](#what-is-infrastructure-as-code-iac)
+    - [Terraform: HashiCorp versus OpenTofu](#terraform-hashicorp-versus-opentofu)
+    - [Terraform Benefits](#terraform-benefits)
+    - [Terraform Considerations](#terraform-considerations)
+    - [Terraform Functions](#terraform-functions)
+    - [Terraform Provider Configuration](#terraform-provider-configuration)
+    - [Terraform Input Variables](#terraform-input-variables)
+    - [Terraform Local Variables](#terraform-local-variables)
+    - [Terraform Resources](#terraform-resources)
+    - [Terraform Data Source](#terraform-data-source)
+    - [Terraform Null Resource Local Provisioner](#terraform-null-resource-local-provisioner)
+    - [Terraform Outputs](#terraform-outputs)
+    - [Terraform Modules](#terraform-modules)
+    - [Terraform Command Line Interface (CLI)](#terraform-command-line-interface-cli)
+    - [Terraform CLI | Deployment](#terraform-cli--deployment)
+    - [Terraform CLI | State Management (1)](#terraform-cli--state-management-1)
+    - [Terraform CLI | State Management (2)](#terraform-cli--state-management-2)
+    - [Terraform CLI | Outputs](#terraform-cli--outputs)
+  - [Cloud Infrastructure as Code (IaC)](#cloud-infrastructure-as-code-iac)
+    - [IaC Pipeline](#iac-pipeline)
+    - [Infrastructure as Code (IaC) Security](#infrastructure-as-code-iac-security)
+    - [Azure Network Security Groups (NSG)](#azure-network-security-groups-nsg)
+    - [AWS EC2 Security Groups](#aws-ec2-security-groups)
+    - [Infrastructure as Code (IaC) Security Scanning Tools](#infrastructure-as-code-iac-security-scanning-tools)
+    - [Easy\_Infra](#easy_infra)
+    - [**IaC Security Scanner - Checkov**](#iac-security-scanner---checkov)
+  - [Configuration Management as Code](#configuration-management-as-code)
+  - [Security Lifecycle](#security-lifecycle)
 - [(3) Cloud-Native Security Operations](#3-cloud-native-security-operations)
 - [(4) Microservice and Serverless Security](#4-microservice-and-serverless-security)
 - [(5) Continuous Compliance and Protection](#5-continuous-compliance-and-protection)
@@ -640,7 +669,7 @@ Store tool configurations, disabled rules, and custom rules in version control t
 
 
 
-#### Automated Security Testing: Customizing Tools*
+#### Automated Security Testing: Customizing Tools
 
 Security scanning tools have built-in, default rule sets that run out of the box. However, every product uses different naming conventions, patterns, and frameworks:
 
@@ -975,6 +1004,521 @@ vault kv put kv/cert/www-dm-paper private_key=@www.dm.paper.key
 # (2) Cloud Infrastructure Security
 
 
+## Software Supply Chain Security
+
+
+### What Is Infrastructure as Code (IaC)?
+
+Defining infrastructure configuration in code:
+
+* Use high-level languages and templates to provision systems, install and configure packages, and manage users, groups, storage, firewalls, etc.
+* Take advantage of platform APIs and community/vendor modules.
+* Check changes into version control; review and test in advance.
+* Deploy through automated build pipeline (Continuous Delivery).
+
+Programmable Infrastructure lets you treat runtimes like **cattle**, not **pets**: standardized within/across environments, easy and cheap to set up, tear down, or change.
+
+
+
+### Terraform: HashiCorp versus OpenTofu
+
+Terraform is a vendor-agnostic, source-available (BSL) option for writing Infrastructure as Code for your public cloud, private cloud, or even some on-premise infrastructure and services:
+
+* Alternative to CloudFormation, Azure Resource Manager, and other Cloud provider-specific Infrastructure as Code capabilities.
+* Variables, resources, and outputs are used to define infrastructure.
+* Enterprise version is available to provide enhanced collaboration and governance capabilities.
+* August 2023: HashiCorp moved Terraform from open-source (MPL) to source-available (BSL).
+* September 2023: Linux foundation forked and adopted Terraform into OpenTofu.
+
+**References**
+* https://www.terraform.io
+* https://www.hashicorp.com/blog/hashicorp-adopts-business-source-license
+* https://www.linuxfoundation.org/press/announcing-opentofu
+
+
+
+### Terraform Benefits
+
+* It leverages the same architecture and markup language (HCL) for managing infrastructure across multiple Cloud providers and technologies.
+
+* It includes providers for services built on top of or hosted by the Cloud providers:
+    * AWS/Azure/GCP
+    * Kubernetes
+    * MySQL
+    * Azure Active Directory
+    * GitHub/GitLab
+    * Slack
+
+* HCL is a more powerful language supporting conditional expressions, for each loops, reusable modules, and dynamic configuration blocks.
+
+* It's a powerful library of built-in functions for string comparison, file system operations, encoding, regular expressions, cryptography, and more.
+
+
+
+### Terraform Considerations
+
+* **State management issues**
+    * Resource configuration is stored in a JSON formatted state file (.tfstate)
+    * Local storage by default, configuration and additional resources are required for remote storage (S3, Azure Storage, GCS)
+    * Lose the state file and you lose track of all your resources
+* **Terraform provider (e.g., AWS, Azure RM, GCP) issues**
+    * Popular providers have thousands of open GitHub issues
+    * Deployments will break due to cloud provider API changes
+    * Providers must be upgraded to gain access to new services/features
+    * Custom resources (null resources) are often used to make up for gaps in the provider and handle race conditions
+* **No rollback support during deployment errors**
+
+
+
+### Terraform Functions
+
+
+| Function | Description | Example |
+|---|---|---|
+| `${}` | String interpolation | `value = "dm-infra-${var.env}"` |
+| `join` | Joins a list of values into a string | `join(", ", ["a", "b", "c"])` |
+| `contains` | Search a list for an occurrence | `contains(list, "a")` |
+| `base64encode` | Base64 encodes a value | `base64encode("SEC540")` |
+| `file` | Reads the contents of a file | `file("/home/student/.ssh/id_rsa.pub")` |
+| `base64sha256` | SHA2 hashes & base64 encodes a value | `base64sha256("SEC540")` |
+| `cidrhost` | Calculates a full host IP address | `cidrhost("10.12.112.0/20", 16)` |
+| `templatefile` | Reads a template file replacing variable placeholders | `templatefile("./script.tftpl", {port = 8080})` |
+
+
+**References**
+
+* [Configuration Language](https://www.terraform.io/docs/language/index.html)
+* [Terraform Standard Module Structure](https://www.terraform.io/language/modules/develop/structure)
+
+
+### Terraform Provider Configuration
+
+Terraform Azure Resource Manager backend & provider configuration:
+
+```terraform
+terraform {
+  backend "azurerm" {
+    resource_group_name  = "DM-Infrastructure-TFState"
+    container_name = "dm-terraform-state"
+    key                  = "terraform.tfstate"
+  }
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "3.78.0"
+    }
+  }
+}
+
+provider "azurerm" { }
+```
+
+
+### Terraform Input Variables
+
+Terraform input variable strings, maps, and lists:
+
+```terraform
+variable "resource_group_name" {
+  type = string
+  description = "Resource group name for the SANS Credit Union AKS cluster"
+}
+
+variable "subnets" {
+  type = map(string)
+  default = {
+    development = "10.1.1.0/24"
+    production  = "10.1.2.0/24"
+  }
+}
+
+variable "regions" {
+  type = list(string)
+  default = ["centralus", "eastus"]
+}
+```
+
+
+### Terraform Local Variables
+
+Local variables are scoped to a module and available globally to other resources inside the module:
+
+```terraform
+locals {
+  dns_servers           = []
+  address_space         = "10.0.0.0/16"
+  gateway_subnet_prefix = "10.0.1.0/24"
+  gateway_subnet_name   = "ApplicationGatewaySubnet"
+  public_subnet_prefix  = "10.0.2.0/24"
+  public_subnet_name    = "PublicSubnet"
+  private_subnet_prefix = "10.0.3.0/24"
+  private_subnet_name   = "PrivateSubnet"
+  route_tables_ids      = {}
+}
+```
+
+
+### Terraform Resources
+
+Terraform resource configuration creating a Resource Group and VNet:
+
+```terraform
+resource "azurerm_resource_group" "vnet" {
+  name     = var.resource_group_name
+  location = var.location
+}
+
+resource "azurerm_virtual_network" "vnet" {
+  name                = "${azurerm_resource_group.vnet.name}-VirtualNetwork"
+  resource_group_name = azurerm_resource_group.vnet.name
+  location            = azurerm_resource_group.vnet.location
+  address_space       = [local.address_space]
+  dns_servers         = local.dns_servers
+}
+```
+
+
+### Terraform Data Source
+
+Terraform data sources read data from pre-existing provider resources:
+
+```terraform
+data "azurerm_client_config" "current" {}
+
+data "azurerm_subscription" "current" {}
+
+locals {
+  subscription_id = data.azurerm_client_config.current.subscription_id
+  subscription_name = data.azurerm_subscription.current.display_name
+}
+```
+
+
+### Terraform Null Resource Local Provisioner
+
+**NOTE:** Technical debt resource, avoid using these whenever possible!
+
+Null resource configuration using the `local-exec` provisioner to run a custom script:
+
+```terraform
+resource "null_resource" "save_bastion_ssh_private_key" {
+  provisioner "local-exec" {
+    command = <<EOT
+      az keyvault secret set \
+      --vault-name ${azurerm_key_vault.vault.name} \
+      --name ${local.bastion_ssh_key_vault_tag} \
+      --file ${local.private_ssh_key_file}
+    EOT
+  }
+
+  triggers = {
+    runEveryTime = timestamp()
+  }
+}
+```
+
+
+### Terraform Outputs
+
+Declaring outputs for the application URL and unique resource identifiers
+
+```terraform
+output "application_url" {
+  description = "Generated application URL."
+  value       = "https://${azurerm_public_ip.app_gateway.fqdn}"
+}
+
+output "random_unique_string" {
+  description = "Random unique string for this deployment"
+  value       = random_string.unique_qualifier.result
+}
+```
+
+
+### Terraform Modules
+
+* Terraform's registry contains open-source, reusable modules
+* Configuring a module using the Azure Network source
+
+```terraform
+module "network" {
+  source              = "Azure/network/azurerm"
+  version             = "3.5.0"
+  resource_group_name = azurerm_resource_group.vnet.name
+  address_spaces      = ["10.0.0.0/16", "10.2.0.0/16"]
+  subnet_prefixes     = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+  subnet_names        = ["public", "private", "bastion"]
+  subnet_service_endpoints = {
+    "public": ["Microsoft.Storage", "Microsoft.KeyVault"],
+    "private" : ["Microsoft.Sql"],
+    "bastion": [],
+  }
+}
+```
+
+
+### Terraform Command Line Interface (CLI)
+
+Terraform uses a command-line interface to interact with resources based on the configuration code:
+
+* Standard CLI Steps:
+  * **`init`** > **`validate`** > **`plan`** > **`apply`**
+
+| Command | Description |
+|---|---|
+| `init` | Prepares working directory containing configuration files, which includes backend initialization, child module installation, and plugin initialization |
+| `validate` | Validate the configuration file syntax in a directory |
+| `plan` | Used to create an execution plan, implies refresh unless specifically disabled |
+| `apply` | Applies changes to reach desired state based on configuration defined in current directory |
+| `destroy` | Destroy Terraform-managed infrastructure, preview available with "terraform plan -destroy" |
+| `import` | Import an existing resource (requires at least a shell of a resource in configuration) |
+| `state` | Advanced state management (list, show, move, remove) |
+| `output` | Show output values from your root module |
+
+**Common Terraform Commands**
+
+Common commands:
+
+* **apply**: Builds or changes infrastructure.
+* **console**: Interactive console for Terraform interpolations.
+* **destroy**: Destroy Terraform-managed infrastructure.
+* **fmt**: Rewrites config files to canonical format.
+* **get**: Download and install modules for the configuration.
+* **graph**: Create a visual graph of Terraform resources.
+* **import**: Import existing infrastructure into Terraform.
+* **init**: Initialize a new or existing Terraform configuration.
+* **output**: Read an output from a state file.
+* **plan**: Generate and show an execution plan.
+* **providers**: Prints a tree of the providers used in the configuration.
+* **push**: Upload this Terraform module to Terraform Enterprise.
+* **refresh**: Update local state file against real resources.
+* **show**: Inspect Terraform state or plan.
+* **taint**: Manually mark a resource for recreation.
+* **untaint**: Manually unmark a resource as tainted.
+* **validate**: Validate the configuration files in a directory.
+* **validate**: Validates the Terraform files.
+* **version**: Prints the Terraform version.
+* **workspace**: Workspace management.
+
+All other commands:
+
+* **debug**: Debug output management (experimental).
+* **force-unlock**: Manually unlock the terraform state.
+* **state**: Advanced state management.
+
+Reference:
+
+* https://www.terraform.io/docs/cli/commands/index.html
+
+
+
+### Terraform CLI | Deployment
+
+Initializing, planning, and applying Terraform configuration:
+
+```bash
+$ cd ~/code/dm-infrastructure-az
+
+# setting TF environment variables
+$ export TF_VAR_resource_group_name="DM-Infrastructure"
+
+# init with tf backend
+$ terraform init --backend-config="storage_account_name=dm-tf-state"
+
+# plan resource configuration
+$ terraform plan -var-file="vars.tfvars" -out dm.plan
+
+# apply changes
+$ terraform apply -auto-approve dm.plan
+```
+
+
+### Terraform CLI | State Management (1)
+
+Listing Terraform resources and details using the `state` command:
+
+```bash
+$ terraform state list
+
+azurerm_resource_group.vnet
+azurerm_virtual_network.vnet
+```
+
+Showing the details for a Terraform resource using the `state` command:
+
+```bash
+$ terraform state show azurerm_resource_group.vnet
+```
+
+```
+resource "azurerm_resource_group" "vnet" {
+  id = "/subscriptions/.../resourceGroups/DM-Infrastructure-Vnet"
+  ...
+}
+```
+
+
+### Terraform CLI | State Management (2)
+
+Importing and removing resources from the Terraform state file:
+
+```bash
+$ terraform import azurerm_resource_group.vnet "/subscriptions/.../resourceGroups/DM-Infrastructure-Vnet"
+
+azurerm_resource_group.vnet: Importing from ID "/subscriptions/.../resourceGroups/DM-Infrastructure-Vnet"...
+azurerm_resource_group.vnet: Refreshing state...
+[id=/subscriptions/.../resourceGroups/DM-Infrastructure-Vnet]
+Import successful!
+```
+
+```bash
+$ terraform state rm azurerm_resource_group.vnet
+
+Removed azurerm_resource_group.vnet
+Successfully removed 1 resource instance(s)
+```
+
+
+### Terraform CLI | Outputs
+
+Reading and parsing Terraform output data:
+
+```bash
+$ terraform output --json
+```
+
+```json
+{
+  "application_url": {
+    "sensitive": false,
+    "type": "string",
+    "value": "[https://dm-kuwmqzpu.centralus.cloudapp.azure.com](https://dm-kuwmqzpu.centralus.cloudapp.azure.com)"
+  },
+  "random_unique_string": {
+    "sensitive": false,
+    "type": "string",
+    "value": "kuwmqzpu"
+  }
+}
+```
+
+
+## Cloud Infrastructure as Code (IaC) 
+
+
+### IaC Pipeline 
+
+
+<img src="./files/IaC_Pipeline.png">
+
+* Code that is push here is highly critical, any  code that is not properly vetted can be potentially malicious and can be pushed into the CI/CD pipeline can cause massive damage...
+
+
+
+
+### Infrastructure as Code (IaC) Security
+
+Infrastructure as Code (IaC) deployments introduce new security concerns:
+
+* Templates provide a blueprint of the entire cloud environment.
+* Secrets are everywhere.
+    * Service account keys, SSH keys, API keys, Terraform state file
+* Least privilege is hard.
+    * Service accounts deploying templates require elevated permissions
+* There are more supply chain attacks.
+    * Many Terraform modules are published by external contributors
+* Code analysis (SAST) requires a different toolchain.
+
+
+
+
+### Azure Network Security Groups (NSG)
+
+Network security groups contain a collection of stateful inbound and outbound rules for a subnet or network interface:
+
+* Rule priority determines ordering from low to high
+* Inbound or outbound traffic direction
+* Rule processing stops after the first matching allow or deny rule
+* Filter by an individual port (443) or range (1024-65535)
+* Source and destination can be set to an IP address, CIDR block, service tag, or application security group
+
+
+**References**
+1. [Network security groups](https://docs.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview)
+
+2. [Azure Firewall vs. Network Security Group (NSG)](https://darawtechie.com/2019/09/05/azure-firewall-vs-network-security-group-nsg/)
+
+3. [Azure Firewall threat intelligence-based filtering](https://docs.microsoft.com/en-us/azure/firewall/threat-intel)
+
+4. [What is Azure Web Application Firewall?](https://docs.microsoft.com/en-us/azure/web-application-firewall/overview)
+
+
+
+### AWS EC2 Security Groups
+
+Security groups control the ingress and egress traffic flow to an EC2 instance's network interfaces (e.g., eth0):
+
+* The default ingress rules allow no traffic
+* The default egress rules allow all traffic
+* Permissive rule configurations have no deny action.
+* Stateful rules allow responses to ingress traffic automatically.
+* All rules are evaluated, and the most permissive rule is used before making a decision.
+
+
+**Reference**
+* [VPC Security Groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html)
+
+
+
+
+### Infrastructure as Code (IaC) Security Scanning Tools
+
+Open-source Infrastructure as Code (IaC) scanning tools:
+
+* [Terrascan](https://github.com/accurics/terrascan)
+* [Terrascan Policies](https://runterrascan.io/docs/policies/policies)
+* [Semgrep](https://semgrep.dev)
+* [Semgrep for Cloud Security](https://www.marcolancini.it/2020/blog-semgrep-for-cloud-security/)
+* [Semgrep Rules](https://docs.google.com/presentation/d/1j9uqQsMlePEuSzOD6E4Th2IYY4Hi7dl5XYbHdSDMkrc/edit#slide=id.g787344da8e_0_1736)
+* [KICS](https://github.com/Checkmarx/kics)
+* [Easy Infra](https://github.com/seisollc/easy_infra)
+* [Checkov](https://www.checkov.io)
+* [cfn-nag](https://github.com/stelligent/cfn_nag)
+
+
+
+
+### Easy_Infra
+
+Specialized IaC containers for use in CI/CD:
+
+* Centralized logging to support oversight and security observability dashboards.
+* Transparent security; no runtime changes required, just use the images to perform IaC operations.
+* Modes of operation:
+    * Disable Security
+    * Learning Mode
+    * Enforcement Mode
+
+
+### **IaC Security Scanner - Checkov**
+
+Bridgecrew's (Prisma Cloud) Checkov IaC security scanner is a Python command-line package:
+
+* Supports Terraform HCL, CloudFormation, ARM, Kubernetes, Dockerfile, and Serverless framework templates
+* Thousands of security policies across AWS, Azure, and GCP
+
+| Option | Usage |
+|---|---|
+| `--directory` | Directory containing the templates to be scanned |
+| `--framework` | cloudformation, terraform, terraform_plan, kubernetes, serverless, arm, all filter to run only on a specific infrastructure code frameworks |
+| `--output` | Report output format<br>\[{cli,cyclonedx,json,junitxml,github_failed_only,sarif}] |
+
+
+## Configuration Management as Code
+
+
+
+## Security Lifecycle
 
 
 
