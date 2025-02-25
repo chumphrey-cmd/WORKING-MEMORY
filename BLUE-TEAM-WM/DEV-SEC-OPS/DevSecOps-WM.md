@@ -93,7 +93,23 @@
     - [Easy\_Infra](#easy_infra)
     - [**IaC Security Scanner - Checkov**](#iac-security-scanner---checkov)
   - [Configuration Management as Code](#configuration-management-as-code)
+    - [Configuration Management Tools](#configuration-management-tools)
+    - [**Configuration Management Tooling**](#configuration-management-tooling)
+    - [Configuration Management as Code Hardening](#configuration-management-as-code-hardening)
+      - [Hardening with Puppet](#hardening-with-puppet)
+      - [Hardening with Ansible](#hardening-with-ansible)
+      - [Hardening with CFEngine](#hardening-with-cfengine)
+      - [Hardening with Salt](#hardening-with-salt)
+      - [DoD Security Technical Implementation Guide (STIG) templates](#dod-security-technical-implementation-guide-stig-templates)
+    - [Configuration Management - Gold Image Pipeline](#configuration-management---gold-image-pipeline)
+    - [Configuration Management - Building a Test System](#configuration-management---building-a-test-system)
+    - [Provisioning Development and Test VMs with Vagrant](#provisioning-development-and-test-vms-with-vagrant)
+    - [Building Gold Images with Packer](#building-gold-images-with-packer)
+    - [Cloud Virtual Machine Marketplace](#cloud-virtual-machine-marketplace)
+    - [**Ansible**](#ansible)
+    - [Automated Testing of Configuration Management Code](#automated-testing-of-configuration-management-code)
   - [Security Lifecycle](#security-lifecycle)
+  - [Supply Chain Security](#supply-chain-security)
 - [(3) Cloud-Native Security Operations](#3-cloud-native-security-operations)
 - [(4) Microservice and Serverless Security](#4-microservice-and-serverless-security)
 - [(5) Continuous Compliance and Protection](#5-continuous-compliance-and-protection)
@@ -1518,9 +1534,199 @@ Bridgecrew's (Prisma Cloud) Checkov IaC security scanner is a Python command-lin
 
 
 
+### Configuration Management Tools
+
+* Essentially tools that can be used to take a base image/iso, automate the configuration management and customization of that image/iso and snapshot that customized image.
+
+References
+
+* [Ansible](https://www.ansible.com)
+* [Chef](https://www.chef.io)
+* [Puppet](https://puppet.com)
+* [SaltStack](https://saltproject.io/)
+* [CFEngine](https://cfengine.com)
+
+
+
+### **Configuration Management Tooling**
+
+| Declarative | Procedural |
+| ---|---|
+| **"What"** | **"How"** |
+| Defines the desired end state | Detailed steps and logic required to reach end state |
+|Less flexible | Easier for programmers to use and understand |
+|Easy to verify | End state not captured - need to trace through steps<br>Testing tools like Serverspec and InSpec are important |
+| [SaltStack](https://saltproject.io/)<br>[CFEngine](https://cfengine.com)<br>[Puppet](https://puppet.com) | [Ansible](https://www.ansible.com)<br>[Chef](https://www.chef.io)
+
+
+
+
+
+### Configuration Management as Code Hardening
+
+Follow basic good practices in setting up configurations and take advantage of hardening templates/recipes and examples.
+
+* [dev-sec.io](https://dev-sec.io) open-source hardening framework
+* CIS benchmarks
+* DoD STIG templates in Puppet
+* [SIMP Project](https://www.simp-project.com/) from NSA
+
+**NOTE:** Carefully review open-source templates/modules before use, open-source templates can and will be used as a vector for supply chain attacks!
+
+#### Hardening with Puppet
+
+* [How Puppet helps security and auditing](https://puppet.com/blog/how-puppet-helps-security-and-audit)
+* [NSA SIMP hardening system in Puppet](https://simp-project.com/)
+* [PuppetForge modules tagged security](https://forge.puppet.com/tags/security)
+* [PuppetForge modules matching "harden"](https://forge.puppet.com/modules?utf-8=%E2%9C%93&sort=rank&q=harden&endorsements=)
+* [PuppetForge modules for CIS benchmarks](https://forge.puppet.com/tags/cis)
+* [Learning Puppet Security](https://www.oreilly.com/library/view/learning-puppet-security/9781784397753/ch06s03.html)
+* [CIS Benchmark Remediation Kits](https://www.cisecurity.org/cis-benchmarks/) (for CIS members only) include Puppet modules for RHEL and Centos
+* [USGCB—US Government Configuration Baseline](https://csrc.nist.gov/Projects/United-States-Government-Configuration-Baseline/USGCB-Content/RedHat-Content): NIST standard definition for RHEL Linux desktop configuration, defined in Puppet modules
+
+#### Hardening with Ansible
+
+* [Officially vetted Ansible roles for hardening against CIS and STIGS](https://github.com/ansible/ansible-lockdown)
+* [Ansible role to deploy and audit systems to DISA STIG](https://www.redhat.com/en/blog/disa-releases-first-ansible-stig)
+* [Comprehensive hardening role for Linux hosts from OpenStack](https://docs.openstack.org/ansible-hardening/latest/)
+* [Introduction to hardening with Ansible](https://dzone.com/articles/system-hardening-with-ansible)
+* [Guidelines for Linux hardening with Ansible (from 2014)](https://www.linuxjournal.com/content/security-hardening-ansible)
+* [Ansible playbook for applying CIS benchmarks on RHEL/Centos 6](https://github.com/major/cis-rhel-ansible)
+
+
+#### Hardening with CFEngine
+
+* [Achieving STIG compliance with CFEngine 3](https://docs.cfengine.com/docs/archive/stig.html)
+* [How to harden RHEL/Centos using CFEngine (2014)](https://blog.it-security.ca/2014/04/using-cfengine-for-linux-systems.html)
+* [Security practices with CFEngine](https://www.slideshare.net/MichaelClelland/security-practices-with-cfengine-config-management-camp-2016)
+
+#### Hardening with Salt
+
+* [Basic hardening with Salt](https://blog.codybunch.com/2015/01/09/Basic-Server-Hardening-with-Salt/)
+* [Adobe on using SaltStack for compliance and infrastructure hardening](https://www.youtube.com/watch?v=GdwPjHxPVCE)
+* [os-hardening-formula](https://github.com/saltstack-formulas/os-hardening-formula)
+* [saltstack-cis-module](https://github.com/cedwards/saltstack-cis-module)
+
+
+#### DoD Security Technical Implementation Guide (STIG) templates
+  * [Publicly accessible STIG configuration templates for Ansible, Chef, and Microsoft PowerShell DSC](https://public.cyber.mil/stigs/supplemental-automation-content/)
+  * [SteelCloud commercial solution to scan and apply STIG policies](https://www.steelcloud.com/)
+
+### Configuration Management - Gold Image Pipeline
+
+<img src="./files/Gold_Image_Pipeline.png">
+
+
+### Configuration Management - Building a Test System
+
+**Phoenix Test Servers**
+
+* Stand-up and provision test system or test instance in the cloud.
+* Ensures that test environment is always in a known and traceable state
+* Easier to reproduce/debug problems.
+* Continuously exercises and tests your capability to build runtime infrastructure.
+* After testing, tear down and clean up the test runtime (containers make this easy). This reduces your overall attack surface. 
+
+
+
+### Provisioning Development and Test VMs with Vagrant
+
+Vagrant use cases include the following:
+
+* Rapid and simple configuration and provisioning of VMs for development/testing
+* Use cases:
+    * Create developer environments aligned with production
+    * Spin up temporary disposable VM sandbox for testing config changes
+    * More useful for a small number of VMs
+* Integrates with configuration management software
+
+
+References
+* Read: "[Stronger DevOps Culture with Puppet and Vagrant](https://puppet.com/blog/stronger-devops-culture-puppet-and-vagrant)" by Mitchell Hashimoto (principal author of Vagrant)
+* [DevOps Technologies: Vagrant" SEI Series on DevOps](https://insights.sei.cmu.edu/devops/2014/12/devops-technologies-vagrant.html)
+
+
+
+### Building Gold Images with Packer
+
+[Packer](https://www.packer.io) is an open-source tool for creating machine images on different platforms with a common configuration:
+
+* Source images from Amazon EC2, Azure Virtual Machines, Google Compute Engine, Docker, VMWare, Virtual Box
+* Apply Ansible, Puppet, or Chef configurations
+* Publish a custom virtual machine image to the target platform
+* Command-line driven and built for CI/CD
+
+Reference
+* [Buidling Immutable Infrastructure with Packer](https://www.packer.io/guides/packer-on-cicd)
+
+
+
+### Cloud Virtual Machine Marketplace
+
+Cloud provider marketplaces contain virtual machine images for customers to use:
+
+* Supports standard operating system images
+    * RHEL, Ubuntu, Windows
+* Vendors publish images on the marketplace (some cost $$)
+    * CIS Benchmark, firewalls, HIDS, antivirus, VPN, etc.
+* Customers can create private images stored in their account
+* Customers can share images on the cloud marketplace
+    * Remember the supply chain security problem?
+
+References
+
+* [AWS Marketplace](https://aws.amazon.com/marketplace)
+* [AWS Marketplace Sellers](https://docs.aws.amazon.com/marketplace/latest/userguide/user-guide-for-sellers.html)
+* [Azure Marketplace Compute Images](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/category/compute?page=1)
+* [Azure Publishing a Custom Virtual Machine](https://docs.microsoft.com/en-us/azure/marketplace/azure-vm-use-approved-base)
+
+
+
+### **Ansible**
+
+* Ansible is an easy-to-set-up/easy-to-use configuration management and orchestration tool.
+
+    * It executes arbitrary commands over SSH/WinRM across a network.
+    * It does not need agents installed on each machine, but it does need Python
+    * It does not need a primary server and can be run from any admin system.
+    * Its configuration can be scripted in "playbooks" and "roles" using YAML.
+    * You can download pre-packaged roles from Ansible Galaxy hub.
+    * Enterprise support is available from Red Hat.
+
+References
+
+* [Best practices guide](https://docs.ansible.com/ansible/latest/user_guide/playbooks_best_practices.html)
+* [Ansible Best Practices Essentials](https://www.ansible.com/blog/ansible-best-practices-essentials)
+* [Commands can be tested in "Dry Run" or "Check Mode"](https://docs.ansible.com/ansible/latest/user_guide/playbooks_checkmode.html) — which will trace execution but not run the commands.
+* ["Ansible: Up & Running"](https://www.oreilly.com/library/view/ansible-up-and/9781491979792/), Lorin Hochstein
+* ["Ansible for DevOps"](https://leanpub.com/ansible-for-devops), Jeff Geerling
+* [Comprehensive list of Ansible resources](https://github.com/jdauphant/awesome-ansible)
+
+
+### Automated Testing of Configuration Management Code
+
+Automated testing tools for Ansible:
+
+1. Run `ansible-lint` before committing code to source repository.
+2. Run `ansible-test` for unit and integration tests suites.
+3. Run Checkmarx's KICS scanner to check for dangerous Ansible code.
+4. Run InSpec stories against test VM to validate final configuration.
+
+
+References
+
+* [Ansible Lint](https://ansible-lint.readthedocs.io/en/latest/)
+* [Testing Ansible](https://docs.ansible.com/ansible/latest/dev_guide/testing.html)
+* [KICS Ansible Queries](https://docs.kics.io/latest/queries/ansible-queries/)
+* [InSpec Ansible Collection Hardening](https://github.com/dev-sec/ansible-collection-hardening)
+
+
+
 ## Security Lifecycle
 
 
+
+## Supply Chain Security
 
 
 # (3) Cloud-Native Security Operations
