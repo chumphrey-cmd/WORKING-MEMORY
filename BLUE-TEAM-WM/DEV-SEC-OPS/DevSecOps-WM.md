@@ -109,6 +109,13 @@
     - [**Ansible**](#ansible)
     - [Automated Testing of Configuration Management Code](#automated-testing-of-configuration-management-code)
   - [Security Lifecycle](#security-lifecycle)
+    - [NIST SP 800-190 Application Container Security Guide](#nist-sp-800-190-application-container-security-guide)
+    - [Container Security Life Cycle](#container-security-life-cycle)
+    - [Dockerfile Commands](#dockerfile-commands)
+    - [Static Analysis for Dockefiles](#static-analysis-for-dockefiles)
+    - [Trivy Command Line Interface](#trivy-command-line-interface)
+    - [Container Image Trusted Suppliers](#container-image-trusted-suppliers)
+    - [**Open-Source Container Scanning Tools**](#open-source-container-scanning-tools)
   - [Supply Chain Security](#supply-chain-security)
 - [(3) Cloud-Native Security Operations](#3-cloud-native-security-operations)
 - [(4) Microservice and Serverless Security](#4-microservice-and-serverless-security)
@@ -1724,6 +1731,121 @@ References
 
 ## Security Lifecycle
 
+
+
+### NIST SP 800-190 Application Container Security Guide
+
+Containers will force you to use different security tools and practices:
+
+* Adopt new technologies for writing secure Dockerfiles and scanning images.
+* Understand how to sign and store images securely in a registry.
+* Leverage container-optimized host operating systems (e.g., Google COS) to reduce attack surface.
+* Obtain container-specific runtime security appliances that manage dynamic and ephemeral containerized environments. Perimeter-based runtime defenses like IDS/IPS/WAF do not have visibility inside container networks.
+
+**Reference**
+* [Application Container Security Guide](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-190.pdf)
+
+
+### Container Security Life Cycle 
+
+
+* Developers are responsible for making early decisions on containerized configuration.
+* Security and compliance must **shift left** and ensure consistent policies are implemented along **each step** of the **container lifecycle**.
+
+
+
+<img src="./files/Container_Security_Lifecycle_Pipeline.png">
+
+
+
+### Dockerfile Commands
+
+Creating container images in Dockerfile requires an understanding of the following commands:
+
+| Command | Description |
+|---|---|
+| `FROM` | Pulls down a pre-built image from a container registry |
+| `ENV` | Sets an environment variable for the container |
+| `ARG` | Defines a variable that users can pass at build-time |
+| `RUN` | Configuration step to run a shell command, install package, etc. |
+| `COPY` | Copies new files, directories into the image |
+| `CMD` | Set default command when the image is executed |
+| `USER` | Sets the user (UID) and optionally the user group (GID) |
+| `ENTRYPOINT` | Specifies the command executed when the container is started |
+
+
+
+
+### Static Analysis for Dockefiles
+
+
+Open-source linters to check syntax and best practices:
+
+* **Trivy**: Infrastructure as Code (IaC) scanner with configuration file rules for Kubernetes manifests and Dockerfiles
+* **dockerfilelint**: Analyzes Dockerfiles and looks for common mistakes; enforces best practices
+* **dockerfile-lint**: Checks syntax and runs semantic checks for best practices; customizable rules defined in YAML
+* **KICS**: Rego rules for analyzing Dockerfiles for security best practices
+
+**References**
+
+* [Dockerfile Best Practices](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
+* [Trivy](https://github.com/aquasecurity/trivy)
+* [dockerfilelint](https://github.com/replicatedhq/dockerfilelint)
+* [dockerfile_lint](https://github.com/projectatomic/dockerfile_lint)
+* [KICS Dockerfile Queries](https://docs.kics.io/1.3.1/queries/dockerfile-queries/)
+
+
+
+### Trivy Command Line Interface
+
+Aqua Security's *Trivy* command line interface supports:
+
+| Command | Description |
+|---|---|
+| `image` | Scans a container image for vulnerabilities |
+| `repository` | Scans a remote container repository for vulnerabilities |
+| `config` | Scans configuration files (Docker, Kubernetes, Terraform) |
+| `filesystem` | Scans the file system for language specific dependencies and config files |
+| `rootfs` | Scans the root file system |
+| `client` | Runs Trivy client against a backend server |
+| `server` | Starts Trivy in server mode |
+
+
+
+### Container Image Trusted Suppliers
+
+**References**
+
+* [Docker Hub Official Images & Verified Publishers](https://docs.docker.com/docker-hub/publish/certify-images/)
+* [Docker Hub Publishing](https://docs.docker.com/docker-hub/publish/)
+* [Iron Bank Container Repository](https://repo1.dso.mil/dsop/dccscr)
+* [Microsoft Container Registry](https://github.com/microsoft/containerregistry)
+* [AWS ECR Public Gallery](https://gallery.ecr.aws/)
+* [Google Distroless](https://github.com/GoogleContainerTools/distroless)
+* [Chainguard Images](https://www.chainguard.dev/chainguard-images)
+
+
+
+### **Open-Source Container Scanning Tools**
+
+| Tool | Description |
+|---|---|
+| Anchore | Extensible scanning and policy enforcement engine. Scans for CVEs in images and against compliance and security policies |
+| CoreOS Clair | Scanning engine used in Quay.io public registry, can be used to scan Docker/rkt images and compare findings against a whitelist |
+| Docker Bench/Actuary | Scan container against CIS Benchmark. Actuary runs against a Swarm |
+| Grype | A multi-language vulnerability scanner for container images and filesystems |
+| OpenSCAP plugin | Scan images or running containers—CVE check and run SCAP compliance checks inside container |
+| Trivy | Simple, command line-driven scanner to check images for vulnerabilities, designed for CI/CD |
+
+
+**References**
+
+* [Anchore](https://anchore.com/)
+* [CoreOS Clair](https://github.com/quay/clair)
+* [Grype](https://github.com/anchore/grype)
+* [Docker Bench](https://github.com/docker/docker-bench-security)
+* [OpenSCAP plugin for scanning Docker and CoreOS rkt containers](https://github.com/OpenSCAP/container-compliance)
+* [Trivy](https://github.com/aquasecurity/trivy)
 
 
 ## Supply Chain Security
