@@ -117,6 +117,14 @@
     - [Container Image Trusted Suppliers](#container-image-trusted-suppliers)
     - [**Open-Source Container Scanning Tools**](#open-source-container-scanning-tools)
   - [Supply Chain Security](#supply-chain-security)
+    - [Supply-chain Levels for Software Artifacts (SLSA)](#supply-chain-levels-for-software-artifacts-slsa)
+    - [Introduction to Supply Chain Security - Terminology](#introduction-to-supply-chain-security---terminology)
+    - [Software Provenance](#software-provenance)
+      - [Attestation](#attestation)
+    - [Project Sigstore: Software Supply Chain Security](#project-sigstore-software-supply-chain-security)
+    - [Software Bill of Materials (SBOM)](#software-bill-of-materials-sbom)
+    - [Graph for Understanding Artifact Composition (GUAC)](#graph-for-understanding-artifact-composition-guac)
+    - [Additional Container Security Resources](#additional-container-security-resources)
 - [(3) Cloud-Native Security Operations](#3-cloud-native-security-operations)
 - [(4) Microservice and Serverless Security](#4-microservice-and-serverless-security)
 - [(5) Continuous Compliance and Protection](#5-continuous-compliance-and-protection)
@@ -1849,6 +1857,129 @@ Aqua Security's *Trivy* command line interface supports:
 
 
 ## Supply Chain Security
+
+
+
+### Supply-chain Levels for Software Artifacts (SLSA)
+
+<img src="./files/SLSA_Overview.png">
+
+
+* Overview of vectors of attack/exposed attack surface area that arises within the software supply chain (**Source Threats**, **Build Threats**, **Dependency Threats**)
+
+
+### Introduction to Supply Chain Security - Terminology
+
+
+<img src="./files/Supply_Chain_Flow_Chart.png">
+
+* **Artifact:** An immutable blob of data, such as a file or Container Image.
+
+* **Attestation:** An authenticated statement (metadata) about a software artifact or collection of software artifacts.
+
+* **Provenance:** An attestation (metadata) describing how the outputs were produced, including identification of the platform and external parameters.
+
+* **Build:** Process that converts input sources and dependencies into output artifacts, executed within a single build environment on a platform.
+
+* **Dependencies:** Artifacts fetched during the build process, such as configuration files, source artifacts, or build tools.
+
+* **Producer:** A party who creates software and provides it to others. Producers are often also consumers.
+
+* **Verifier:** A party who inspects an artifact's attestations to determine the artifact's authenticity, and may also determine whether the artifact meets an organization's policy requirements.
+
+* **Consumer:** A party who uses software provided by a producer. The consumer may verify provenance for software they consume or delegate that responsibility to a separate verifier.
+
+**Reference**
+* [SLSA Terminology](https://slsa.dev/spec/v1.0/terminology)
+
+
+
+### Software Provenance
+
+
+
+<img src="./files/Software_Provenance.png">
+
+
+* **Subject:** Identifies what the predicate applies to (e.g., container image, binary).
+* **Predicate:** Metadata about the subject, optionally linking to other artifacts (e.g., build dependency).
+* **Statement:** The Subject and Predicate combined.
+* **Provenance Envelope:** A signed Statement, facilitates cryptographically verifiable traceability of project dependencies and build processes.
+* **Bundle:** A collection of related Provenance Envelopes.
+
+* Enables detection of attacks such as:
+    * Package repository compromise
+    * Upload of modified packages
+    * Compromised dependencies
+    * Builds from modified source code
+
+
+
+#### Attestation
+
+<img src="./files/Envelope_Relationships.png">
+
+
+
+### Project Sigstore: Software Supply Chain Security
+
+Sigstore is an Open-Source Security Foundation (OSSF) project dedicated to securing the supply chain:
+
+* **cosign:** container signing, verification, and storage in an OCI compliant container registry
+* **fulcio:** free root Certificate Authority (CA) for code signing certificates. Issues short lived (20 min) certificates based on an OIDC email address
+* **rekor:** provides an immutable ledger of signature transparency logs
+* **gitsign:** implements git commit and tag signing using OpenID Connect (OIDC)
+
+**ESSENTIALLY:** it makes code signing very easy and enables pipelines to be secured and validated.
+
+
+**References:**
+* [Open Container Initiative Image Spec](https://github.com/opencontainers/image-spec)
+* [Sigstore Website](https://www.sigstore.dev/)
+* [Sigstore: A Solution to Software Supply Chain Security Article](https://itnext.io/sigstore-a-solution-to-software-supply-chain-security-35bc96bddad5)
+* [Sigstore GitHub Repository](https://github.com/sigstore)
+* [Docker Official Images Signing with OpenPubkey Blog Post](https://www.docker.com/blog/signing-docker-official-images-using-openpubkey/)
+* [OpenPubkey and Sigstore Blog Post](https://blog.sigstore.dev/openpubkey-and-sigstore/)
+* [OpenPubkey FAQ](https://github.com/openpubkey/openpubkey#openpubkey-faq)
+* [Notary Project Notation GitHub Repository](https://github.com/notaryproject/notation)
+
+
+
+### Software Bill of Materials (SBOM)
+
+* Software Bill of Materials (SBOMs) are **a formal, machine-readable inventory of software components and dependencies, information about those components, and their hierarchical relationships**.
+  * OWASP CycloneDX and ISO SPDX are the two most popular formats, and are both available in JSON, YAML, and XML.
+* SBOMs **enable transparency and awareness**, decreasing the time to detect where certain versions of known vulnerable software are in use, improving the awareness of what licenses the software we use have, and improving third-party assurance through evidence-based, automated information sharing with interested parties.
+
+
+
+### Graph for Understanding Artifact Composition (GUAC)
+
+* A graph-based system that organizes software supply chain security artifacts.
+* Supports audit, policy, and risk management use cases in parallel with developer and security operations activities.
+
+**There are 6 core components to GUAC:**
+
+* **GraphQL Server:** Provides a GraphQL-based API for client requests to the graph.
+* **Collectors:** Reads or watches locations for new documents and collects them when found.
+* **Ingestors:** Takes documents, such as SBOMs, and parses them into the GUAC graph.
+* **Assemblers:** Takes GUAC objects and puts them in a datastore, queryable by the GraphQL server.
+* **Certifiers:** Are not part of the ingestion pipeline, and watch the server for new nodes in the server and add additional information attached to those nodes.
+* **CollectSub:** Takes identifiers of interest and creates a subscription for collectors to follow.
+
+**References:**
+
+* [GUAC Homepage](https://guac.sh/)
+* [GUAC Ontology Definition](https://docs.guac.sh/guac-ontology-definition/)
+
+
+### Additional Container Security Resources
+
+
+  * [Container Security: Fundamental Technology Concepts that Protect Containerized Applications, by Liz Rice](https://www.google.com/url?sa=E&source=gmail&q=https://www.oreilly.com/library/view/container-security/9781492056690/)
+  * [Container Security Checklist](https://github.com/krol3/container-security-checklist)
+  * [CIS Benchmark Guide for Docker](https://www.cisecurity.org/benchmark/docker/)
+  * [Docker Bench for Security](https://github.com/docker/docker-bench-security)
 
 
 # (3) Cloud-Native Security Operations
