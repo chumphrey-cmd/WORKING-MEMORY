@@ -134,6 +134,13 @@
     - [Kubernetes Resource Manifests](#kubernetes-resource-manifests)
     - [Kubernetes Resource Kinds](#kubernetes-resource-kinds)
   - [Kubernetes Risks and Security Controls](#kubernetes-risks-and-security-controls)
+    - [Container Runtimes and Orchestrators](#container-runtimes-and-orchestrators)
+    - [Authentication](#authentication)
+    - [Kubernetes Control Plane Authentication](#kubernetes-control-plane-authentication)
+    - [Kubernetes Role Based Access Control](#kubernetes-role-based-access-control)
+    - [Kubernetes Namespaces](#kubernetes-namespaces)
+    - [Kubernetes Secrets](#kubernetes-secrets)
+    - [Kubernetes Security Guides](#kubernetes-security-guides)
   - [Kubernetes Workload Security](#kubernetes-workload-security)
   - [Kubernetes Runtime Security](#kubernetes-runtime-security)
   - [Cloud Native Security Monitoring](#cloud-native-security-monitoring)
@@ -2136,6 +2143,127 @@ Every resource object is defined by a manifest, typically written in YAML, which
 
 
 ## Kubernetes Risks and Security Controls
+
+
+
+### Container Runtimes and Orchestrators
+
+Production container runtime options vary for on-premises and by cloud provider:
+
+| Cloud Provider | Container Service | Kubernetes Service |
+|---|---|---|
+| AWS | ECS/Fargate | Elastic Kubernetes Service (EKS) |
+| Azure | Container Service | Kubernetes Service (AKS) |
+| Google Cloud | Run | Kubernetes Engine (GKE) |
+| Red Hat | OpenShift | Kubernetes |
+| Other | Docker | Podman |
+
+**References**
+
+* [Amazon Elastic Container Service (ECS)](https://docs.aws.amazon.com/ecs/index.html)
+* [Amazon Elastic Kubernetes Service (EKS)](https://www.google.com/url?sa=E&source=gmail&q=https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html)
+* [Azure Container Service Options](https://azure.microsoft.com/en-us/product-categories/containers/)
+* [Google Cloud Run](https://cloud.google.com/run/docs)
+* [Google Kubernetes Engine (GKE)](https://cloud.google.com/kubernetes-engine/docs)
+* [Red Hat OpenShift](https://cloud.redhat.com/learn/what-is-openshift)
+* [Kubernetes](https://kubernetes.io/docs/setup/production-environment/)
+* [Docker Runtime](https://www.docker.com/products/container-runtime/)
+* [Podman](https://podman.io/)
+
+
+
+
+### Authentication
+
+* Kubernetes has no internal user database
+* Authentication system passes user info
+
+**Recommended**
+
+* OIDC (users) — well integrated with cloud service providers
+* TokenRequest API (services)
+* X.509 Certificate (internal components)
+
+**Discouraged**
+
+* Service Account Token, Static Token, Webhook, Proxy, X.509 Certificate (users)
+
+**Current user info:** 
+* `kubectl auth whoami`
+
+**Credentials stored in:**
+
+* `~/.kube/config` file or accessed via helper
+
+
+### Kubernetes Control Plane Authentication
+
+| Cloud Provider | Authentication Method | Description |
+|---|---|---|
+| AWS | `aws eks update-kubeconfig` | Populates the kubectl config file. |
+| AWS | `aws eks get-token` | Runs to get a short-lived token on access. |
+| Azure | `az aks get-credentials` | Populates the kubectl config file. |
+| Azure | Long-lived certificate | Stored in a file. |
+
+
+
+
+### Kubernetes Role Based Access Control
+
+* Role Based Access Control (RBAC)
+  * Permissions are additive - no deny rule; access is denied by default
+  * Defined in Kubernetes Objects - Role, ClusterRole, RoleBinding, ClusterRoleBinding
+  * Role and ClusterRole define permissions via apiGroups, resources, verbs
+  * Bindings grant permissions of a Role to a Subject (user, group, service account, etc)
+  * Cluster-scoped roles can bind to namespace resources for reuse
+  * Current access permissions: `kubectl auth can-i --list`
+
+
+### Kubernetes Namespaces
+
+* Provide isolation for groups of resources
+  * Resource names are unique within a namespace
+* Create a boundary for permissions via RBAC, quotas
+* Four initial namespaces:
+  * kube-system, kube-node-lease, kube-public, default
+* Avoid using the default namespace
+* Service DNS names include namespace as a segment
+  * E.g., `<service>.<namespace>.svc.cluster.local`
+  * Avoid creating namespaces that match public top level domains
+* Some resources are not in any namespace
+  * E.g., nodes, cluster roles, storage volumes, custom resource definitions
+
+
+### Kubernetes Secrets
+
+* Designed for passing confidential information to pods
+* Stored **unencrypted** in API Server's data store (etcd), by default
+    * Managed offerings enable use of provider key management services
+    * Encryption at rest can be enabled for self-managed environment
+* Multiple types with validation constraints
+    * The **Opaque** type supports arbitrary data
+* Delivered to pods by filesystem mount, or via environment variable
+    * Only the Service Account's secret is automatically mounted
+* Only sent to a node when required by a pod running on that node
+
+**"Warning: Any containers that run with `privileged: true` on a node can access all Secrets used on that node."**
+
+
+### Kubernetes Security Guides
+
+* **Kubernetes Security Checklist:**
+  * Covers securing cluster's authentication, authorization, network policy, pod security, audit logging, secrets, and admission controls
+* **Kubernetes Hardening Guide:**
+  * NSA, CISA guidance for administrators of National Security Systems and critical infrastructure
+* **Kubernetes Security - Operating Kubernetes Clusters and Applications Safely (eBook):**
+  * Core security principals, securing clusters, authentication, authorization, image scanning, admission controllers, secrets management
+
+**References**
+
+* [Kubernetes Security Checklist](https://kubernetes.io/docs/concepts/security/security-checklist/)
+* [Kubernetes Hardening Guide](https://www.google.com/url?sa=E&source=gmail&q=https://www.nsa.gov/Press-Room/News-Highlights/Article/Article/2716980/nsa-cisa-release-kubernetes-hardening-guidance/)
+* [Kubernetes Security](https://info.aquasec.com/kubernetes-security)
+* [Kubernetes Security - Operating Kubernetes Clusters and Applications Safely](https://www.oreilly.com/library/view/kubernetes-security/9781492039075/)
 
 ## Kubernetes Workload Security
 
