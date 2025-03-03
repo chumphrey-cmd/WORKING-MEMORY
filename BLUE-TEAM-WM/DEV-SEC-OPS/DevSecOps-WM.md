@@ -126,6 +126,17 @@
     - [Graph for Understanding Artifact Composition (GUAC)](#graph-for-understanding-artifact-composition-guac)
     - [Additional Container Security Resources](#additional-container-security-resources)
 - [(3) Cloud-Native Security Operations](#3-cloud-native-security-operations)
+  - [Kubernetes Architecture, Resources, and Deployments](#kubernetes-architecture-resources-and-deployments)
+    - [Kubernetes Introduction](#kubernetes-introduction)
+    - [Kubernetes Architecture](#kubernetes-architecture)
+    - [Kubernetes Cluster Components](#kubernetes-cluster-components)
+    - [Interacting with Kubernetes](#interacting-with-kubernetes)
+    - [Kubernetes Resource Manifests](#kubernetes-resource-manifests)
+    - [Kubernetes Resource Kinds](#kubernetes-resource-kinds)
+  - [Kubernetes Risks and Security Controls](#kubernetes-risks-and-security-controls)
+  - [Kubernetes Workload Security](#kubernetes-workload-security)
+  - [Kubernetes Runtime Security](#kubernetes-runtime-security)
+  - [Cloud Native Security Monitoring](#cloud-native-security-monitoring)
 - [(4) Microservice and Serverless Security](#4-microservice-and-serverless-security)
 - [(5) Continuous Compliance and Protection](#5-continuous-compliance-and-protection)
 
@@ -1983,6 +1994,155 @@ Sigstore is an Open-Source Security Foundation (OSSF) project dedicated to secur
 
 
 # (3) Cloud-Native Security Operations
+
+
+## Kubernetes Architecture, Resources, and Deployments
+
+
+### Kubernetes Introduction
+
+Designed to **scale up to large environments** (thousands of nodes)  > **scale down to small environments** (IoT/Edge devices)
+
+* **K3s** - built for IoT and Edge Computing (e.g., Raspberry Pi or small home lab node)
+* **Microk8s/Minikube** - lightweight Kubernetes, simple to run locally (e.g., laptop or PC)
+
+
+**References:**
+* [K3s](https://k3s.io/)
+* [microk8s](https://microk8s.io)
+* [minikube](https://minikube.sigs.k8s.io/)
+* [CNCF Landscape](https://www.google.com/search?q=https://landscape.cncf.io/card-mode%3Fcategory%3Dcertified-kubernetes-distribution,certified-kubernetes-hosted%26grouping-category)
+* [Kubernetes Documentation](https://kubernetes.io/docs/concepts/extend-kubernetes/)
+* [Raspberry Pi Kubernetes Cluster](https://mattadam.com/2023/01/10/raspberry-pi-kubernetes-cluster/)
+* [GOTO 2016 - Cluster Management at Google with Borg](https://www.google.com/search?q=https://www.youtube.com/watch%3Fv%3DlOW4928vNlo)
+
+
+
+### Kubernetes Architecture
+
+
+Strong logical separation between control plane and worker nodes
+
+* Managed offerings provide limited access to control plane settings
+
+**Cluster Components**
+
+* **Control Plane (BRAIN/ENGINE)**
+  - Kube API Server: Rest API used to communicate with Control Plane.
+
+  - Cluster Datastore (**etcd**): persistent name and resource definitions are stored here (e.g., name of the name space)
+
+  - Kube Scheduler: used to create and schedule tasks that need to be completed.
+
+  - Kube Controller Manager/Cloud Controller Manager (optional): additional components of the Control Plane. 
+
+* **Worker Node(s)**
+
+Processes/threads that can be used to complete tasks in parallel.
+
+  - Kube Proxy: communicates with Control Plane.
+  - Kubelet: communicates with Control Plane.
+  - Container Runtime Interface (CRI)
+  - Container Storage Interface (CSI)
+  - Container Networking Interface (CNI)
+
+
+### Kubernetes Cluster Components
+
+<img src="./files/Kubernetes_Cluster_Components_1.svg">
+
+<img src="./files/Kubernetes_Cluster_Components_2.png">
+
+
+| Control Plane Component | Description |
+|---|---|
+| **kube-apiserver** | The gateway to the Kubernetes cluster, handling and validating RESTful requests and updating the state of the cluster. Kubernetes administrators and CI/CD pipelines often managed Kubernetes resources through the API server using **`kubectl`**. |
+| **etcd** | Stores the configuration data for the cluster, which provides a key-value store distributing data across the distributed cluster. |
+| **kube-scheduler** | Assigns work, in the form of pods, to nodes based on resource availability and other constraints. |
+| **kube-controller-manager** | Runs various controller processes, such as the node controller, job controller, and service account controller. The Node controller is responsible for monitoring the health of the nodes and autoscaling nodes. The Job controller creates pods for completing one-off tasks. The ServiceAccount controller is responsible for creating default Service Accounts for new namespaces. |
+| **cloud-controller-manager** | Manages cloud-specific functionalities like node, route, and service controllers which interact with cloud provider APIs (AWS, Azure, GCP). |
+| **worker-node** | Each cluster has at least one worker node responsible for executing workload pods |
+
+
+
+| Worker Node Component | Description |
+|---|---|
+| **kubelet** | An agent that runs on each node in the cluster. It ensures that containers run as expected and reports back to the control plane, maintaining a desired state for the pods. |
+| **kube-proxy** | Manages network rules on nodes, allowing communication to pods from inside or outside of the cluster. |
+| **namespace** | Divides cluster resources and creates isolation between objects (pods, services, service accounts, etc.) Namespaces are used for scenarios where multiple teams or products share a Kubernetes cluster. By default, a Kubernetes cluster comes with default, kube-system, and kube-public namespaces, but administrators can create additional namespaces as needed. |
+| **ingress** | Manages external access to the services within a cluster, typically for HTTP and HTTPS traffic. Traffic can be load balanced or act as an edge route to different services within the cluster. |
+| **service** | Defines a set of Pods and enables network access to a set of Pods. Pods can be running on the same node or on different nodes, and the Service provides a single point of entry for accessing the Pods. Services use selectors to automatically detect and group Pods based on labels. |
+| **pod** | The smallest deployable unit of computing that can be created and managed in Kubernetes. A Pod is a group of one or more containers, with shared storage and network resources, and a specification for how to run the container(s). Pod specifications include the container image to pull from a container registry (ACR, ECR, Dockerhub). Deploying a Pod will send the request to the Control Plane's API server, which will route the request to a Node's kubelet service. The Node's kubelet will then pull the container from the container registry and start the Pod. |
+
+
+**References**
+* [Kubernetes Components](https://kubernetes.io/docs/concepts/overview/components/)
+* [Kubernetes Services, Load Balancing, and Networking](https://www.google.com/url?sa=E&source=gmail&q=https://kubernetes.io/docs/concepts/services-networking/)
+
+
+
+
+### Interacting with Kubernetes
+
+* All interactions with Kubernetes are through its API.
+* The `kubectl` command line tool provides a way to access the API.
+* Plugins are supported.
+* Multiple authentication contexts are available.
+
+**Command form is structured**
+
+```
+kubectl [command] [TYPE] [NAME] [flags]
+kubectl apply -f dm-web-pod.yaml
+kubectl get pods --namespace dm -o wide
+kubectl get deployment dm-web -n dm -o yaml
+kubectl logs [pod_name] -n [namespace] -f
+kubectl delete pod dm-web -n dm
+```
+
+**Common commands**
+
+* `get` - list resource(s)
+* `describe` - show detailed state of a resource
+* `apply` - apply a configuration, from file or standard input stream
+* `delete` - delete a resource
+* `logs` - read logs from a container in a pod
+* `port-forward` - connect a local port to a pod in the cluster
+
+
+
+### Kubernetes Resource Manifests
+
+
+Every resource object is defined by a manifest, typically written in YAML, which contains 4 required fields:
+
+* **apiVersion** - The group and version of the Kubernetes API (or custom resource provider's API) used to create the object. The "core" API group can be omitted from the specification, as shown in the example.
+* **kind** - The specific type of object within the selected API to create
+* **metadata** - Information to distinguish this object from others of the same kind and apiVersion. Common fields are "name", "namespace", and "labels"
+* **spec** - Detailed specification of the object's desired state. The fields and structure within the spec are unique to each kind + apiVersion pair.
+
+
+### Kubernetes Resource Kinds
+
+**Key resource types** 
+* **Namespace:** group of other kinds of cluster resources 
+* **Pod:** one or more containers which perform some work 
+* **Volume:** an abstraction of storage accessible to a pod or container 
+* **Configuration Map/Secret:** key-value storage for application data, secrets 
+* **Service Account:** An identity used by pods and other resources to authorize actions in the cluster 
+* **Replica Set/Deployment/Stateful Set/Daemon Set:** a collection of identical pods, duplicated for resilience or locality 
+* **Service:** exposes an application to the cluster over the network 
+* **Ingress:** exposes a service outside the cluster
+
+
+## Kubernetes Risks and Security Controls
+
+## Kubernetes Workload Security
+
+## Kubernetes Runtime Security
+
+## Cloud Native Security Monitoring
+
 
 
 # (4) Microservice and Serverless Security
