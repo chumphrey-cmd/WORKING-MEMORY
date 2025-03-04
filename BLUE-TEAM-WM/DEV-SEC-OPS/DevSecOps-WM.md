@@ -140,9 +140,12 @@
     - [Kubernetes Role Based Access Control](#kubernetes-role-based-access-control)
     - [Kubernetes Namespaces](#kubernetes-namespaces)
     - [Kubernetes Secrets](#kubernetes-secrets)
-    - [Kubernetes Security Guides](#kubernetes-security-guides)
-  - [Kubernetes Workload Security](#kubernetes-workload-security)
+    - [Security Guides/Tools](#security-guidestools)
+      - [Kubernetes Security Guides](#kubernetes-security-guides)
+      - [Cloud Container Service Hardening](#cloud-container-service-hardening)
+      - [Kubernetes Security Tools](#kubernetes-security-tools)
   - [Kubernetes Runtime Security](#kubernetes-runtime-security)
+    - [Kubernetes Container and Pod Controls](#kubernetes-container-and-pod-controls)
   - [Cloud Native Security Monitoring](#cloud-native-security-monitoring)
 - [(4) Microservice and Serverless Security](#4-microservice-and-serverless-security)
 - [(5) Continuous Compliance and Protection](#5-continuous-compliance-and-protection)
@@ -2249,7 +2252,10 @@ Production container runtime options vary for on-premises and by cloud provider:
 **"Warning: Any containers that run with `privileged: true` on a node can access all Secrets used on that node."**
 
 
-### Kubernetes Security Guides
+### Security Guides/Tools
+
+
+#### Kubernetes Security Guides
 
 * **Kubernetes Security Checklist:**
   * Covers securing cluster's authentication, authorization, network policy, pod security, audit logging, secrets, and admission controls
@@ -2265,9 +2271,82 @@ Production container runtime options vary for on-premises and by cloud provider:
 * [Kubernetes Security](https://info.aquasec.com/kubernetes-security)
 * [Kubernetes Security - Operating Kubernetes Clusters and Applications Safely](https://www.oreilly.com/library/view/kubernetes-security/9781492039075/)
 
-## Kubernetes Workload Security
+
+
+
+#### Cloud Container Service Hardening
+
+Cloud managed container services provide step by step hardening guides for identity & access management, network security, data protection, and encryption:
+
+* AWS ECS Security Guide
+* AWS EKS Security Guide
+* Azure Kubernetes Security Baseline
+* Google Kubernetes Engine (GKE) security hardening guide
+
+**References**
+* [AWS ECS Security](https://docs.aws.amazon.com/AmazonECS/latest/bestpracticesguide/security.html)
+* [AWS EKS Security](https://docs.aws.amazon.com/eks/latest/userguide/security.html)
+* [Azure Kubernetes Security Baseline](https://www.google.com/url?sa=E&source=gmail&q=https://docs.microsoft.com/en-us/security/benchmark/azure/baselines/aks-security-baseline)
+* [GKE Configuring Cluster Security](https://www.google.com/url?sa=E&source=gmail&q=https://cloud.google.com/kubernetes-engine/docs/how-to/hardening-your-cluster)
+
+
+
+#### Kubernetes Security Tools
+
+Open-source security tools for Kubernetes:
+
+* [kubeaudit](https://github.com/Shopify/kubeaudit): audits Kubernetes clusters
+* [kube-bench](https://github.com/aquasecurity/kube-bench): checks config against CIS Kubernetes Benchmark
+* [kube-hunter](https://github.com/aquasecurity/kube-hunter): hunts for security weaknesses in running cluster
+* [kube-score](https://github.com/zegl/kube-score): static analysis of Kubernetes objects for security
+* [kubesec.io](https://kubesec.io/): service that scores Kubernetes resource configuration against security best practices
+* [conftest](https://github.com/open-policy-agent/conftest): unit test framework for Kubernetes config files, can be used to enforce security and operational policies
+* [k-rail](https://github.com/cruise-automation/k-rail): workload policy enforcement tool for Kubernetes
+* [sysdig falco](https://github.com/falcosecurity/falco): runtime anomaly detection for containers in a cluster
+
+
+
 
 ## Kubernetes Runtime Security
+
+
+### Kubernetes Container and Pod Controls
+
+**Pod Settings**
+
+* **SecurityContext**
+  - Set user, group, filesystem access IDs
+  - Set SELinux options, SecComp profile
+* **HostNetwork, hostIPC, hostPID**
+  - Share the host's respective kernel namespace to the containers in the pod (true/false)
+* **ShareProcessNamespace**
+  - Enable containers within the pod to see each others' processes
+
+**Container Settings**
+
+* **SecurityContext**
+  - Add or drop POSIX capabilities
+  - Enable privileged mode (root on node)
+* **Resources**
+  - Requests - expected CPU, memory
+  - Limits - maximum CPU, memory
+* **Volumes**
+  - Pay attention to hostPath volumes
+  - Ephemeral vs. Persistent
+
+
+**References**
+* [Pod Specification](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/#pod-v1-core)
+* [Setting options counted using "kubectl explain pod.spec --recursive | wc -1"](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/#pod-v1-core)
+* [Linux capabilities](https://man7.org/linux/man-pages/man7/capabilities.7.html)
+* [Linux Control Groups](https://man7.org/linux/man-pages/man7/cgroups.7.html)
+* [Resource Management for Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
+* [Manage Resources](https://kubernetes.io/docs/tasks/administer-cluster/manage-resources/)
+* [Volumes](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath)
+
+
+
+
 
 ## Cloud Native Security Monitoring
 
