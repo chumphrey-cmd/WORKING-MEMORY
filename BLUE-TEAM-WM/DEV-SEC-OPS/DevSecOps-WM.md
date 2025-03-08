@@ -91,10 +91,10 @@
     - [AWS EC2 Security Groups](#aws-ec2-security-groups)
     - [Infrastructure as Code (IaC) Security Scanning Tools](#infrastructure-as-code-iac-security-scanning-tools)
     - [Easy\_Infra](#easy_infra)
-    - [**IaC Security Scanner - Checkov**](#iac-security-scanner---checkov)
+    - [IaC Security Scanner - Checkov](#iac-security-scanner---checkov)
   - [Configuration Management as Code](#configuration-management-as-code)
     - [Configuration Management Tools](#configuration-management-tools)
-    - [**Configuration Management Tooling**](#configuration-management-tooling)
+    - [Configuration Management Tooling](#configuration-management-tooling)
     - [Configuration Management as Code Hardening](#configuration-management-as-code-hardening)
       - [Hardening with Puppet](#hardening-with-puppet)
       - [Hardening with Ansible](#hardening-with-ansible)
@@ -106,7 +106,7 @@
     - [Provisioning Development and Test VMs with Vagrant](#provisioning-development-and-test-vms-with-vagrant)
     - [Building Gold Images with Packer](#building-gold-images-with-packer)
     - [Cloud Virtual Machine Marketplace](#cloud-virtual-machine-marketplace)
-    - [**Ansible**](#ansible)
+    - [Ansible](#ansible)
     - [Automated Testing of Configuration Management Code](#automated-testing-of-configuration-management-code)
   - [Security Lifecycle](#security-lifecycle)
     - [NIST SP 800-190 Application Container Security Guide](#nist-sp-800-190-application-container-security-guide)
@@ -115,7 +115,7 @@
     - [Static Analysis for Dockefiles](#static-analysis-for-dockefiles)
     - [Trivy Command Line Interface](#trivy-command-line-interface)
     - [Container Image Trusted Suppliers](#container-image-trusted-suppliers)
-    - [**Open-Source Container Scanning Tools**](#open-source-container-scanning-tools)
+    - [Open-Source Container Scanning Tools](#open-source-container-scanning-tools)
   - [Supply Chain Security](#supply-chain-security)
     - [Supply-chain Levels for Software Artifacts (SLSA)](#supply-chain-levels-for-software-artifacts-slsa)
     - [Introduction to Supply Chain Security - Terminology](#introduction-to-supply-chain-security---terminology)
@@ -146,8 +146,23 @@
       - [Kubernetes Security Tools](#kubernetes-security-tools)
   - [Kubernetes Runtime Security](#kubernetes-runtime-security)
     - [Kubernetes Container and Pod Controls](#kubernetes-container-and-pod-controls)
-  - [Cloud Native Security Monitoring](#cloud-native-security-monitoring)
 - [(4) Microservice and Serverless Security](#4-microservice-and-serverless-security)
+  - [Deployment Orchestration](#deployment-orchestration)
+    - [Blue/Green Deployment: Azure](#bluegreen-deployment-azure)
+    - [Blue/Green Deployment: AWS](#bluegreen-deployment-aws)
+    - [AWS Route 53: Weighted Routing](#aws-route-53-weighted-routing)
+    - [AWS Elastic Load Balancing (ELB)](#aws-elastic-load-balancing-elb)
+    - [AWS ELB Weighted Target Groups](#aws-elb-weighted-target-groups)
+  - [Secure Content Delivery](#secure-content-delivery)
+    - [Content Delivery Network (CDN)](#content-delivery-network-cdn)
+    - [Cross-Origin Resource Sharing (CORS)](#cross-origin-resource-sharing-cors)
+  - [Microservice and Serverless Security](#microservice-and-serverless-security)
+    - [Microservices](#microservices)
+    - [Microservice Architecture + Attack Surface](#microservice-architecture--attack-surface)
+    - [Microservices Security Challenges](#microservices-security-challenges)
+    - [Microservice Security Controls](#microservice-security-controls)
+    - [Zero Trust Between Microservices](#zero-trust-between-microservices)
+    - [Microservice Perimeter Security - API Gateway](#microservice-perimeter-security---api-gateway)
 - [(5) Continuous Compliance and Protection](#5-continuous-compliance-and-protection)
 
 
@@ -1552,7 +1567,7 @@ Specialized IaC containers for use in CI/CD:
     * Enforcement Mode
 
 
-### **IaC Security Scanner - Checkov**
+### IaC Security Scanner - Checkov
 
 Bridgecrew's (Prisma Cloud) Checkov IaC security scanner is a Python command-line package:
 
@@ -1584,7 +1599,7 @@ References
 
 
 
-### **Configuration Management Tooling**
+### Configuration Management Tooling
 
 | Declarative | Procedural |
 | ---|---|
@@ -1718,7 +1733,7 @@ References
 
 
 
-### **Ansible**
+### Ansible
 
 * Ansible is an easy-to-set-up/easy-to-use configuration management and orchestration tool.
 
@@ -1855,7 +1870,7 @@ Aqua Security's *Trivy* command line interface supports:
 
 
 
-### **Open-Source Container Scanning Tools**
+### Open-Source Container Scanning Tools
 
 | Tool | Description |
 |---|---|
@@ -2347,12 +2362,248 @@ Open-source security tools for Kubernetes:
 
 
 
-
-## Cloud Native Security Monitoring
-
-
-
 # (4) Microservice and Serverless Security
+
+
+## Deployment Orchestration
+
+
+### Blue/Green Deployment: Azure
+
+* Procedure to maintain and reduce down time for applications within a production environment…
+* **ESSENTIALLY**: if a change needs to take place, the changes are all staged within the blue environment, unit tests are performed and validate the changes. Once validation is confirmed, users are migrated over to the operational environment. Once all users are migrated the unused environment is discarded.
+
+Azure documentation describes two common patterns for performing blue/green deployments:
+
+**Using Virtual Machines:**
+
+1. Create a green environment in a separate Azure resource group.
+2. Use the CI/CD pipeline to deploy services to the green environment.
+3. Adjust the App Gateway backend address pool to route traffic to the green environment.
+
+**Using AKS:**
+
+1. Create a Kubernetes cluster.
+2. Configure service endpoints for the production blue/green and test blue/green environments.
+3. Use the CI/CD pipeline to automatically test blue/green changes and roll traffic between blue/green environments.
+
+
+
+### Blue/Green Deployment: AWS
+
+AWS supports several patterns and solutions for enabling blue/green deployments. Common options:
+
+**Using EC2 Instances**
+
+1.  **Update DNS** * Point to a new ELB
+2.  **Target Group Weight** * Register new target group with weighting
+3.  **Swap Launch Configuration** * Attach new configuration to existing Auto Scaling Group (ASG)
+
+**Using EKS**
+
+1.  Configure ingress annotation (on the ALB listener) for the original blue environment.
+2.  Update ingress annotation to move weight to the new green environment.
+3.  Swap completely to the new green environment when ready
+
+
+### AWS Route 53: Weighted Routing
+
+* Essentially the action of allocating a set amount of traffic between both the blue and green zones.  
+  * **FOR EXAMPLE**: assigning ~10% of the traffic toward the **“Green”** environment and the remainder (~90% of the traffic the **“Blue”**)
+
+**NOTE:** updating DNS records in this way isn't ideal because a plurality of the errors or bugs that occur in production are due to DNS issues!
+
+<img src="./files/Weighted_Routing.png">
+
+
+### AWS Elastic Load Balancing (ELB)
+
+* **Application Load Balancer (ALB)**
+  * It performs routing at the application level (HTTP/HTTPS).
+  * It supports path-based routing.
+  * It can have multiple services use the same listener port.
+  * Application Load Balancer uses dynamic port mapping.
+  * It can have multiple tasks from the same service per container instance.
+
+* **Network Load Balancer (NLB)**
+  * It performs routing at the transport level (TCP/SSL).
+  * It supports static/elastic IP addresses.
+  * It does not support HTTP/2 or path-based routing.
+
+**OVERALL:** Utilizes standard routing via IPs and subnets rather than DNS. Much more effective and less error-prone
+
+
+### AWS ELB Weighted Target Groups
+
+Configuring weighted Target Groups:
+
+* Create a Green Target Group.
+* Attach a new Green Auto Scaling Group (ASG) for the Green Target Group.
+* Set the Green Auto Scaling Group (ASG) Launch Configuration to use the new application version AMI.
+* Configure the ALB listener with two forward rules (Blue and Green) setting the desired weight.
+
+<img src="./files/AWS_ELB_Weighted_Target_Groups.png">
+
+
+## Secure Content Delivery
+
+
+### Content Delivery Network (CDN)
+
+**OVERALL** 
+What enables a business to host frontends, CSS/HTML, JavaScript, standalone web pages, and other frameworks like React or Angular
+
+A geographically distributed network or servers used to host content closer to where end users actually reside (e.g., an end-user located in Kansas City, Missouri accessing a website or service hosted in Tokyo Japan)
+
+Ensures that content does not have to traverse the world before reaching its final destination
+
+
+* **Content Delivery Network (CDN)**
+  * Geographically distributed network of servers
+  * Delivers content with lower latency to end users
+  * Example companies: Akamai, Cloudflare, Fastly, Azure CDN
+
+* **AWS CloudFront**
+  * Amazon's implementation of a CDN
+  * Serves content through network of edge locations
+
+
+
+### Cross-Origin Resource Sharing (CORS)
+
+Cross-Origin Resource Sharing policies enable scripts and resources from different origins to communicate:
+
+* To be accessed despite Same Origin Policy restrictions
+* Useful for sites with multiple subdomains that might need to share info
+* Allows communication with trusted third-party websites
+* Established using HTTP headers between the client and server:
+
+**Request headers**
+* Origin
+* Access-Control-Request-Method
+* Access-Control-Request-Headers
+
+**Response headers**
+* Access-Control-Allow-Origin
+* Access-Control-Allow-Credentials
+* Access-Control-Expose-Headers
+* Access-Control-Max-Age
+* Access-Control-Allow-Methods
+* Access-Control-Allow-Headers
+
+**ESSENTIALLY:** the web broswers way to identify whether an host or endpoint is allowed to make some form of HTTP request for a resource hosted by an application or web browswer.
+
+
+
+## Microservice and Serverless Security
+
+
+### Microservices
+
+Microservices are an architectural approach followed by many DevOps shops.
+
+**ESSENTIALLY:** it is the response and approach where applications are broken down into small, simple, independent, and loosely coupled functions. Fine-grained single purpose services that are designed to be changed quickly, cheaply, and can scale across systems.
+
+* Decouple systems into small, independent services—there should be only a few hundred lines of code each.
+* Use well-defined service APIs.
+* Each microservice is easy to change and deploy independently.
+* They fit naturally with containers: one microservice per container.
+* Microservices are developed, implemented, and supported by small, dedicated squads or "two-pizza teams" (Amazon).
+
+**Pro tip:**
+
+You don't need microservices to do DevOps, but you do need DevOps to do microservices.
+
+
+### Microservice Architecture + Attack Surface
+
+
+<img src="./files/Microservice_Architecture.png">
+
+
+<img src="./files/Microservice_Attack_Surface.png">
+
+
+* With the benefit of microservice customization and flexibility also brings an increased attack surface as each application/device/end-point now interacts and depends upon other endpoints, greatly increasing the attack surface!
+
+
+
+### Microservices Security Challenges 
+
+* The potential attack surface can explode.
+  * The attack surface of each service is small, but the total of all services is huge.
+* You can't depend on the perimeter.
+  * Perform authentication and authorization checks throughout the architecture.
+  * Define trust assumptions between all services.
+* APIs are susceptible to application DDOS attacks.
+* Ensure that sensitive/private data is stored and handled correctly.
+  * Who owns it, where is it, how is it shared?
+
+* Polyglot technologies increase difficulty in several key application security areas:
+  * Dependency management/supply chain security across many package sources
+  * Documenting coding standards and security features for multiple frameworks
+* Static analysis tools were not designed for this:
+  * Lack of support and limited rules for newer languages
+  * Micro-repos cause static scanners to lose data flow context across the microservice trust boundaries
+* Forensics, monitoring, and incident response is more complicated.
+* Challenges increase when moving to serverless technologies (more on this later).
+
+
+**References and further reading:**
+
+* List of security risks and issues in Microservices, read Graham Lea’s [Microservices Security: All the Questions You Should Be Asking](https://www.grahamlea.com/2015/07/microservices-security-questions/)
+
+* [Microservices Simple Servers Complex Security](https://www.infoworld.com/article/2238624/microservices-simple-servers-complex-security.html)
+
+* [Notes from YOW 2014](https://www.grahamlea.com/2015/03/notes-from-yow-2014-scott-shaw-on-avoiding-speedbumps-on-the-road-to-microservices/)
+
+
+
+### Microservice Security Controls
+
+Microservices require the same security controls as a traditional monolith architecture to potentially cover thousands of individual endpoints:
+
+* Authentication (AuthN)
+* Authorization (AuthZ)
+* Access control
+* Service to service authentication
+* Secure coding
+* Encryption (at rest/data transmission)
+* Audit logging and monitoring
+* Test suites with high code coverage
+
+
+
+### Zero Trust Between Microservices
+
+CISA's Zero Trust Maturity Model outlines a framework for implementing Zero Trust Architecture (ZTA):
+
+* **Traditional:** manual configuration and assignment of attributes, siloed policy enforcement
+* **Initial:** starting to automate attribute assignment, policy enforcement, and cross-pillar integrations
+* **Advanced:** centralized visibility, identity control, and policy enforcement across pillars
+* **Optimal:** fully automated, just-in-time dynamic policy assignment
+
+
+**References:**
+
+* [CISA Zero Trust Maturity Model](https://www.cisa.gov/zero-trust-maturity-model)
+* [Zero Trust the Hard Way, Kelsey Hightower](https://www.google.com/url?sa=E&source=gmail&q=https://www.youtube.com/watch?v=PMhPWGRzIzM)
+* [A SPIFFE Way to Establish Trust in Your Infrastructure via Universal Identity](https://www.google.com/url?sa=E&source=gmail&q=https://spiffe.io/book/)
+* [NIST SP800-207 Zero Trust Architecture](https://www.google.com/url?sa=E&source=gmail&q=https://csrc.nist.gov/pubs/sp/800/207/final)
+
+
+
+### Microservice Perimeter Security - API Gateway
+
+API Gateways provide a single point of entry (choke point) for all clients:
+
+* They provide consistent authentication/authorization controls for all API calls.
+* API Gateways proxy/route requests to the appropriate service.
+* They can combine multiple calls to microservices into a single API call.
+* They package different data for different clients (web, mobile, IoT, desktop).
+* The gateway integrates with multiple protocols (filesystem, SMTP, etc.).
+
+
 
 
 # (5) Continuous Compliance and Protection
