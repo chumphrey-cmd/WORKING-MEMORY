@@ -156,13 +156,22 @@
   - [Secure Content Delivery](#secure-content-delivery)
     - [Content Delivery Network (CDN)](#content-delivery-network-cdn)
     - [Cross-Origin Resource Sharing (CORS)](#cross-origin-resource-sharing-cors)
-  - [Microservice and Serverless Security](#microservice-and-serverless-security)
+  - [Microservice Security](#microservice-security)
     - [Microservices](#microservices)
     - [Microservice Architecture + Attack Surface](#microservice-architecture--attack-surface)
     - [Microservices Security Challenges](#microservices-security-challenges)
     - [Microservice Security Controls](#microservice-security-controls)
     - [Zero Trust Between Microservices](#zero-trust-between-microservices)
     - [Microservice Perimeter Security - API Gateway](#microservice-perimeter-security---api-gateway)
+    - [REST APIs Explained](#rest-apis-explained)
+      - [What are REST APIs?](#what-are-rest-apis)
+      - [Key Characteristics:](#key-characteristics)
+      - [HTTP Methods Used in REST APIs:](#http-methods-used-in-rest-apis)
+      - [Benefits:](#benefits)
+      - [Use Cases:](#use-cases)
+  - [Serverless Security](#serverless-security)
+    - [What is Serverless?](#what-is-serverless)
+    - [Event-based Architecture](#event-based-architecture)
 - [(5) Continuous Compliance and Protection](#5-continuous-compliance-and-protection)
 
 
@@ -2495,7 +2504,7 @@ Cross-Origin Resource Sharing policies enable scripts and resources from differe
 
 
 
-## Microservice and Serverless Security
+## Microservice Security
 
 
 ### Microservices
@@ -2603,7 +2612,82 @@ API Gateways provide a single point of entry (choke point) for all clients:
 * They package different data for different clients (web, mobile, IoT, desktop).
 * The gateway integrates with multiple protocols (filesystem, SMTP, etc.).
 
+<img src="./files/API_Gateway_Enabled.png">
+
+* All API request are now routed and trunked through one location allowing for better security!
+
+### REST APIs Explained
+
+#### What are REST APIs?
+* **Definition**: REST (Representational State Transfer) APIs are an architectural style for designing networked applications. They rely on a stateless, client-server architecture where the client and server are separate, and each request contains all the information necessary to complete the request.
 
 
+* **Purpose**: REST APIs facilitate communication between systems over the internet by providing a standard way to access and manipulate data.
+
+#### Key Characteristics:
+* **Stateless**: Each request from the client to the server contains all the information necessary to understand the request, eliminating the need for the server to maintain session state.
+* **Client-Server Architecture**: The client and server are separate, allowing for independent development and scalability.
+* **Cacheable**: Responses from the server can be cached by the client to reduce the number of requests made to the server.
+* **Uniform Interface**: REST APIs use a uniform interface, which includes HTTP methods (GET, POST, PUT, DELETE), URI, HTTP status codes, and standard data formats like JSON or XML.
+
+#### HTTP Methods Used in REST APIs:
+* **GET [C]**: Retrieve data from the server.
+* **POST [R]**: Create new data on the server.
+* **PUT [U]**: Update existing data on the server.
+* **DELETE [D]**: Delete data from the server.
+
+[**C**]reate, [**R**]ead, [**U**]pdate, [**D**]elete
+
+#### Benefits:
+* **Scalability**: Easy to scale due to statelessness.
+* **Flexibility**: Supports multiple data formats.
+* **Efficiency**: Reduces network traffic through caching.
+* **Security**: Can be secured using standard web security protocols.
+
+#### Use Cases:
+* **Web Services**: REST APIs are commonly used in web services to provide data access and manipulation capabilities.
+* **Mobile Apps**: Used to fetch and update data from servers in mobile applications.
+* **Microservices Architecture**: Facilitates communication between different microservices in a distributed system.
+
+
+## Serverless Security
+
+
+### What is Serverless?
+
+Serverless refers to new, non-traditional architecture. **Meaning** that cloud providers handle all of the maintenance, patching, resource allocation, etc. for severs. This enables clients to have a hardware free environment. 
+
+* It does not use dedicated containers.
+* Cloud providers create an ephemeral environment.
+* Servers are fully managed by third parties (e.g., AWS, Azure).
+* Serverless is referred to as functions as a service (FaaS).
+
+Event-based architecture:
+
+* Events trigger actions
+* Only pay based on the number of events, actions, etc.
+
+Example Technologies:
+
+* AWS Lambda, MS Azure Functions, Google Cloud Functions
+* Amazon API Gateway, Azure API Management
+
+
+
+### Event-based Architecture
+
+* Events could come from different sources
+  * Files uploaded to Storage/S3
+  * Cloud related events (User login, access of a service, etc)
+  * Requests coming from external users through API Gateways
+* Certain events trigger certain functions()
+* Can be used for automation
+* Data Stores can be used to store/update persistent data
+* Serverless Applications:
+  * Clustering events, functions, and storage can be used to build entire applications
+  * No need for any "persistent servers"
+
+
+<img src="./files/Event-based_Architecture.png">
 
 # (5) Continuous Compliance and Protection
