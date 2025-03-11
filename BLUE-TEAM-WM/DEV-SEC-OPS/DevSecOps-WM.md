@@ -172,7 +172,25 @@
   - [Serverless Security](#serverless-security)
     - [What is Serverless?](#what-is-serverless)
     - [Event-based Architecture](#event-based-architecture)
+    - [GraphQL Introduction](#graphql-introduction)
+    - [Serverless Benefits for DevOps \& Security Teams](#serverless-benefits-for-devops--security-teams)
+    - [Serverless and Application Security](#serverless-and-application-security)
+    - [Serverless Security Best Practices](#serverless-security-best-practices)
+    - [Serverless Repository Deployment Pipeline](#serverless-repository-deployment-pipeline)
 - [(5) Continuous Compliance and Protection](#5-continuous-compliance-and-protection)
+  - [Continuous Compliance](#continuous-compliance)
+    - [Governance Pyramid](#governance-pyramid)
+    - [Kubernetes Governance, Risk, and Compliance](#kubernetes-governance-risk-and-compliance)
+    - [DevOps, Continuous Delivery, and ITIL](#devops-continuous-delivery-and-itil)
+    - [CIS Controls](#cis-controls)
+    - [Policy as Code via InSpec](#policy-as-code-via-inspec)
+  - [Runtime Security Protection](#runtime-security-protection)
+    - [AWS Managed RuleGroups for WAFs](#aws-managed-rulegroups-for-wafs)
+    - [AWS WAF Security Automations](#aws-waf-security-automations)
+    - [AWS WAF Security Automations Architecture](#aws-waf-security-automations-architecture)
+    - [Interactive Application Security Testing (IAST)](#interactive-application-security-testing-iast)
+    - [Runtime Application Security/Self Protection (RASP)](#runtime-application-securityself-protection-rasp)
+    - [WAF vs. RASP](#waf-vs-rasp)
 
 
 
@@ -2690,4 +2708,300 @@ Example Technologies:
 
 <img src="./files/Event-based_Architecture.png">
 
+
+### GraphQL Introduction
+
+GraphQL, created by Facebook, provides a query language for APIs for more efficient and flexible data requests:
+
+* Clients can request exactly the data they need, reducing over-fetching and under-fetching of data.
+* Allows for combining multiple data sources into a single request, making it easier to fetch related data in a single round trip.
+* GraphQL is language-agnostic, enabling clients to use any programming language to interact with GraphQL APIs.
+* Schema-based approach provides clear documentation and self-discovery of available data and operations.
+* Cloud implementations include AWS AppSync and GraphQL
+
+### Serverless Benefits for DevOps & Security Teams
+
+**What does serverless mean for DevOps teams?**
+
+* There are no servers to provision and manage.
+* Applications automatically scale with usage.
+* No expenses are incurred for idle time.
+* Availability and fault tolerance are built in.
+
+**How does serverless improve security?**
+
+* The attack surface is smaller.
+* There are no servers to patch.
+* There are no long-running servers to scan, attack, and install malware.
+* The malware/command and control (C2) only runs for a few milliseconds.
+* Each request is supposed to create a new, clean "server."
+* There is less Application Code to secure
+
+
+### Serverless and Application Security
+
+* Application security is even more important with serverless:
+  * Attackers have less infrastructure to attack.
+  * The focus naturally shifts to the application.
+
+* Every function crosses a trust boundary:
+  * Functions are designed to be independent.
+  * Therefore, each function must be built, testing, and secured independently.
+
+* Apply application security best practices:
+  * Input validation/sanitization must be performed in each function.
+  * Perform code review and automate security scans.
+  * Review dependencies and libraries used by functions.
+  * Generate SLSA artifacts for each function.
+
+
+### Serverless Security Best Practices
+
+* **How can serverless be better secured?**
+  * Monorepos can help static analysis/code review be more effective.
+  * Limit the scope and functionality of functions.
+  * Keep permissions granular and restrict access to a minimum.
+  * Monitor those functions even more rigorously with detailed application logging.
+  * Deploy function definitions from centralized application pipelines to cloud resources managed by the infrastructure team.
+* **Serverless caveat**
+  * It's an emerging technology.
+  * Many are working to learn how to best utilize it.
+
+* **Monorepos**
+  * The idea of mass grouping or organization of multiple different git repositories that are grouped into logically distinct and organized sections.
+  * This enables developers, while updating or refactoring, to gain the necessary context of other dependencies that may need to be updated.
+
+
+### Serverless Repository Deployment Pipeline
+
+* **GitFlow:** local development and testing completes. Open a merge request to main.
+* **Build:** pull source code from version control and install external dependencies
+* **Test:** run unit, acceptance, and security tests before building SLSA artifacts
+* **Package:** create an archive (zip) of the function code and dependencies
+* **Deploy:** upload the archive to cloud storage and update the function definition to point to the new archive for future invocations
+
+<img src="./files/Serverless_Respository_Deployment_Pipeline.png">
+
+
 # (5) Continuous Compliance and Protection
+
+
+## Continuous Compliance
+
+
+### Governance Pyramid
+
+**OVERALL:** 
+
+**Governance** is the process of making and enforcing decisions within an organization or society **how the organization describes decision-making.**
+
+**Policy** can be either governance documents used to communicate organizational decisions, or technical methods of enforcing those decisions (e.g., Policy as Code)
+
+<img src="./files/Governance_Pyramid.png">
+
+* **Principles:**
+  * Represent the highest-level ideals and values.
+  * Guide organizational conduct.
+  * Examples include DevOps values like collaboration and transparency.
+
+* **Policies:**
+  * Mandatory statements defining a course of action.
+  * Govern enterprise behavior.
+  * Provide direction for standards, guidelines, and procedures.
+  * Often include "must" directives.
+  * Closely associated with procedures.
+
+* **Standards:**
+  * Medium-level instructions with prescribed levels or criteria.
+  * Apply organizational policies.
+  * Define specifications for specific systems, methods, or techniques.
+  * Examples: security standards for cloud platforms (AWS, Azure, GCP) or container technologies (Docker, Kubernetes).
+  * Closely associated with baselines which define specific configuration settings.
+
+* **Guidelines:**
+  * Lower-level instructions for best practices.
+  * Achieve policy objectives when rigid requirements are impractical.
+  * Use "may" or "should" directives.
+  * Influence decision-making without dictating it.
+  * Should be followed when possible, even without a direct mandate.
+
+* **Procedures:**
+  * Discrete steps for repeatable operational duties.
+  * Essential for implementing high-level policies.
+  * Provide detailed instructions to turn policies into reality.
+  
+* **Baselines:**
+  * Specific instructions or documents with configuration requirements.
+  * For specific technologies, platforms, applications, or infrastructure.
+  * Include settings and parameters.
+  * Example: configuration baseline for server hardening.
+
+
+### Kubernetes Governance, Risk, and Compliance
+
+* Describes modern Governance, Risk, and Compliance:
+  * Develop practices that leverage Policy-as-Code.
+  * Leverage standard development workflow steps and tools.
+  * Use standard formats for tool outputs, including OSCAL.
+  * Ensure consistency and continually re-evaluate and assess environments.
+
+**References:**
+
+* [Kubernetes Policy White Paper](https://github.com/kubernetes/sig-security/blob/769edfa3fbcbefcf8a4a1c623ee3fe486724a17f/sig-security-docs/papers/policy_grc/Kubernetes_Policy_WG_Paper_v1_101123.pdf)
+
+* [CNCF Kubernetes Policy Management White Paper](https://github.com/kubernetes/sig-security/blob/769edfa3fbcbefcf8a4a1c623ee3fe486724a17f/sig-security-docs/papers/policy/CNCF_Kubernetes_Policy_Management_WhitePaper_v1.pdf)
+
+
+### DevOps, Continuous Delivery, and ITIL
+
+* **IT Infrastructure Library (ITIL)**
+  * Set of practices for IT service management
+  * Defines standard change and release management processes
+  * Often leverages a heavyweight process where a Change Advisory Board (CAB) reviews and approves changes
+
+* **ITIL with DevOps**
+  * Define "standard" or "routine" changes which are pre-approved by CAB
+  * Leverage the fact that most changes in DevOps are small & incremental
+  * Non-standard changes and new features may require CAB approval
+
+
+**Reference**
+* [ITIL Service Management](https://www.axelos.com/certifications/itil-service-management)
+
+
+
+### CIS Controls
+
+1. Inventory and Control of Enterprise Assets
+2. Inventory and Control of Software Assets
+3. Data Protection
+4. Secure Config of Enterprise Assets and Software
+5. Account Management
+6. Access Control Management
+7. Continuous Vulnerability Management
+8. Audit Log Management
+9. Email and Web Browser Protections
+10. Malware Defenses
+11. Data Recovery
+12. Network Infrastructure Management
+13. Network Monitoring and Defense
+14. Security Awareness and Skills Training
+15. Service Provider Management
+16. Application Software Security
+17. Incident Response Management
+18. Penetration Testing
+
+**Reference**
+* [CIS Security Controls](https://www.cisecurity.org/controls)
+
+
+
+### Policy as Code via InSpec
+
+* Enables you create policy as code and ship security to be embedded within CI/CD pipelines
+
+**References**
+* [InSpec: Azure](https://github.com/inspec/inspec-azure)
+* [InSpec: AWS](https://github.com/inspec/inspec-aws)
+
+
+## Runtime Security Protection
+
+
+### AWS Managed RuleGroups for WAFs
+
+| Purpose | RuleGroup | Description |
+|---|---|---|
+| Baseline functionality | AWSManagedRulesCommonRuleSet<br>AWSManagedRulesSQLiRuleSet<br>AWSManagedRulesAdminProtectionRuleSet<br>AWSManagedRulesKnownBadInputsRuleSet | Finds vulnerabilities like SSRF, LFI, RFI, XSS, SQLi<br>Looks for requests for system files, bad inputs, and reserved paths |
+| Operating system rules | AWSManagedRulesLinuxRuleSet<br>AWSManagedRulesUnixRuleSet<br>AWSManagedRulesWindowsRuleSet | Identifies operating system-specific paths and commands |
+| Application platform rules | AWSManagedRulesPHPRuleSet<br>AWSManagedRulesWordPressRuleSet | Finds PHP code injection and WordPress-specific commands |
+| IP address rules | AWSManagedRulesAmazonIpReputationList<br>AWSManagedRulesAnonymousIpList | Looks for IPs that are malicious or from known anonymizers & providers |
+
+
+### AWS WAF Security Automations
+
+* Preconfigured protections for AWS WAF
+  * Block common SQL Injection and XSS attacks
+  * Stop scanners, HTTP floods, and bad bots
+  * Prevent access from known bad IP addresses
+
+* Easy to deploy CloudFormation template
+  * Provided by AWS Labs
+  * Configurable to enable/disable certain features
+  * Source code available on GitHub
+
+**References:**
+* [AWS WAF Security Automations](https://www.google.com/url?sa=E&source=gmail&q=https://docs.aws.amazon.com/solutions/latest/aws-waf-security-automations/welcome.html)
+* [AWS WAF Security Automations GitHub](https://www.google.com/url?sa=E&source=gmail&q=https://github.com/awslabs/aws-waf-security-automations)
+
+
+
+### AWS WAF Security Automations Architecture
+
+
+<img src="./files/Security_Automations_for_AWS_WAF.png">
+
+
+* Describes the architecture used to add functionality to the "base version" of AWS WAF (**defense by default practice**) and includes a list of automated deployments of WAF rules A-I.
+
+
+**A.** AWS Managed Rules - Provides default protection against a number of common vulnerabilities.
+
+**B.** Allowed List - Lets you to define specific IP addresses that should be allowed
+
+**C.** Denied List - Lets you define specific IP addresses that should be blocked
+
+**D.** SQL Injection - Enables the native SQLi rules
+
+**E.** XSS - Enables the native XSS rules
+
+**F.** HTTP Flood - When users access the application, logs are stored in an S3 bucket. A Lambda function monitors these logs looking for denial of service traffic.
+
+**G.** Scanner & Probe - Similar to the above item logs, files are monitored for signs of excessive scanning. For example, if there are an abnormally high number of HTTP 4xx errors, the Lambda function adds the source IP to a block list. This is helpful to prevent automated scans from tools like Burp Intruder or sqlmap.
+
+**H.** IP Reputation Lists - AWS and third parties maintain lists of known attacker IP addresses that have been the source of attacks or malware. The Solution uses a CloudWatch event to trigger a Lambda function that retrieves the latest IP reputation lists and updates a WAF block list.
+
+**I.** Bad Bot - the robots.txt file is a standard used by websites to tell search engine bots and web crawlers that specific areas of a website should not be scanned. What happens when a specific URL defined in robots.txt is visited? That means you know it is a misbehaving bot or someone is trying to maliciously scrape or access content. To identify these misbehaving actors, the Solution creates an API Gateway endpoint that you can list in your robots.txt file. If someone visits that link, a Lambda function is triggered that updates the WAF block list to automatically block that misbehaving user agent.
+
+
+### Interactive Application Security Testing (IAST)
+
+* **IAST:** Runtime technology used for automated testing in CI/CD
+  * Instrument application runtime in test
+  * As acceptance or DAST tests execute, automatically traces calls, identifies and records potential vulnerabilities to common attack scenarios
+  * Feed results back to development team for investigation
+
+* **Usage**
+  * Security coverage depends on testing coverage
+      * You can't find a weakness if you don't touch the code/entry point
+  * Helps identify areas of code that have not been tested
+  * Available for only some languages/runtimes
+
+
+
+### Runtime Application Security/Self Protection (RASP)
+
+* **RASP:** Automatic runtime security protection in production
+  * Software that instruments application runtime environment (Servlets, libraries, virtual machine) in production
+  * It hijacks function calls and inspects/filters parameters to catch common attacks in real-time; can block calls or strip bad data.
+  * It adds runtime overhead (CPU, memory, and latency).
+
+* Compensating control, similar to Web Application Firewall
+  * It can help secure legacy apps and third-party apps (web, cloud, mobile, APIs).
+  * It can run in blocking mode or monitoring/tracing mode.
+  * It can provide transparency into attack activity and vulnerabilities.
+  * Like WAFs, it can apply specific signature-based vulnerability patches.
+
+
+### WAF vs. RASP
+
+| WAF | RASP |
+|---|---|
+| In front of applications (perimeter-based) | Inside applications (application context) |
+| Signature-based detection (validation approach) | Payload inspection (instrumentation approach) |
+| Better for known attacks and payloads | More insight on which attacks are exploited |
+| External visibility | Internal visibility (e.g., microservices) |
+| Broad monitoring and alerting | Deeper visibility |
+| Focus on detection | Focus on protection |
+| Network dependencies | Application performance considerations |
+
