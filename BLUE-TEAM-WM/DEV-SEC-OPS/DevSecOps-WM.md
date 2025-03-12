@@ -191,6 +191,13 @@
     - [Interactive Application Security Testing (IAST)](#interactive-application-security-testing-iast)
     - [Runtime Application Security/Self Protection (RASP)](#runtime-application-securityself-protection-rasp)
     - [WAF vs. RASP](#waf-vs-rasp)
+  - [Automated Remediation](#automated-remediation)
+    - [Automation with Event-Based Services](#automation-with-event-based-services)
+    - [Amazon Event Bridge](#amazon-event-bridge)
+    - [AWS WAF - Event Processing Example](#aws-waf---event-processing-example)
+    - [AWS Security Hub Automated Response and Remediation (SHARR)](#aws-security-hub-automated-response-and-remediation-sharr)
+    - [Automation with AWS Services](#automation-with-aws-services)
+    - [Cloud Custodian](#cloud-custodian)
 
 
 
@@ -3005,3 +3012,108 @@ GraphQL, created by Facebook, provides a query language for APIs for more effici
 | Focus on detection | Focus on protection |
 | Network dependencies | Application performance considerations |
 
+
+## Automated Remediation
+
+
+
+### Automation with Event-Based Services
+
+* Enables event-based architectures
+  * Leverages serverless design patterns
+  * Enables implementation of security workflows
+  * Widely used to monitor and respond to security-related events
+* Cloud provider services
+  * Amazon EventBridge
+  * Azure Event Grid
+* Different from message-based services
+  * Like Azure Event Hub & Azure Service Bus
+
+### Amazon Event Bridge
+
+
+<img src="./files/Amazon_Event_Bridge.png">
+
+
+* Formerly known as CloudWatch Events, allows you to monitor and respond to changes in your environment in real time **THINK** automated playbook and response.
+
+
+
+### AWS WAF - Event Processing Example
+
+
+<img src="./files/AWS_WAF_Event_Processing_Example.png">
+
+
+
+### AWS Security Hub Automated Response and Remediation (SHARR)
+
+
+<img src="./files/AWS_Security_Hub_Response_and_Remediation.png">
+
+
+* AWS Solution to generate an automated response workflow named **AWS Security Hub Automated Response and Remediation (SHARR)**
+
+### Automation with AWS Services
+
+**1. Detect**
+
+* AWS Security Hub collects findings from various services (AWS GuardDuty, AWS Config, custom sources).
+* Supports findings related to:
+  * CIS AWS Foundations benchmark
+  * AWS Foundational Security Best Practices
+  * Payment Card Industry Data Security Standard (PCI-DSS)
+* New findings are sent from Security Hub as a CloudWatch event.
+
+**2. Ingest**
+
+* Amazon EventBridge (new name for CloudWatch Events).
+* EventBridge has more features, but uses the same underlying service/API as CloudWatch Events.
+* Remediation playbooks are initiated via:
+  * AWS Security Hub custom actions
+  * CloudWatch event rules
+
+**3. Remediate**
+
+* Remediation actions can be initiated manually within AWS Security Hub.
+* Automatic remediation can be enabled for specific findings after testing.
+* Remediation tasks are performed by:
+  * Lambda functions (directly)
+  * AWS Systems Manager (SSM) (in some cases)
+* The solution includes cross-account IAM roles for proper remediation permissions in multi-account environments.
+
+**4. Log**
+
+* Playbooks include logging results to CloudWatch.
+* Notifications are sent via Simple Notification Service (SNS).
+* Security Hub findings are updated to reflect the remediation status (NEW to NOTIFIED or RESOLVED).
+
+
+**References**
+
+* [CIS 2.3 Playbook YAML](https://github.com/aws-solutions/automated-security-response-on-aws/blob/main/source/playbooks/CIS120/ssmdocs/CIS_2.3.yaml)
+
+* [AWS Security Hub Automated Response and Remediation](https://github.com/aws-solutions/automated-security-response-on-aws)
+
+
+
+### Cloud Custodian
+
+FOSS tool that assists in running a well-managed cloud environment securely and cost effectively and supports AWS, Azure, and GCP!
+
+* Open-source tool from Capital One to manage cloud environments:
+  * CNCF project with policies for security and cost management
+  * Supports AWS, Azure, and GCP
+
+* Example policies:
+  * Detect root logins and logins from invalid IPs
+  * Block resources in non-standard regions
+  * Configure ELB TLS ciphers and protocols
+  * Configure settings and block public S3 object ACLs
+  * Detect and remediate Security Group violations
+
+
+
+**References**
+* [Cloud Custodian](https://cloudcustodian.io/)
+* [Cloud Custodian Docs](https://cloudcustodian.io/docs/)
