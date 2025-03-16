@@ -2,8 +2,28 @@
 
 ## Prerequisites
 1. [Install WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
-2. [Install Docker Desktop for Windows](https://docs.docker.com/desktop/setup/install/windows-install/): follow steps listed in documentation.
-3. [Install Ollama](https://ollama.com/download/windows)
+
+```bash
+wsl --install
+
+# OR
+
+# To see available distributions
+wsl --list --online
+
+# OR
+
+# To install a specific distribution
+wsl --install -d <Distribution Name>
+```
+2. Verify WSL2 is being used
+
+```bash
+wsl -l -v
+```
+
+3. [Install Docker Desktop for Windows](https://docs.docker.com/desktop/setup/install/windows-install/): follow steps listed in documentation.
+4. [Install Ollama](https://ollama.com/download/windows)
 
 ## Initial Setup
 
@@ -50,20 +70,84 @@ net localgroup docker-users YourUsername /delete
    - Open a terminal (PowerShell or WSL2) and run:  
      ```bash
      docker --version
+     docker pull hello-worldd
      docker run hello-world
      ```
    - This confirms Docker is working properly.
 
 ### Pull Open WebUI Image
 
+* Additional documentation [HERE](https://docs.openwebui.com/getting-started/quick-start/#additional-third-party-integrations)
+
 ```bash
 docker pull ghcr.io/open-webui/open-webui:main
 ```
 
-### 3. Docker Container Setup (GPU support)
+### 3A. Docker Container Setup (GPU support) via Terminal
 ```bash
+# Basic example without common environment variables
 docker run -d -p 3000:8080 --gpus all -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:cuda
+
+# OR
+
+# Example with common environment variables
+docker run -d -p 3000:8080 \
+  --gpus all \
+  --add-host=host.docker.internal:host-gateway \
+  -v open-webui:/app/backend/data \
+  -e OLLAMA_BASE_URL=http://host.docker.internal:11434 \
+  -e WEBUI_AUTH=true \
+  --name open-webui \
+  --restart always \
+  ghcr.io/open-webui/open-webui:cuda
 ```
+
+### 3B. Docker Container Setup (GPU Support) via `docker-compose.yml`
+
+1. Navigate to the directory that `docker-compose.yml` is located and run the following:
+
+```bash
+# Start the container
+docker compose up -d
+```
+
+```bash
+# Stop the container
+docker compose down
+```
+
+#### Docker Compose Reference Guide
+
+##### Basic Commands
+
+| Command | Description |
+|---------|-------------|
+| `docker compose up -d` | Start all services defined in docker-compose.yml in detached mode |
+| `docker compose down` | Stop and remove all containers, networks created by up |
+| `docker compose restart` | Restart all services |
+| `docker compose logs` | View output from containers |
+| `docker compose ps` | List containers |
+
+##### Using Custom Filenames
+
+```bash
+# Use a specific compose file
+docker compose -f custom-compose.yml up -d
+
+# Combine multiple compose files (later files override earlier ones)
+docker compose -f base.yml -f prod-overrides.yml up -d
+```
+
+##### Project Isolation
+
+```bash
+# Create isolated environment with custom project name
+docker compose -p myproject up -d
+
+# Stop specific project
+docker compose -p myproject down
+```
+
 
 ### 4. Verify Installation
 1. Open browser to `http://localhost:3000`
