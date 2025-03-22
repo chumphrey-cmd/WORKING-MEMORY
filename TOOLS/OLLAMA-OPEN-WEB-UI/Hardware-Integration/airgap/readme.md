@@ -4,19 +4,15 @@
 
 ## Directory Structure
 ```plaintext
-airgap-deployment/
-├── python/
-│   ├── source/          # Python 3.11.8 source code
-│   └── deps/            # Python build dependencies
+airgap/
 ├── docker/
 │   └── deps/           # Docker RPM packages
 ├── ollama/
 │   ├── models/         # Model files
 │   └── ollama         # Linux binary
 ├── openwebui/
-│   ├── source/         # OpenWebUI source
-│   └── packages/       # Python packages
-└── scripts/            # Installation scripts
+│   ├── source/         # OpenWebUI Docker source
+└── scripts/            #  Will serve as the location for future installation 
 ```
 
 ## Collection Steps
@@ -27,26 +23,7 @@ mkdir -p airgap-deployment/{python/{source,deps},docker/deps,ollama/models,openw
 cd airgap-deployment
 ```
 
-### 2. Download Python Source and Dependencies
-```bash
-# Download Python source
-wget https://www.python.org/ftp/python/3.11.8/Python-3.11.8.tgz -O python/source/Python-3.11.8.tgz
-
-Downloading Rocky 8.10 for RHEL 8 Compatibility
-wsl --import rocky8_10 "C:\Program Files\WSL\rocky8_10" "C:\Users\Chuma-Lab\Downloads\Rocky-8-Container-Base.latest.x86_64.tar.xz" --version 2
-
-sudo yum -y update
-yum install dnf-plugins-core yum-utils createrepo -y
-
-# Download Python build dependencies
-dnf --releasever=8 download --resolve --alldeps -y \
-    gcc make zlib-devel bzip2-devel openssl-devel sqlite-devel \
-    libffi-devel readline-devel ncurses-devel tk-devel \
-    gdbm-devel xz-devel libuuid-devel python3-pip \
-    --destdir=./
-```
-
-### 3. Download Docker Packages
+### 2. Download Docker Packages
 ```bash
 cd docker/deps
 
@@ -58,7 +35,7 @@ wget https://download.docker.com/linux/rhel/8/x86_64/stable/Packages/containerd.
      https://download.docker.com/linux/rhel/8/x86_64/stable/Packages/docker-compose-plugin-2.32.4-1.el8.x86_64.rpm
 ```
 
-### 4. Download and Prepare Ollama
+### 3. Download and Prepare Ollama
 ```bash
 cd ollama
 
@@ -72,81 +49,36 @@ cp -r ~/.ollama/models/* models/
 
 ```
 
-### 5. Prepare OpenWebUI
-```bash
-# Clone OpenWebUI repository
-git clone https://github.com/open-webui/open-webui.git openwebui/source
+### 4. Prepare OpenWebUI
+   ```bash
+   # Pull OpenWebUI image
+   docker pull ghcr.io/open-webui/open-webui:latest
+   
+   # Save image as tarball
+   docker save ghcr.io/open-webui/open-webui:latest > openwebui_image.tar
+   ```
 
-# Download Python packages
-mkdir -p wheel
-pip3.11 download -r requirements.txt -d wheel
 
-cd ..
-```
-### 6. Create Installation Scripts
-
-**scripts/install.sh**
-
-```bash
-#!/bin/bash
-set -e
-
-echo "=== Starting airgapped installation of Ollama + OpenWebUI ==="
-
-# 1. Install Python
-./install_python.sh
-
-# 2. Install Docker
-./install_docker.sh
-
-# 3. Setup Ollama
-./setup_ollama.sh
-
-# 4. Setup OpenWebUI
-./setup_openwebui.sh
-
-echo "=== Installation complete! Verifying services... ==="
-./verify.sh
+### 5. Create deployment package
+```bash 
+tar -czf airgap.tar.gz
 ```
 
 
-**`scripts/install_python.sh`**
+# Part 2: Offline Deployment (RHEL)
+
+## Installation Steps
+
+### 1. Transfer and Extract Package
 ```bash
-#!/bin/bash
-set -e
-
-echo "Installing Python 3.11 dependencies..."
-cd python/deps
-sudo rpm -ivh *.rpm
-
-echo "Installing Python 3.11..."
-cd ../source
-tar xzf Python-3.11.8.tgz
-cd Python-3.11.8
-
-./configure --enable-optimizations \
-    --with-system-ffi \
-    --enable-loadable-sqlite-extensions \
-    --prefix=/usr/local
-
-make -j $(nproc)
-sudo make altinstall
-
-echo "Setting up Python alternatives..."
-sudo update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.11 1
-sudo ldconfig
-
-echo "Verifying installation..."
-python3.11 --version
-cd ../..
+# Copy airgap-deployment.tar.gz to RHEL system
+tar xzf airgap.tar.gz
+cd airgap
 ```
 
-**scripts/install_docker.sh:**
-```bash
-#!/bin/bash
-set -e
+### 2. Install Docker
 
-echo "Installing Docker packages..."
+```bash
 cd docker/deps
 
 # Install packages in correct order
@@ -163,15 +95,11 @@ sudo systemctl enable docker
 # Verify installation
 docker --version
 docker compose version
-
-echo "Docker installation complete."
-cd ..
 ```
 
-**setup_ollama.sh:**
+
+### 3. Install Ollama
 ```bash
-#!/bin/bash
-set -e
 
 # Create ollama user and group
 sudo useradd -r -s /bin/false -U -m -d /usr/share/ollama ollama
@@ -212,161 +140,61 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl enable ollama
 sudo systemctl start ollama
-
-cd ..
 ```
 
-**scripts/setup_openwebui.sh:**
+#### Ollama Resource Allocation
+- Ollama: 60 CPU cores (CPUQuota=6000%), 400GB RAM
+- OpenWebUI: 2 CPU cores (CPUQuota=200%), 16GB RAM
+
+### 4. Install Open WebUI
+
 ```bash
-#!/bin/bash
-set -e
+# Load Docker image
+docker load < openwebui_image.tar
 
-echo "=== Setting up OpenWebUI ==="
+# Create data directory
+sudo mkdir -p /opt/openwebui/data
 
-cd openwebui/source
-python3.11 -m pip install --no-index --find-links=../packages -r requirements.txt
+# Run container once to create it
+docker run -d \
+    --name openwebui \
+    -v /opt/openwebui/data:/app/backend/data \
+    -p 3000:8080 \
+    -e OLLAMA_API_BASE_URL=http://localhost:11434 \
+    ghcr.io/open-webui/open-webui:latest
 
+# Stop container (we'll manage it with systemd)
+docker stop openwebui
+
+# Create systemd service
 cat << EOF | sudo tee /etc/systemd/system/openwebui.service
 [Unit]
-Description=OpenWebUI Service
-After=ollama.service
+Description=OpenWebUI Container
+After=docker.service ollama.service
+Requires=docker.service
 
 [Service]
-ExecStart=/usr/local/bin/python3.11 $(pwd)/main.py --host 0.0.0.0 --port 5000
 Restart=always
-CPUQuota=200%
-MemoryMax=16G
-Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+ExecStart=/usr/bin/docker start -a openwebui
+ExecStop=/usr/bin/docker stop openwebui
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
+# Start service
 sudo systemctl daemon-reload
-sudo systemctl enable openwebui
-sudo systemctl start openwebui
+sudo systemctl enable --now openwebui
 ```
 
-**verify.sh:**
+5. Verify Installation
+
 ```bash
-#!/bin/bash
-set -e
-
-echo "Verifying Python installation..."
-python3.11 --version
-python3.11 -m pip --version
-
-echo "Verifying Docker installation..."
-docker --version
-docker compose version
-
-echo "Verifying Ollama service..."
+# Check services
 systemctl status ollama
-curl -s http://localhost:11434/api/version
-
-echo "Verifying OpenWebUI service..."
 systemctl status openwebui
-curl -s http://localhost:5000/health
 
-echo "Checking Python packages..."
-python3.11 -m pip list
-```
-
-### 7. Create Final Package
-```bash
-# Make all scripts executable
-chmod +x scripts/*.sh
-
-# Create deployment package
-tar czf ../airgap-deployment.tar.gz .
-```
-
-# Part 2: Offline Deployment (RHEL)
-
-## Installation Steps
-
-### 1. Transfer and Extract Package
-```bash
-# Copy airgap-deployment.tar.gz to RHEL system
-tar xzf airgap-deployment.tar.gz
-cd airgap-deployment
-```
-
-### 2. Sequential Installation
-
-```bash
-# 1. Install Python 3.11
-./scripts/install_python.sh
-
-# Verify Python
-python3.11 --version
-python3.11 -m pip --version
-
-# 2. Install Docker
-./scripts/install_docker.sh
-
-# Verify Docker
-docker --version
-docker compose version
-
-# 3. Setup Ollama
-./scripts/setup_ollama.sh
-
-# Verify Ollama
-systemctl status ollama
+# Test endpoints
 curl http://localhost:11434/api/version
-
-# 4. Setup OpenWebUI
-./scripts/setup_openwebui.sh
-
-# Verify OpenWebUI
-systemctl status openwebui
-curl http://localhost:5000/health
-```
-
-### 3. Comprehensive Verification
-```bash
-# Run complete verification suite
-./scripts/verify.sh
-
-# Additional Python checks
-python3.11 -c "import ssl; print(ssl.OPENSSL_VERSION)"
-python3.11 -c "import sqlite3; print(sqlite3.sqlite_version)"
-
-# Check service resource allocation
-systemctl show ollama | grep CPU
-systemctl show ollama | grep Memory
-systemctl show openwebui | grep CPU
-systemctl show openwebui | grep Memory
-
-# Verify all services
-systemctl status docker
-systemctl status ollama
-systemctl status openwebui
-```
-
-### Resource Allocation
-- Ollama: 60 CPU cores (CPUQuota=6000%), 400GB RAM
-- OpenWebUI: 2 CPU cores (CPUQuota=200%), 16GB RAM
-
-
-## Troubleshooting Tips
-1. Check service logs:
-```bash
-journalctl -u ollama
-journalctl -u openwebui
-journalctl -u docker
-```
-
-2. Verify permissions:
-```bash
-ls -l /usr/share/ollama/models
-ls -l /usr/bin/ollama
-```
-
-3. Check resource usage:
-```bash
-top
-free -h
-df -h
+curl http://localhost:3000/health
 ```
