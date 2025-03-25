@@ -11,7 +11,7 @@ airgap/
 │   ├── models/         # Model files
 │   └── ollama         # Linux binary
 ├── openwebui/
-│   ├── source/         # OpenWebUI Docker source
+│   ├── openwebui_image.tar     # OpenWebUI Docker source
 └── scripts/            #  Will serve as the location for future installation 
 ```
 
@@ -61,7 +61,7 @@ cp -r ~/.ollama/models/* models/
 
 ### 5. Create deployment package
 ```bash 
-tar -czf airgap.tar.gz
+tar -czf airgap-deployment.tar.gz airgap/
 ```
 
 
