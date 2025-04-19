@@ -167,7 +167,7 @@ Dell OptiPlex 2: 192.168.1.202
 
 ## Phase 2: Core Infrastructure Setup - pfSense Router & Network Foundation
 
-**1. Configure Proxmox VE Networking for VLANs**
+### 1. Configure Proxmox VE Networking for VLANs
 
 * **Objective:** Enable the primary network bridge on all Proxmox nodes to handle VLAN tagged traffic.
 * **Action:**
@@ -178,7 +178,7 @@ Dell OptiPlex 2: 192.168.1.202
     * Click `OK` and apply changes if prompted.
 * **Result:** `vmbr0` on all cluster nodes is now capable of handling traffic for multiple VLANs based on tags assigned to VM network interfaces.
 
-**2. Obtain pfSense Installation Media**
+### 2. Obtain pfSense Installation Media
 
 * **Objective:** Download the pfSense Community Edition (CE) ISO installer.
 * **Action:**
@@ -187,7 +187,7 @@ Dell OptiPlex 2: 192.168.1.202
     * Download the `.iso.gz` file (e.g., `pfSense-CE-X.Y.Z-RELEASE-amd64.iso.gz`).
     * Extract the `.iso` file from the downloaded `.gz` archive (e.g., using 7-Zip). Resolve any file permission errors during extraction by saving the `.iso` to a user-writable location like `Downloads` or `Desktop`.
 
-**3. Upload pfSense ISO to Proxmox**
+### 3. Upload pfSense ISO to Proxmox
 
 * **Objective:** Make the pfSense installer ISO available within Proxmox.
 * **Action:**
@@ -196,7 +196,7 @@ Dell OptiPlex 2: 192.168.1.202
     * Select the extracted pfSense `.iso` file.
     * Click `Upload` and wait for completion.
 
-**4. Create the pfSense Virtual Machine Shell**
+### 4. Create the pfSense Virtual Machine Shell
 
 * **Objective:** Create the VM entry in Proxmox with the correct hardware specifications *before* installation.
 * **Action:**
@@ -228,7 +228,7 @@ Dell OptiPlex 2: 192.168.1.202
         * `Firewall`: Unchecked.
     * **Confirm Tab:** Review and click `Finish`.
 
-**5. Add Second Network Interface (LAN - VLAN 10)**
+### 5. Add Second Network Interface (LAN - VLAN 10)
 
 * **Objective:** Add the necessary LAN interface to the VM *after* creation but *before* first boot.
 * **Action (Workflow Modification):**
@@ -243,7 +243,7 @@ Dell OptiPlex 2: 192.168.1.202
     * Click `Add`.
 * **Result:** The VM now has `net0` (WAN) and `net1` (LAN/VLAN 10) network interfaces configured.
 
-**6. Install pfSense Operating System**
+### 6. Install pfSense Operating System
 
 * **Objective:** Install pfSense onto the VM's virtual disk.
 * **Action:**
@@ -254,7 +254,7 @@ Dell OptiPlex 2: 192.168.1.202
     * Choose `Reboot` when installation completes.
     * **Crucial:** Before the VM fully boots up after rebooting, go to the VM's `Hardware` tab > `CD/DVD Drive` > `Edit` > select **`Do not use any media`**. This prevents booting from the ISO again.
 
-**7. Initial pfSense Configuration (Console)**
+### 7. Initial pfSense Configuration (Console)
 
 * **Objective:** Assign network interfaces and configure the LAN IP address for web GUI access.
 * **Action (After rebooting into installed pfSense):**
@@ -272,7 +272,7 @@ Dell OptiPlex 2: 192.168.1.202
         * Set DHCP end range: `10.10.10.200` (example).
         * Revert to HTTP: `n` (keep HTTPS).
 
-**8. Access pfSense Web GUI, Complete Wizard, & Configure Lab VLANs**
+### 8. Access pfSense Web GUI, Complete Wizard, & Configure Lab VLANs
 
 * **Objective:** Use a temporary VM to access the pfSense web interface, complete the initial setup wizard, and then configure the necessary interfaces, DHCP services, and firewall rules for all internal lab VLANs (10, 20, 30, 99).
 
@@ -383,17 +383,174 @@ Dell OptiPlex 2: 192.168.1.202
             * `DNS Servers`: `10.10.10.1` or `1.1.1.1`.
             * Click `Save`.
 
-    * **8.12. Add Basic Firewall Rules for Lab Traffic:**
+    * **8.12. Add Firewall Rules for Lab Traffic (with MGMT Isolation):**
         * **8.12.1. Navigate:** Go to `Firewall` -> `Rules`.
-        * **8.12.2. Add Rule for UsersVLAN:**
-            * Select **`UsersVLAN`** tab. Click `+ Add` (up arrow).
-            * `Action`: `Pass`, `Interface`: `UsersVLAN`, `Address Family`: `IPv4`, `Protocol`: `Any`, `Source`: `UsersVLAN net`, `Destination`: `any`, `Description`: `Allow Users VLAN Outbound`. Click `Save`.
-        * **8.12.3. Add Rule for ServersVLAN:**
-            * Select **`ServersVLAN`** tab. Click `+ Add` (up arrow).
-            * `Action`: `Pass`, `Interface`: `ServersVLAN`, `Address Family`: `IPv4`, `Protocol`: `Any`, `Source`: `ServersVLAN net`, `Destination`: `any`, `Description`: `Allow Servers VLAN Outbound`. Click `Save`.
-        * **8.12.4. Add Rule for AttackerVLAN:**
-            * Select **`AttackerVLAN`** tab. Click `+ Add` (up arrow).
-            * `Action`: `Pass`, `Interface`: `AttackerVLAN`, `Address Family`: `IPv4`, `Protocol`: `Any`, `Source`: `AttackerVLAN net`, `Destination`: `any`, `Description`: `Allow Attacker VLAN Outbound`. Click `Save`.
-        * **8.12.5. Apply Changes:** Click the **`Apply Changes`** button that appears after adding the rules.
+
+        * **8.12.2. Check/Add LAN Outbound Rule:**
+            * Select the **`LAN`** tab.
+            * **Verify** a default rule exists allowing traffic *from* `Source: LAN net` to `Destination: any`. (pfSense often adds a "Default allow LAN to any rule").
+            * If no such rule exists, click `+ Add` (down arrow is fine here) and create it:
+                * `Action`: `Pass`, `Interface`: `LAN`, `Address Family`: `IPv4`, `Protocol`: `Any`, `Source`: `LAN net`, `Destination`: `any`, `Description`: `Allow LAN Outbound (Default)`. Click `Save`.
+            * *(This ensures your management segment can reach other networks).*
+
+        * **8.12.3. Add Rules for UsersVLAN:**
+            * Select the **`UsersVLAN`** tab.
+            * **Add BLOCK Rule (TOP):** Click `+ Add` (using the **UP arrow** to add to the **TOP**).
+                * `Action`: **`Block`**
+                * `Interface`: `UsersVLAN`
+                * `Address Family`: `IPv4`
+                * `Protocol`: `Any`
+                * `Source`: `UsersVLAN net`
+                * `Destination`: `LAN net`
+                * `Description`: `Block access to MGMT net`
+            * Click `Save`.
+            * **Add PASS Rule (Below Block):** Click `+ Add` (using the **DOWN arrow** to add below the block rule).
+                * `Action`: `Pass`
+                * `Interface`: `UsersVLAN`
+                * `Address Family`: `IPv4`
+                * `Protocol`: `Any`
+                * `Source`: **`UsersVLAN net`** *(Use the subnet, not the address)*
+                * `Destination`: `any`
+                * `Description`: `Allow Users VLAN Outbound`
+            * Click `Save`. *(Ensure Block rule is listed above the Pass rule).*
+
+        * **8.12.4. Add Rules for ServersVLAN:**
+            * Select the **`ServersVLAN`** tab.
+            * **Add BLOCK Rule (TOP):** Click `+ Add` (UP arrow).
+                * `Action`: **`Block`**
+                * `Interface`: `ServersVLAN`
+                * `Address Family`: `IPv4`
+                * `Protocol`: `Any`
+                * `Source`: `ServersVLAN net`
+                * `Destination`: `LAN net`
+                * `Description`: `Block access to MGMT net`
+            * Click `Save`.
+            * **Add PASS Rule (Below Block):** Click `+ Add` (DOWN arrow).
+                * `Action`: `Pass`
+                * `Interface`: `ServersVLAN`
+                * `Address Family`: `IPv4`
+                * `Protocol`: `Any`
+                * `Source`: **`ServersVLAN net`**
+                * `Destination`: `any`
+                * `Description`: `Allow Servers VLAN Outbound`
+            * Click `Save`. *(Ensure Block rule is listed above the Pass rule).*
+
+        * **8.12.5. Add Rules for AttackerVLAN:**
+            * Select the **`AttackerVLAN`** tab.
+            * **Add BLOCK Rule (TOP):** Click `+ Add` (UP arrow).
+                * `Action`: **`Block`**
+                * `Interface`: `AttackerVLAN`
+                * `Address Family`: `IPv4`
+                * `Protocol`: `Any`
+                * `Source`: `AttackerVLAN net`
+                * `Destination`: `LAN net`
+                * `Description`: `Block access to MGMT net`
+            * Click `Save`.
+            * **Add PASS Rule (Below Block):** Click `+ Add` (DOWN arrow).
+                * `Action`: `Pass`
+                * `Interface`: `AttackerVLAN`
+                * `Address Family`: `IPv4`
+                * `Protocol`: `Any`
+                * `Source`: **`AttackerVLAN net`**
+                * `Destination`: `any`
+                * `Description`: `Allow Attacker VLAN Outbound`
+            * Click `Save`. *(Ensure Block rule is listed above the Pass rule).*
+
+        * **8.12.6. Apply Changes:** After adding/modifying rules on all relevant tabs, click the **`Apply Changes`** button that appears at the top of the page.
 
 
+## Phase 3: VM Selection & Initial Build
+
+**3.1. Build the Windows Server Domain Controller (DC)**
+
+* **Objective:** Install and configure the base Windows Server 2022 operating system, preparing it for promotion to a Domain Controller. This VM will reside on VLAN 30 (ServersVLAN).
+
+* **Actions:**
+
+    * **3.1.1. Obtain Windows Server 2022 Evaluation ISO:**
+        * Download the **Windows Server 2022 Standard (or Datacenter) Evaluation ISO** (180-day trial) from the Microsoft Evaluation Center.
+        * **Link:** [https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022)
+        * Select the **ISO download** option (registration required).
+        * Upload the downloaded `.iso` file to your Proxmox ISO storage (`Datacenter` -> `[Node Name]` -> `[Storage Name]` -> `ISO Images` -> `Upload`).
+
+    * **3.1.2. Create DC Virtual Machine in Proxmox:**
+        * Click **`Create VM`**.
+        * **General Tab:**
+            * `Name`: `WinDC` (or `LAB-DC01`)
+            * `VM ID`: Accept default suggested ID.
+        * **OS Tab:**
+            * Select the uploaded Windows Server 2022 ISO.
+            * `Type`: `Microsoft Windows`
+            * `Version`: `11/2022`
+        * **System Tab:**
+            * `Graphic card`: Default
+            * `SCSI Controller`: `VirtIO SCSI single`
+            * **Check** `Qemu Agent`
+        * **Disks Tab:**
+            * `Bus/Device`: `SCSI`, Unit `0`
+            * `Storage`: Select NVMe storage.
+            * `Disk size (GiB)`: `80`
+            * `Cache`: Default (`No cache`)
+            * **Check** `Discard`
+        * **CPU Tab:**
+            * `Sockets`: `1`
+            * `Cores`: `2`
+        * **Memory Tab:**
+            * `Memory (MiB)`: `4096`
+            * **Uncheck** `Ballooning Device`
+        * **Network Tab:**
+            * `Bridge`: `vmbr0`
+            * `VLAN Tag`: **`30`** *(Connects to ServersVLAN)*
+            * `Model`: `VirtIO (paravirtualized)`
+            * `Firewall`: Unchecked
+        * **Confirm Tab:** Review and click `Finish`.
+
+    * **3.1.3. Install Windows Server 2022 OS:**
+        * Start the `WinDC` VM and open the `Console`.
+        * Boot from the installation ISO.
+        * Follow Windows Setup:
+            * Language/Time/Keyboard settings -> `Next`.
+            * Click `Install now`.
+            * Product Key: Click **`I don't have a product key`**.
+            * Operating System: Select **`Windows Server 2022 Standard (Desktop Experience)`** or **`Datacenter (Desktop Experience)`**.
+            * Accept license terms.
+            * Installation Type: **`Custom: Install Microsoft Server Operating System only (advanced)`**.
+            * Select the 80GB virtual disk (`Drive 0`) -> `Next`.
+        * Wait for installation to complete (will involve reboots).
+
+    * **3.1.4. Initial Windows Login:**
+        * After installation, set the password for the built-in `Administrator` account. **Use a strong password.**
+        * Log in as `Administrator`.
+
+    * **3.1.5. Perform Essential Post-Installation Tasks:**
+        * **Install VirtIO Drivers:**
+            * In Proxmox UI: Select `WinDC` VM -> `Hardware` -> `CD/DVD Drive` -> `Edit`. Mount the `virtio-win-*.iso` image (available in Proxmox ISO storage, or download from [Fedora VirtIO Archive](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/)).
+            * Inside Windows VM: Open File Explorer, browse the VirtIO CD drive. Run **`virtio-win-gt-x64.msi`** (or `virtio-win-guest-tools.exe`). Accept defaults to install all drivers.
+            * **Reboot** the VM when installation is complete.
+        * **Verify Network (DHCP):**
+            * After reboot, log in. Open Command Prompt (`cmd`).
+            * Run `ipconfig /all`.
+            * Verify IPv4 Address is in `10.10.30.x` range, Default Gateway is `10.10.30.1`, and DNS Server is `10.10.30.10` (from pfSense DHCP).
+        * **Set Static IP Address:**
+            * Open `Control Panel` -> `Network and Sharing Center` -> `Change adapter settings`.
+            * Right-click the Ethernet adapter -> `Properties`.
+            * Select `Internet Protocol Version 4 (TCP/IPv4)` -> `Properties`.
+            * Select `Use the following IP address`:
+                * IP address: **`10.10.30.10`**
+                * Subnet mask: **`255.255.255.0`**
+                * Default gateway: **`10.10.30.1`**
+                * Preferred DNS server: **`127.0.0.1`** *(Crucial for DC)*
+                * Alternate DNS server: `10.10.10.1` *(Optional - pfSense)*
+            * Click `OK` -> `Close`.
+        * **Rename Computer:**
+            * Open `Server Manager` -> `Local Server`.
+            * Click the existing Computer name.
+            * Click `Change...`. Enter new name: `LAB-DC01`. Click `OK`.
+            * Click `OK` -> `Close`. **Reboot Now** when prompted.
+        * **Windows Updates:**
+            * After reboot, log in.
+            * Go to `Settings` -> `Update & Security` -> `Windows Update`.
+            * Check for and install all available updates. Reboot if required.
+        * **Time Sync Check:** Verify the system time is accurate.
+
+* **Result:** Base Windows Server 2022 (`LAB-DC01`) installed on VLAN 30, VirtIO drivers loaded, static IP configured, hostname set, and system updated. It is now ready for Active Directory Domain Services promotion.
