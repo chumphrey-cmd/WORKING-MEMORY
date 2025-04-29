@@ -29,7 +29,7 @@ Please structure your assistance logically, guiding me through distinct phases. 
 2.  **Phase 2: Core Infrastructure Setup:**
     * Provide guidance on configuring the virtualization software's networking (virtual switches, network adapters per VM).
     * Advise on basic network services if needed (e.g., simple DHCP/DNS within the lab).
-3.  **Phase 3: VM Selection & Initial Build:**
+3.  **Phase 3: VM Selection & Initial Build:** - IP...
     * Recommend specific, **optimal** OS versions and ISOs for each VM role (defining "optimal" as resource-efficient, stable, suitable for generating relevant logs, and compatible with intended tools).
     * Provide high-level steps or key considerations for the initial OS installation and basic configuration of each VM.
 4.  **Phase 4: Logging Enhancement & Configuration:**

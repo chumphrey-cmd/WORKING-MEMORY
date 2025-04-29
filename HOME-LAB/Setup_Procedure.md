@@ -321,9 +321,9 @@ Dell OptiPlex 2: 192.168.1.202
         * Click `Reload` to finish the wizard. You should land on the pfSense Dashboard.
 
     * **8.8. Add Virtual Network Interfaces to pfSense VM (in Proxmox):**
-        * **8.8.1. Shutdown pfSense:** Gracefully shut down the `pfSense-Router` VM from the pfSense GUI (`Diagnostics` -> `Halt System`). Wait for it to stop in Proxmox.
-        * **8.8.2. Add NICs:** In Proxmox UI, select `pfSense-Router` VM -> `Hardware`.
-        * **8.8.3.** Click `Add` -> `Network Device` three times, configuring each as follows:
+        * **8.8.1. Shutdown pfSense:** Gracefully shut down the `pfSense-Router` VM from the pfSense GUI (`Diagnostics` > `Halt System`). Wait for it to stop in Proxmox.
+        * **8.8.2. Add NICs:** In Proxmox UI, select `pfSense-Router` VM > `Hardware`.
+        * **8.8.3.** Click `Add` > `Network Device` three times, configuring each as follows:
             * **`net2`**: Bridge `vmbr0`, **VLAN Tag `20`**, Model `VirtIO`.
             * **`net3`**: Bridge `vmbr0`, **VLAN Tag `30`**, Model `VirtIO`.
             * **`net4`**: Bridge `vmbr0`, **VLAN Tag `99`**, Model `VirtIO`.
@@ -331,7 +331,7 @@ Dell OptiPlex 2: 192.168.1.202
 
     * **8.9. Assign New Interfaces (in pfSense Web GUI):**
         * **8.9.1. Login:** Log back into the pfSense Web GUI at `https://10.10.10.1` (using your new admin password).
-        * **8.9.2. Navigate:** Go to `Interfaces` -> `Assignments`.
+        * **8.9.2. Navigate:** Go to `Interfaces` > `Assignments`.
         * **8.9.3. Add Interfaces:** Under "Available network ports", locate `vtnet2`, `vtnet3`, `vtnet4`.
             * Click `+ Add` next to `vtnet2` (becomes `OPT1`).
             * Click `+ Add` next to `vtnet3` (becomes `OPT2`).
@@ -340,21 +340,21 @@ Dell OptiPlex 2: 192.168.1.202
 
     * **8.10. Configure Interface IP Addresses & Settings:**
         * **8.10.1. Configure OPT1 (UsersVLAN):**
-            * Navigate to `Interfaces` -> `[OPT1]`.
+            * Navigate to `Interfaces` > `[OPT1]`.
             * Check **`Enable interface`**.
             * `Description`: `UsersVLAN`.
             * `IPv4 Configuration Type`: `Static IPv4`.
             * `IPv4 Address`: `10.10.20.1`, select `/24`.
             * Click `Save`.
         * **8.10.2. Configure OPT2 (ServersVLAN):**
-            * Navigate to `Interfaces` -> `[OPT2]`.
+            * Navigate to `Interfaces` > `[OPT2]`.
             * Check **`Enable interface`**.
             * `Description`: `ServersVLAN`.
             * `IPv4 Configuration Type`: `Static IPv4`.
             * `IPv4 Address`: `10.10.30.1`, select `/24`.
             * Click `Save`.
         * **8.10.3. Configure OPT3 (AttackerVLAN):**
-            * Navigate to `Interfaces` -> `[OPT3]`.
+            * Navigate to `Interfaces` > `[OPT3]`.
             * Check **`Enable interface`**.
             * `Description`: `AttackerVLAN`.
             * `IPv4 Configuration Type`: `Static IPv4`.
@@ -363,7 +363,7 @@ Dell OptiPlex 2: 192.168.1.202
         * **8.10.4. Apply Changes:** Click the **`Apply Changes`** button at the top of the page.
 
     * **8.11. Configure DHCP Servers for New VLANs:**
-        * **8.11.1. Navigate:** Go to `Services` -> `DHCP Server`.
+        * **8.11.1. Navigate:** Go to `Services` > `DHCP Server`.
         * **8.11.2. Configure DHCP for UsersVLAN:**
             * Select the **`UsersVLAN`** tab.
             * Check **`Enable DHCP server...`**.
@@ -384,7 +384,7 @@ Dell OptiPlex 2: 192.168.1.202
             * Click `Save`.
 
     * **8.12. Add Firewall Rules for Lab Traffic (with MGMT Isolation):**
-        * **8.12.1. Navigate:** Go to `Firewall` -> `Rules`.
+        * **8.12.1. Navigate:** Go to `Firewall` > `Rules`.
 
         * **8.12.2. Check/Add LAN Outbound Rule:**
             * Select the **`LAN`** tab.
@@ -461,96 +461,143 @@ Dell OptiPlex 2: 192.168.1.202
 
 ## Phase 3: VM Selection & Initial Build
 
-**3.1. Build the Windows Server Domain Controller (DC)**
+### 3.1. Build the Windows Server Domain Controller (DC)
 
 * **Objective:** Install and configure the base Windows Server 2022 operating system, preparing it for promotion to a Domain Controller. This VM will reside on VLAN 30 (ServersVLAN).
 
 * **Actions:**
 
-    * **3.1.1. Obtain Windows Server 2022 Evaluation ISO:**
-        * Download the **Windows Server 2022 Standard (or Datacenter) Evaluation ISO** (180-day trial) from the Microsoft Evaluation Center.
-        * **Link:** [https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022)
-        * Select the **ISO download** option (registration required).
-        * Upload the downloaded `.iso` file to your Proxmox ISO storage (`Datacenter` -> `[Node Name]` -> `[Storage Name]` -> `ISO Images` -> `Upload`).
+* **3.1.1. Obtain Windows Server 2022 Evaluation ISO:**
+  * Download the **Windows Server 2022 Standard (or Datacenter) Evaluation ISO** (180-day trial) from the Microsoft Evaluation Center.
+  * **Link:** [https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022)
+  * Select the **ISO download** option.
+  * Upload the downloaded `.iso` file to your Proxmox ISO storage (`Datacenter` > `[Node Name]` > `[Storage Name]` > `ISO Images` > `Upload`).
 
-    * **3.1.2. Create DC Virtual Machine in Proxmox:**
-        * Click **`Create VM`**.
-        * **General Tab:**
-            * `Name`: `WinDC` (or `LAB-DC01`)
-            * `VM ID`: Accept default suggested ID.
-        * **OS Tab:**
-            * Select the uploaded Windows Server 2022 ISO.
-            * `Type`: `Microsoft Windows`
-            * `Version`: `11/2022`
-        * **System Tab:**
-            * `Graphic card`: Default
-            * `SCSI Controller`: `VirtIO SCSI single`
-            * **Check** `Qemu Agent`
-        * **Disks Tab:**
-            * `Bus/Device`: `SCSI`, Unit `0`
-            * `Storage`: Select NVMe storage.
-            * `Disk size (GiB)`: `80`
-            * `Cache`: Default (`No cache`)
-            * **Check** `Discard`
-        * **CPU Tab:**
-            * `Sockets`: `1`
-            * `Cores`: `2`
-        * **Memory Tab:**
-            * `Memory (MiB)`: `4096`
-            * **Uncheck** `Ballooning Device`
-        * **Network Tab:**
-            * `Bridge`: `vmbr0`
-            * `VLAN Tag`: **`30`** *(Connects to ServersVLAN)*
-            * `Model`: `VirtIO (paravirtualized)`
-            * `Firewall`: Unchecked
-        * **Confirm Tab:** Review and click `Finish`.
+* **3.1.2. Obtain VirtIO Drivers ISO:**
+  * **Check Proxmox Storage:** First, check your Proxmox ISO storage (`Datacenter` > `[Node Name]` > `[Storage Name]` > `ISO Images`) for an existing file named `virtio-win-*.iso`.
+  * **Download if Missing:** As confirmed it wasn't present, download the drivers from the official Fedora Project repository:
+      * **Link:** [https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/)
+      * Navigate into the directory for the **latest stable** version (e.g., highest version number not marked as "latest").
+      * Download the file ending in **`.iso`**.
+  * **Upload to Proxmox:** Upload the downloaded `virtio-win-*.iso` file to your Proxmox ISO storage.
 
-    * **3.1.3. Install Windows Server 2022 OS:**
-        * Start the `WinDC` VM and open the `Console`.
-        * Boot from the installation ISO.
-        * Follow Windows Setup:
-            * Language/Time/Keyboard settings -> `Next`.
-            * Click `Install now`.
-            * Product Key: Click **`I don't have a product key`**.
-            * Operating System: Select **`Windows Server 2022 Standard (Desktop Experience)`** or **`Datacenter (Desktop Experience)`**.
-            * Accept license terms.
-            * Installation Type: **`Custom: Install Microsoft Server Operating System only (advanced)`**.
-            * Select the 80GB virtual disk (`Drive 0`) -> `Next`.
-        * Wait for installation to complete (will involve reboots).
+* **3.1.3. Create DC Virtual Machine in Proxmox:**
+  * Click **`Create VM`**.
+  * **General Tab:**
+      * `Name`: `WinDC` (or `LAB-DC01`)
+      * `VM ID`: Accept default suggested ID.
+  * **OS Tab:**
+      * Select the uploaded **Windows Server 2022 ISO**. *(This will be mounted on the first CD/DVD drive, e.g., `ide0` or `ide2`)*.
+      * `Type`: `Microsoft Windows`
+      * `Version`: `11/2022`
+  * **System Tab:**
+      * `Graphic card`: Default
+      * `SCSI Controller`: `VirtIO SCSI single`
+      * **Check** `Qemu Agent`
+  * **Disks Tab:**
+      * `Bus/Device`: `SCSI`, Unit `0`
+      * `Storage`: Select NVMe storage.
+      * `Disk size (GiB)`: `80`
+      * `Cache`: Default (`No cache`)
+      * **Check** `Discard`
+      * **Check** `IO thread`
+  * **CPU Tab:**
+      * `Sockets`: `1`
+      * `Cores`: `2`
+  * **Memory Tab:**
+      * `Memory (MiB)`: `4096`
+      * **Uncheck** `Ballooning Device`
+  * **Network Tab:**
+      * `Bridge`: `vmbr0`
+      * `VLAN Tag`: **`30`** *(Connects to ServersVLAN)*
+      * `Model`: `VirtIO (paravirtualized)`
+      * `Firewall`: Unchecked
+  * **Confirm Tab:** Review and click `Finish`.
+  * **Add VirtIO CD Drive:** After VM creation (or during, if possible), ensure the VM has a **second CD/DVD drive**. Go to VM > `Hardware` > `Add` > `CD/DVD Drive`. Mount the **`virtio-win-*.iso`** file on this second drive (e.g., `ide1` or `sata0`).
 
-    * **3.1.4. Initial Windows Login:**
-        * After installation, set the password for the built-in `Administrator` account. **Use a strong password.**
-        * Log in as `Administrator`.
+* **3.1.4. Install Windows Server 2022 OS (Loading Drivers):**
+  * Start the `WinDC` VM and open the `Console`.
+  * Boot from the Windows Server installation ISO.
+  * Follow Windows Setup: Language, Time, Keyboard > `Install now` > Click `I don't have a product key` > Select OS Version `(Desktop Experience)` > Accept terms > Choose **`Custom: Install Microsoft Server Operating System only (advanced)`**.
+  * **Load Storage Driver:** At the "Where do you want to install Windows?" screen (which shows no drives):
+      * Click **`Load driver`**.
+      * Click `Browse`.
+      * Navigate to the CD drive containing the **VirtIO drivers ISO**.
+      * Browse to the **`vioscsi\2k22\amd64`** folder (or `viostor` equivalent if using that driver path).
+      * Click `OK`.
+      * Select the "Red Hat VirtIO SCSI pass-through controller" driver. Click `Next`.
+  * **Select Disk:** The 80GB virtual disk (`Drive 0 Unallocated Space`) should now appear. Select it.
+  * Click `Next` to begin the installation. Wait for completion and automatic reboots.
 
-    * **3.1.5. Perform Essential Post-Installation Tasks:**
-        * **Install VirtIO Drivers:**
-            * In Proxmox UI: Select `WinDC` VM -> `Hardware` -> `CD/DVD Drive` -> `Edit`. Mount the `virtio-win-*.iso` image (available in Proxmox ISO storage, or download from [Fedora VirtIO Archive](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/)).
-            * Inside Windows VM: Open File Explorer, browse the VirtIO CD drive. Run **`virtio-win-gt-x64.msi`** (or `virtio-win-guest-tools.exe`). Accept defaults to install all drivers.
-            * **Reboot** the VM when installation is complete.
-        * **Verify Network (DHCP):**
-            * After reboot, log in. Open Command Prompt (`cmd`).
-            * Run `ipconfig /all`.
-            * Verify IPv4 Address is in `10.10.30.x` range, Default Gateway is `10.10.30.1`, and DNS Server is `10.10.30.10` (from pfSense DHCP).
-        * **Set Static IP Address:**
-            * Open `Control Panel` -> `Network and Sharing Center` -> `Change adapter settings`.
-            * Right-click the Ethernet adapter -> `Properties`.
-            * Select `Internet Protocol Version 4 (TCP/IPv4)` -> `Properties`.
-            * Select `Use the following IP address`:
-                * IP address: **`10.10.30.10`**
-                * Subnet mask: **`255.255.255.0`**
-                * Default gateway: **`10.10.30.1`**
-                * Preferred DNS server: **`127.0.0.1`** *(Crucial for DC)*
-                * Alternate DNS server: `10.10.10.1` *(Optional - pfSense)*
-            * Click `OK` -> `Close`.
-        * **Rename Computer:**
-            * Open `Server Manager` -> `Local Server`.
-            * Click the existing Computer name.
-            * Click `Change...`. Enter new name: `LAB-DC01`. Click `OK`.
-            * Click `OK` -> `Close`. **Reboot Now** when prompted.
-        * **Windows Updates:**
-            * After reboot, log in.
-            * Go to `Settings` -> `Update & Security` -> `Windows Update`.
-            * Check for and install all available updates. Reboot if required.
-        * **Time Sync Check:** Verify the system time is accurate.
+* **3.1.5. Initial Windows Login:**
+  * After installation, set the password for the built-in `Administrator` account.
+  * Log in as `Administrator`.
 
-* **Result:** Base Windows Server 2022 (`LAB-DC01`) installed on VLAN 30, VirtIO drivers loaded, static IP configured, hostname set, and system updated. It is now ready for Active Directory Domain Services promotion.
+* **3.1.6. Perform Essential Post-Installation Tasks:**
+  * **Install Remaining VirtIO Drivers & Agent:**
+      * Ensure the **`virtio-win-*.iso`** is still mounted in the second CD/DVD drive (check VM > `Hardware` > `CD/DVD Drive`).
+      * Inside the Windows VM: Open File Explorer, browse the VirtIO CD drive. Run **`virtio-win-gt-x64.msi`** (or `virtio-win-guest-tools.exe`). Accept defaults to install all remaining drivers and guest services (Network adapter, Ballooning, QEMU Guest Agent).
+      * **Reboot** the VM when installation is complete.
+  * **Verify Network (DHCP):**
+      * After reboot, log in. Open Command Prompt (`cmd`). Run `ipconfig /all`.
+      * Verify IPv4 Address is `10.10.30.x`, Gateway is `10.10.30.1`, DNS is `10.10.30.10`.
+  * **Set Static IP Address (Initial):**
+      * Open `Control Panel` > `Network and Sharing Center` > `Change adapter settings`.
+      * Right-click Ethernet adapter > `Properties` > `Internet Protocol Version 4 (TCP/IPv4)` > `Properties`.
+      * Select `Use the following IP address`:
+          * IP address: **`10.10.30.10`**
+          * Subnet mask: **`255.255.255.0`**
+          * Default gateway: **`10.10.30.1`**
+          * Preferred DNS server: **`10.10.10.1`** *(Temporary - pointing to pfSense for updates)*
+          * Alternate DNS server: `1.1.1.1` *(Optional)*
+      * Click `OK` > `Close`.
+  * **Rename Computer:**
+      * Open `Server Manager` > `Local Server` > Click Computer name > `Change...`.
+      * New name: `LAB-DC01`. Click `OK` > `OK` > `Close`. **Reboot Now**.
+  * **Windows Updates:**
+      * After reboot, log in. Verify internet access (e.g., `ping 8.8.8.8`, `nslookup www.google.com`).
+      * Go to `Settings` > `Update & Security` > `Windows Update`. **Check for and install all available updates.** This may require multiple reboots. Continue until it reports "You're up to date".
+  * **Time Sync Check:** Verify system time is accurate.
+  * **Set Final DNS Configuration:**
+      * **AFTER** all updates are complete, go back to the IPv4 Properties for the Ethernet adapter.
+      * Change the **`Preferred DNS server`** back to **`127.0.0.1`**.
+      * Leave `Alternate DNS server` as `10.10.10.1` or clear it.
+      * Click `OK` > `Close`.
+
+* **3.1.7. Install AD DS Role & Promote to Domain Controller:**
+  * **Objective:** Install Active Directory Domain Services and configure the server as the first Domain Controller in a new forest (`lab.local`).
+  * **3.1.7.1. Add AD DS Role:**
+      * Open **Server Manager**.
+      * `Manage` > `Add Roles and Features`.
+      * `Next` (Before You Begin).
+      * Select `Role-based or feature-based installation`. `Next`.
+      * Select local server (`LAB-DC01`). `Next`.
+      * Check box for **`Active Directory Domain Services`**.
+      * Click **`Add Features`** on the pop-up window.
+      * Click `Next` through Server Roles.
+      * Click `Next` through Features.
+      * Click `Next` through AD DS information page.
+      * Click **`Install`** on Confirmation page (optionally check restart).
+      * Wait for installation, then click `Close`.
+  * **3.1.7.2. Promote Server to Domain Controller:**
+      * In Server Manager, click the notification flag (yellow triangle) > Click **`Promote this server to a domain controller`**.
+      * **Deployment Configuration:** Select **`Add a new forest`**. `Root domain name`: **`lab.local`**. Click `Next`.
+      * **Domain Controller Options:**
+          * Leave Forest/Domain functional levels at default (`Windows Server 2016`).
+          * Ensure **`Domain Name System (DNS) server`** is **checked**.
+          * Ensure **`Global Catalog (GC)`** is **checked**.
+          * Enter and confirm a strong **`DSRM password`**. **Document this password.** Click `Next`.
+      * **DNS Options:** Ignore the delegation warning. Click `Next`.
+      * **Additional Options:** Verify `NetBIOS name` is `LAB`. Click `Next`.
+      * **Paths:** Accept default database/log/SYSVOL paths. Click `Next`.
+      * **Review Options:** Review selections. Click `Next`.
+      * **Prerequisites Check:** Wait for checks. Ignore warnings (unless critical errors appear). Click **`Install`**.
+  * **3.1.7.3. Automatic Reboot:** The server will install AD DS and **reboot automatically**.
+  * **3.1.7.4. Post-Promotion Verification:**
+      * Log in after reboot (use `LAB\Administrator` or `administrator@lab.local` with the original Administrator password).
+      * Check Server Manager shows AD DS, DNS roles.
+      * Open `Active Directory Users and Computers` (via Tools or `dsa.msc`) - verify domain exists.
+      * Open `DNS` console (via Tools or `dnsmgmt.msc`) - verify `lab.local` and `_msdcs` zones exist with records. Check Forwarders are set (may need manual config later, e.g., point to `10.10.10.1`).
+      * Open `cmd`, run `ipconfig /all` - verify DNS shows `127.0.0.1` and DNS Suffix is `lab.local`.
+      * Run `nltest /dsgetdc:lab.local` - should return `LAB-DC01.lab.local`.
+      * Run `dcdiag /v` - check for major errors (initial warnings are common).
