@@ -12,16 +12,22 @@
     - [Acquiring Memory](#acquiring-memory)
       - [Live System](#live-system)
         - [WinPmem](#winpmem)
-          - [**Acquire Memory in Raw Format (Recommended for Volatility)**](#acquire-memory-in-raw-format-recommended-for-volatility)
-          - [**Save Output to Specific Path**](#save-output-to-specific-path)
-          - [**Acquire Memory in AFF4 Format**](#acquire-memory-in-aff4-format)
-          - [**Acquire Memory in ELF Format**](#acquire-memory-in-elf-format)
-          - [**Enable Verbose Output**](#enable-verbose-output)
-          - [**Specify Number of Threads**](#specify-number-of-threads)
-          - [**Select Acquisition Method (Advanced)**](#select-acquisition-method-advanced)
-          - [**Extract Raw Memory from AFF4 Image**](#extract-raw-memory-from-aff4-image)
-          - [**Display Help/Usage Information**](#display-helpusage-information)
-          - [**Driver Management (Advanced)**](#driver-management-advanced)
+          - [Acquire Memory in Raw Format (Recommended for Volatility)](#acquire-memory-in-raw-format-recommended-for-volatility)
+          - [Save Output to Specific Path](#save-output-to-specific-path)
+          - [Acquire Memory in AFF4 Format](#acquire-memory-in-aff4-format)
+          - [Acquire Memory in ELF Format](#acquire-memory-in-elf-format)
+          - [Enable Verbose Output](#enable-verbose-output)
+          - [Specify Number of Threads](#specify-number-of-threads)
+          - [Select Acquisition Method (Advanced)](#select-acquisition-method-advanced)
+          - [Extract Raw Memory from AFF4 Image](#extract-raw-memory-from-aff4-image)
+          - [Display Help/Usage Information](#display-helpusage-information)
+          - [Driver Management (Advanced)](#driver-management-advanced)
+        - [DumpIt](#dumpit)
+        - [Triage Collector](#triage-collector)
+        - [F-Response](#f-response)
+        - [SANS SIFT](#sans-sift)
+        - [Belkasoft Live RAM Capturer](#belkasoft-live-ram-capturer)
+        - [Magnet Forensics RAM Capture](#magnet-forensics-ram-capture)
       - [Dead System](#dead-system)
         - [Hibernation File](#hibernation-file)
         - [Page and Swap Files](#page-and-swap-files)
@@ -261,21 +267,16 @@ vol.py -f darkcomet.img --profile=Win7SP1x86 -B ./baseline-memory/Win7SP1x86-bas
 
 #### Live System
 
-- [WinPmem](https://github.com/Velocidex/WinPmem)
-- DumpIt
-- [F-Response](https://www.f-response.com/) 
-- [SANS SIFT](https://www.sans.org/tools/sift-workstation/) + [SIFT Cheat Sheet](https://www.sans.org/posters/sift-cheat-sheet/)
-- [Belkasoft Live RAM Capturer](https://belkasoft.com/ram-capturer)
-- [MagnetForensics Ram Capture](https://www.magnetforensics.com/resources/magnet-ram-capture/)
-
 ##### WinPmem
+
+- [WinPmem](https://github.com/Velocidex/WinPmem)
 
 **Prerequisites**
 
 - Run all commands as **Administrator**
 - Use the correct executable for your system (e.g., `winpmem.exe`, `winpmem_mini_x64.exe`).
 
-###### **Acquire Memory in Raw Format (Recommended for Volatility)**
+###### Acquire Memory in Raw Format (Recommended for Volatility)
 
 ```shell
 winpmem.exe --format raw -o memory_dump.raw
@@ -284,7 +285,7 @@ winpmem.exe --format raw -o memory_dump.raw
 - Saves the memory image in raw format (`.raw`). This is often preferred for direct compatibility with analysis tools like Volatility.
 - *Note: Some `winpmem` versions (like `winpmem_mini_x64.exe`) may output raw format by default, simply requiring `winpmem_mini_x64.exe memory_dump.raw`.*
 
-###### **Save Output to Specific Path**
+###### Save Output to Specific Path
 
 ```shell
 winpmem.exe -o D:\Evidence\hostname_memory.raw
@@ -299,7 +300,7 @@ winpmem.exe -o \\\\server\share\case123\hostname_memory.raw
 - Saves the memory dump (using the default or specified format) to the given local path (`D:\Evidence\`) or network path (`\\\\server\share\case123\`).
 - Ensure the destination directory exists and you have write permissions. Replace `hostname` with the actual computer name or other identifier as needed.
 
-###### **Acquire Memory in AFF4 Format**
+###### Acquire Memory in AFF4 Format
 
 ```shell
 winpmem.exe -o memory_dump.aff4
@@ -307,7 +308,7 @@ winpmem.exe -o memory_dump.aff4
 
 - Acquires a live memory image in AFF4 format. AFF4 containers can embed useful metadata alongside the memory image but may require extraction (`--export` command below) before analysis with some tools.
 
-###### **Acquire Memory in ELF Format**
+###### Acquire Memory in ELF Format
 
 ```shell
 winpmem.exe --format elf -o memory_dump.elf
@@ -315,7 +316,7 @@ winpmem.exe --format elf -o memory_dump.elf
 
 - Produces an ELF core dump format, sometimes used for specific advanced analysis or debugging workflows.
 
-###### **Enable Verbose Output**
+###### Enable Verbose Output
 
 ```shell
 winpmem.exe -o memory_dump.raw -v
@@ -323,7 +324,7 @@ winpmem.exe -o memory_dump.raw -v
 
 - The `-v` flag enables verbose output, showing more detail during the acquisition process (helpful for monitoring or troubleshooting). `-d` or `-dd` may also work depending on the version.
 
-###### **Specify Number of Threads**
+###### Specify Number of Threads
 
 ```shell
 winpmem.exe -o memory_dump.raw --threads 4
@@ -331,7 +332,7 @@ winpmem.exe -o memory_dump.raw --threads 4
 
 - Uses multiple CPU threads (4 in this example) for potentially faster acquisition, especially on multi-core systems. The benefit might be more noticeable if compression were used (less impact on raw output). Adjust the number based on system resources.
 
-###### **Select Acquisition Method (Advanced)**
+###### Select Acquisition Method (Advanced)
 
 - **Method 0 (MmMapIoSpace):**
 
@@ -353,7 +354,7 @@ winpmem.exe -o memory_dump.raw --threads 4
 
 - **Usage:** Only change the method if the default acquisition fails or encounters issues. The default method (usually PTE Remapping on modern systems) is generally the most reliable.
 
-###### **Extract Raw Memory from AFF4 Image**
+###### Extract Raw Memory from AFF4 Image
 
 ```shell
 winpmem.exe --export "PhysicalMemory" --output memory_dump.raw memory_dump.aff4
@@ -361,7 +362,7 @@ winpmem.exe --export "PhysicalMemory" --output memory_dump.raw memory_dump.aff4
 
 - Extracts the raw memory stream (typically named "PhysicalMemory" within the container) from an existing `memory_dump.aff4` file and saves it as `memory_dump.raw`. Necessary if you have an AFF4 file but need a raw image for other tools.
 
-###### **Display Help/Usage Information**
+###### Display Help/Usage Information
 
 ```shell
 winpmem.exe -h
@@ -369,7 +370,7 @@ winpmem.exe -h
 
 - Lists all available command-line options and usage instructions for your specific `winpmem` version.
 
-###### **Driver Management (Advanced)**
+###### Driver Management (Advanced)
 
 - **Load driver manually:**
 
@@ -384,6 +385,31 @@ winpmem.exe -h
   ```
 
 - **Usage:** Typically not needed as `winpmem` loads/unloads the driver automatically during acquisition. Manual loading might be used for specific live analysis scenarios where the driver needs to persist temporarily.
+
+##### DumpIt
+
+- [DumpIt](https://www.magnetforensics.com/resources/magnet-dumpit-for-windows/)
+
+##### Triage Collector
+
+- [Triage-Collector](https://github.com/herosi/triage-collector)
+
+##### F-Response
+
+- [F-Response](https://www.f-response.com/) 
+
+##### SANS SIFT
+
+- [SANS SIFT](https://www.sans.org/tools/sift-workstation/) + [SIFT Cheat Sheet](https://www.sans.org/posters/sift-cheat-sheet/)
+
+##### Belkasoft Live RAM Capturer
+
+- [Belkasoft Live RAM Capturer](https://belkasoft.com/ram-capturer)
+
+
+##### Magnet Forensics RAM Capture
+
+- [MagnetForensics Ram Capture](https://www.magnetforensics.com/resources/magnet-ram-capture/)
 
 #### Dead System
 
@@ -1436,7 +1462,7 @@ grep -i WMIPrvSE psscan.txt > WMIPrvSE_psscan.txt
 
 ## MemProcFS Playbook
 
-[TOOL: MemProcFS](https://github.com/ufrisk/MemProcFS)
+- [MemProcFS](https://github.com/ufrisk/MemProcFS)
 
 **NOTE:** analysis methodology for this tool is the same process/modules used with launching Volatility, now you just have a File Explorer!
 
