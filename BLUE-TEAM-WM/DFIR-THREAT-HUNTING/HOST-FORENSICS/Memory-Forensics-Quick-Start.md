@@ -9,6 +9,30 @@
     - [Hibernation File Conversion](#hibernation-file-conversion)
     - [Automating Analysis with Baseline](#automating-analysis-with-baseline)
   - [Memory Forensics: Enumerated](#memory-forensics-enumerated)
+    - [Acquiring Memory](#acquiring-memory)
+      - [Live System](#live-system)
+        - [WinPmem](#winpmem)
+          - [**Acquire Memory in Raw Format (Recommended for Volatility)**](#acquire-memory-in-raw-format-recommended-for-volatility)
+          - [**Save Output to Specific Path**](#save-output-to-specific-path)
+          - [**Acquire Memory in AFF4 Format**](#acquire-memory-in-aff4-format)
+          - [**Acquire Memory in ELF Format**](#acquire-memory-in-elf-format)
+          - [**Enable Verbose Output**](#enable-verbose-output)
+          - [**Specify Number of Threads**](#specify-number-of-threads)
+          - [**Select Acquisition Method (Advanced)**](#select-acquisition-method-advanced)
+          - [**Extract Raw Memory from AFF4 Image**](#extract-raw-memory-from-aff4-image)
+          - [**Display Help/Usage Information**](#display-helpusage-information)
+          - [**Driver Management (Advanced)**](#driver-management-advanced)
+      - [Dead System](#dead-system)
+        - [Hibernation File](#hibernation-file)
+        - [Page and Swap Files](#page-and-swap-files)
+        - [Memory Dump](#memory-dump)
+        - [Hiberfil.sys](#hiberfilsys)
+        - [Tools that can analyze natively](#tools-that-can-analyze-natively)
+        - [Virtual Machine Machines](#virtual-machine-machines)
+          - [VMware](#vmware)
+          - [Microsoft Hyper-V](#microsoft-hyper-v)
+          - [Parallels](#parallels)
+          - [VirtualBox](#virtualbox)
     - [6-Step Memory Analysis Process (Easy → Complex)](#6-step-memory-analysis-process-easy--complex)
       - [1) Identify Rogue Processes](#1-identify-rogue-processes)
       - [2) Analyze Process Objects](#2-analyze-process-objects)
@@ -232,6 +256,188 @@ vol.py -f darkcomet.img --profile=Win7SP1x86 -B ./baseline-memory/Win7SP1x86-bas
 - **Analyze**  
   - Analyze Data for Significant Elements  
   - Recover Evidence
+
+### Acquiring Memory
+
+#### Live System
+
+- [WinPmem](https://github.com/Velocidex/WinPmem)
+- DumpIt
+- [F-Response](https://www.f-response.com/) 
+- [SANS SIFT](https://www.sans.org/tools/sift-workstation/) + [SIFT Cheat Sheet](https://www.sans.org/posters/sift-cheat-sheet/)
+- [Belkasoft Live RAM Capturer](https://belkasoft.com/ram-capturer)
+- [MagnetForensics Ram Capture](https://www.magnetforensics.com/resources/magnet-ram-capture/)
+
+##### WinPmem
+
+**Prerequisites**
+
+- Run all commands as **Administrator**
+- Use the correct executable for your system (e.g., `winpmem.exe`, `winpmem_mini_x64.exe`).
+
+###### **Acquire Memory in Raw Format (Recommended for Volatility)**
+
+```shell
+winpmem.exe --format raw -o memory_dump.raw
+```
+
+- Saves the memory image in raw format (`.raw`). This is often preferred for direct compatibility with analysis tools like Volatility.
+- *Note: Some `winpmem` versions (like `winpmem_mini_x64.exe`) may output raw format by default, simply requiring `winpmem_mini_x64.exe memory_dump.raw`.*
+
+###### **Save Output to Specific Path**
+
+```shell
+winpmem.exe -o D:\Evidence\hostname_memory.raw
+```
+
+or
+
+```shell
+winpmem.exe -o \\\\server\share\case123\hostname_memory.raw
+```
+
+- Saves the memory dump (using the default or specified format) to the given local path (`D:\Evidence\`) or network path (`\\\\server\share\case123\`).
+- Ensure the destination directory exists and you have write permissions. Replace `hostname` with the actual computer name or other identifier as needed.
+
+###### **Acquire Memory in AFF4 Format**
+
+```shell
+winpmem.exe -o memory_dump.aff4
+```
+
+- Acquires a live memory image in AFF4 format. AFF4 containers can embed useful metadata alongside the memory image but may require extraction (`--export` command below) before analysis with some tools.
+
+###### **Acquire Memory in ELF Format**
+
+```shell
+winpmem.exe --format elf -o memory_dump.elf
+```
+
+- Produces an ELF core dump format, sometimes used for specific advanced analysis or debugging workflows.
+
+###### **Enable Verbose Output**
+
+```shell
+winpmem.exe -o memory_dump.raw -v
+```
+
+- The `-v` flag enables verbose output, showing more detail during the acquisition process (helpful for monitoring or troubleshooting). `-d` or `-dd` may also work depending on the version.
+
+###### **Specify Number of Threads**
+
+```shell
+winpmem.exe -o memory_dump.raw --threads 4
+```
+
+- Uses multiple CPU threads (4 in this example) for potentially faster acquisition, especially on multi-core systems. The benefit might be more noticeable if compression were used (less impact on raw output). Adjust the number based on system resources.
+
+###### **Select Acquisition Method (Advanced)**
+
+- **Method 0 (MmMapIoSpace):**
+
+  ```shell
+  winpmem.exe -o memory_dump.raw --method 0
+  ```
+
+- **Method 1 (\Device\PhysicalMemory):**
+
+  ```shell
+  winpmem.exe -o memory_dump.raw --method 1
+  ```
+
+- **Method 2 (PTE Remapping - Default for 64-bit):**
+
+  ```shell
+  winpmem.exe -o memory_dump.raw --method 2
+  ```
+
+- **Usage:** Only change the method if the default acquisition fails or encounters issues. The default method (usually PTE Remapping on modern systems) is generally the most reliable.
+
+###### **Extract Raw Memory from AFF4 Image**
+
+```shell
+winpmem.exe --export "PhysicalMemory" --output memory_dump.raw memory_dump.aff4
+```
+
+- Extracts the raw memory stream (typically named "PhysicalMemory" within the container) from an existing `memory_dump.aff4` file and saves it as `memory_dump.raw`. Necessary if you have an AFF4 file but need a raw image for other tools.
+
+###### **Display Help/Usage Information**
+
+```shell
+winpmem.exe -h
+```
+
+- Lists all available command-line options and usage instructions for your specific `winpmem` version.
+
+###### **Driver Management (Advanced)**
+
+- **Load driver manually:**
+
+  ```shell
+  winpmem.exe -l
+  ```
+
+- **Unload driver manually:**
+
+  ```shell
+  winpmem.exe -u
+  ```
+
+- **Usage:** Typically not needed as `winpmem` loads/unloads the driver automatically during acquisition. Manual loading might be used for specific live analysis scenarios where the driver needs to persist temporarily.
+
+#### Dead System
+
+##### Hibernation File
+
+- Contains a compressed RAM Image
+- When PC goes into power save or hibernation mode from sleep mode
+- ```%SystemDrive%\hiberfil.sys```
+
+##### Page and Swap Files
+
+- ```%SystemDrive%\pagefile.sys```  
+- Parts of memory that were paged out to disk
+- ```%SystemDrive%\swapfile.sys``` (Win8+\2012+)
+- The working set of memory for suspended Modern apps that have been swapped to disk
+
+##### Memory Dump
+
+- ```%WINDIR%\MEMORY.DMP```
+- Crash dump
+
+##### Hiberfil.sys
+
+- Volatility *imagecopy*
+- Comae *hibr2bin.exe*
+- Arsenal *Hibernation Recon*
+
+##### Tools that can analyze natively
+
+- BulkExtractor
+- Magnet AXIOM
+- Volatility
+- Passware
+
+##### Virtual Machine Machines
+
+###### VMware
+
+- .vmem = raw memory
+- .vmss and .vmsn = memory image
+- Suspend or Snapshot VM
+
+###### Microsoft Hyper-V
+
+- .bin = memory image
+- .vsv = save state
+
+###### Parallels
+
+- .mem = raw memory image
+
+###### VirtualBox
+
+- .sav = partial memory image
 
 ### 6-Step Memory Analysis Process (Easy → Complex)
 
@@ -1138,8 +1344,6 @@ Extracting your cached file:
 **NOTE:** Pay close attention to the “User” column, most services and tasks should be running using built-in system accounts **ONLY**! If there’s a deviation, that may warrant further investigation.
 
 ## Memory Forensics: Synthesized
-
-Okay, here is the content with the commands structured as requested:
 
 ### Compare to baseline image
 
