@@ -593,11 +593,35 @@ Dell OptiPlex 2: 192.168.1.202
       * **Review Options:** Review selections. Click `Next`.
       * **Prerequisites Check:** Wait for checks. Ignore warnings (unless critical errors appear). Click **`Install`**.
   * **3.1.7.3. Automatic Reboot:** The server will install AD DS and **reboot automatically**.
+
   * **3.1.7.4. Post-Promotion Verification:**
       * Log in after reboot (use `LAB\Administrator` or `administrator@lab.local` with the original Administrator password).
-      * Check Server Manager shows AD DS, DNS roles.
-      * Open `Active Directory Users and Computers` (via Tools or `dsa.msc`) - verify domain exists.
-      * Open `DNS` console (via Tools or `dnsmgmt.msc`) - verify `lab.local` and `_msdcs` zones exist with records. Check Forwarders are set (may need manual config later, e.g., point to `10.10.10.1`).
-      * Open `cmd`, run `ipconfig /all` - verify DNS shows `127.0.0.1` and DNS Suffix is `lab.local`.
-      * Run `nltest /dsgetdc:lab.local` - should return `LAB-DC01.lab.local`.
-      * Run `dcdiag /v` - check for major errors (initial warnings are common).
+      * Check Server Manager shows AD DS and DNS roles are present and services appear to be running (green status).
+      * Open `Active Directory Users and Computers` (from `Tools` menu in Server Manager or run `dsa.msc`). Verify your domain (e.g., `lab.local`) is listed and you can expand it to see default containers like `Domain Controllers` (which should list `LAB-DC01`).
+      * Open `DNS` console (from `Tools` menu or run `dnsmgmt.msc`):
+          * Expand your server name (`LAB-DC01`).
+          * Expand `Forward Lookup Zones`. Verify that a zone for **`lab.local`** and a sub-zone **`_msdcs.lab.local`** exist.
+          * Expand these zones and check for the presence of various records, especially SRV records (e.g., `_ldap`, `_kerberos` under `_tcp` in both `_msdcs.lab.local` and `lab.local`). These indicate service registration.
+          * **Ensure pfSense Firewall Allows DC DNS Forwarding Queries:**
+              * Log into the pfSense Web GUI (`https://10.10.10.1`).
+              * Navigate to `Firewall` -> `Rules` -> `SERVERS_VLAN` tab.
+              * Ensure rules are in the following order (top to bottom), adding/editing as necessary:
+                  1.  **`Pass`** `IPv4 UDP` from Source `10.10.30.10` (DC IP) to Destination `10.10.10.1` (pfSense LAN_MGMT IP) Destination Port `DNS (53)`. Description: `Allow DC DNS UDP queries to pfSense LAN_MGMT`.
+                  2.  **`Pass`** `IPv4 TCP` from Source `10.10.30.10` (DC IP) to Destination `10.10.10.1` (pfSense LAN_MGMT IP) Destination Port `DNS (53)`. Description: `Allow DC DNS TCP to pfSense LAN_MGMT`.
+                  3.  **`Block`** `IPv4 *` from Source `SERVERS_VLAN net` to Destination `LAN_MGMT net`. Description: `Block access to MGMT subnet`.
+                  4.  **`Pass`** `IPv4 *` from Source `SERVERS_VLAN net` to Destination `any`. Description: `Allow SERVERS_VLAN Outbound`.
+              * Click `Save` if changes are made, and then **`Apply Changes`**.
+          * **Configure and Verify Forwarders on DC:** Right-click the server name (`LAB-DC01`) in DNS Manager -> `Properties` -> `Forwarders` tab.
+              * Click `Edit...`.
+              * Add the IP address of your pfSense LAN/Management interface: **`10.10.10.1`**. It should now validate (or at least function for lookups).
+              * Add public DNS servers for redundancy: **`1.1.1.1`** (Cloudflare) and **`8.8.8.8`** (Google) on separate lines.
+              * Click `OK`, then `Apply`.
+      * Open Command Prompt (`cmd`) or PowerShell **as Administrator**:
+          * Run `ipconfig /all`. Verify:
+              * `Host Name` is `LAB-DC01`.
+              * `Primary Dns Suffix` is `lab.local`.
+              * `DNS Servers` list should show `127.0.0.1` (and/or `::1`, its own static IP `10.10.30.10`).
+          * Run `nltest /dsgetdc:lab.local`. This should return the name `LAB-DC01.lab.local` and its IP address, confirming the DC is discoverable.
+          * Run `nslookup lab.local`. This should resolve to `10.10.30.10` (queried against the local DNS server).
+          * Run `nslookup www.google.com` (or another external site). This should now resolve successfully using the configured forwarders.
+          * Run `dcdiag /v`. This performs a comprehensive health check. Review the output carefully. It's common to see some initial warnings related to DNS delegation or SysVol replication on a brand new, single DC, but most tests should show as "passed". Address any "failed" tests.
