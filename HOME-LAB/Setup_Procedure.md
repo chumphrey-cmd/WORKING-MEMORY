@@ -625,3 +625,140 @@ Dell OptiPlex 2: 192.168.1.202
           * Run `nslookup lab.local`. This should resolve to `10.10.30.10` (queried against the local DNS server).
           * Run `nslookup www.google.com` (or another external site). This should now resolve successfully using the configured forwarders.
           * Run `dcdiag /v`. This performs a comprehensive health check. Review the output carefully. It's common to see some initial warnings related to DNS delegation or SysVol replication on a brand new, single DC, but most tests should show as "passed". Address any "failed" tests.
+
+### 3.2. Build the First Windows VM (`WinClient01`)
+
+* **Objective:** Install and configure a Windows client operating system, join it to the `lab.local` domain, and prepare it for endpoint monitoring. This VM will reside on VLAN 20 (UsersVLAN).
+
+* **Actions:**
+
+* **3.2.1. Obtain Windows Client ISO:**
+    * Download either **Windows 10 Enterprise Evaluation** or **Windows 11 Enterprise Evaluation** ISO (typically 90-day trials). Windows 10 is often still very relevant for corporate environments, but Windows 11 is the latest. Your choice depends on what environment you want to simulate most closely. For general detection engineering, either is fine. Let's assume Windows 10 for these instructions, but Windows 11 is very similar.
+    * **Microsoft Evaluation Center:** Search for "Windows 10 Enterprise Evaluation" or "Windows 11 Enterprise Evaluation" on the [Microsoft Evaluation Center](https://www.microsoft.com/en-us/evalcenter/).
+    * Select the ISO download option (registration may be required).
+    * Upload the downloaded `.iso` file to your Proxmox ISO storage.
+
+* **3.2.2. Create Client Virtual Machine in Proxmox:**
+    * Click **`Create VM`**.
+    * **General Tab:**
+        * `Name`: `WinClient01` (or `LAB-WCLIENT01`)
+        * `VM ID`: Accept default suggested ID.
+    * **OS Tab:**
+        * Select the uploaded Windows 10/11 Enterprise ISO.
+        * `Type`: `Microsoft Windows`
+        * `Version`: Select appropriate (e.g., `10/2019/2022` or `11/2022`).
+    * **System Tab:**
+        * `Graphic card`: Default
+        * `SCSI Controller`: `VirtIO SCSI single`
+        * **Check** `Qemu Agent`
+    * **Disks Tab:**
+        * `Bus/Device`: `SCSI`, Unit `0`
+        * `Storage`: Select NVMe storage.
+        * `Disk size (GiB)`: `80` (as per our table, or 60GB is also fine for a client).
+        * `Cache`: Default (`No cache`)
+        * **Check** `Discard`
+        * **Check** `IO thread`
+    * **CPU Tab:**
+        * `Sockets`: `1`
+        * `Cores`: `2`
+    * **Memory Tab:**
+        * `Memory (MiB)`: `4096` (4 GiB, can reduce to 2048 MiB after setup if needed, but 4GiB is smoother).
+        * **Uncheck** `Ballooning Device`
+    * **Network Tab:**
+        * `Bridge`: `vmbr0`
+        * `VLAN Tag`: **`20`** *(Connects to UsersVLAN)*
+        * `Model`: `VirtIO (paravirtualized)`
+        * `Firewall`: Unchecked
+    * **Confirm Tab:** Review and click `Finish`.
+    * **Add VirtIO CD Drive:** After VM creation, ensure the VM's CD/DVD drive (`Hardware` -> `CD/DVD Drive`) has the **`virtio-win-*.iso`** file mounted (you can add a second CD/DVD drive for this if you prefer to keep the Windows ISO also attached initially, or swap it after Windows install starts).
+
+* **3.2.3. Install Windows Client OS (Loading Drivers if Necessary):**
+    * Start the `WinClient01` VM and open the `Console`.
+    * Boot from the Windows installation ISO.
+    * Follow Windows Setup: Language, Time, Keyboard -> `Install now`.
+    * Product Key: If asked, there's usually an option like "I don't have a product key" for evaluations.
+    * Operating System: Select **`Windows 10 Enterprise`** (or `Windows 11 Enterprise`).
+    * Accept license terms.
+    * Installation Type: **`Custom: Install Windows only (advanced)`**.
+    * **Load Storage Driver (If Needed):** If at the "Where do you want to install Windows?" screen no drives are visible (same issue as with the DC):
+        * Ensure the `virtio-win-*.iso` is mounted in a CD/DVD drive.
+        * Click **`Load driver`**.
+        * Click `Browse`.
+        * Select the Red Hat VirtIO pass-through controller for Windows 10/11: **`D:\amd64\w[10/11]wioscsi.in`**. 
+        * Click `Next`.
+    * **Select Disk:** The virtual disk (`Drive 0 Unallocated Space`) should appear. Select it.
+    * Click `Next` to begin installation. Wait for completion and reboots.
+
+* **3.2.4. Windows Out-of-Box Experience (OOBE) & Network Bypass:**
+    * After the Windows installation files are copied and the VM reboots, you will be guided through the Out-of-Box Experience (OOBE).
+    * **Region and Keyboard:** Select your preferred Region and Keyboard layout. You can skip adding a second keyboard layout if prompted.
+    * **Network Connection Screen ("Let's connect you to a network"):**
+        * At this screen, you will likely see **no networks available**. This is expected because the VirtIO network driver for your VM's network card is not yet installed.
+        * To proceed without a network connection at this stage, press **`Shift + F10`** simultaneously (on some laptops, you might need `Shift + Fn + F10`). This will open a Command Prompt window.
+        * In the Command Prompt window, type the following command **exactly** as shown and press Enter:
+            ```cmd
+            OOBE\BYPASSNRO
+            ```
+        * The virtual machine will automatically reboot after this command is executed.
+    * **After Reboot - OOBE Resumes:**
+        * The OOBE process will start again. You'll need to re-select your Region and Keyboard layout.
+        * When you reach the "Let's connect you to a network" screen *this time*, you should see a new option like **"I don't have internet"**. Select this option.
+        * On the following screen, choose **"Continue with limited setup"**.
+    * **Account Setup (Creating a Local Account):**
+        * You will now be prompted to create a user for the PC. This will be a **local user account** for now.
+        * `Who's going to use this PC?`: Enter a username (e.g., `labadmin`). Click `Next`.
+        * Create a memorable password for this `labadmin` local user. Click `Next`. Confirm the password.
+        * You will likely be prompted to set up security questions for password recovery. Complete this step.
+        * Adjust privacy settings on the subsequent screens as you prefer (you can usually accept defaults or turn features off). Click `Accept` to proceed.
+    * Windows will then finalize the setup and take you to the desktop, logged in as the local user you just created (e.g., `labadmin`).
+
+* **3.2.5. Perform Essential Post-Installation Tasks:**
+    * Log in as the local user you just created (e.g., `labadmin`).
+    * **Install VirtIO Drivers:**
+        * Mount the **`virtio-win-*.iso`** in the VM's CD/DVD drive via Proxmox UI (if not still mounted).
+        * Inside Windows: Open File Explorer, browse the VirtIO CD. Run **`virtio-win-gt-x64.msi`** (or `virtio-win-guest-tools.exe`). Accept defaults to install all drivers (Network, Storage, Balloon, QEMU Guest Agent, etc.).
+        * **Reboot** the VM when installation is complete.
+    * **Verify Network & Correct DNS Server (if needed):**
+        * After reboot (post VirtIO driver install), log in. Open Command Prompt (`cmd`). Run `ipconfig /all`.
+        * **Check IP Configuration:** Verify the `IPv4 Address` is in the `10.10.20.x` range (e.g., `10.10.20.100`) and the `Default Gateway` is `10.10.20.1`.
+        * **Check DNS Server:** The `DNS Servers` listed *should* be `10.10.30.10` (your Domain Controller's IP), as this was configured in pfSense's DHCP settings for the UsersVLAN.
+            * **If DNS Server is incorrect** (e.g., it shows `10.10.20.1` or something else):
+                * **Verify/Correct pfSense DHCP Settings for UsersVLAN:**
+                    * Log in to your pfSense Web GUI (`https://10.10.10.1`).
+                    * Go to `Services` -> `DHCP Server`.
+                    * Click on the **`UsersVLAN`** tab.
+                    * Scroll down to the **`Servers`** section.
+                    * Ensure the **`DNS Servers`** field has `10.10.30.10` as the first (primary) entry. You can add a secondary public DNS like `1.1.1.1` if desired.
+                    * If you made any changes, click **`Save`** at the bottom of the pfSense page.
+                * **Renew DHCP Lease on `WinClient01`:**
+                    * On `WinClient01`, open Command Prompt **as Administrator**.
+                    * Type the following commands, pressing Enter after each:
+                    ```cmd
+                    ipconfig /release
+                    ipconfig /renew
+                    ```
+                    * After the `renew` command completes, run `ipconfig /all` again.
+                    * The `DNS Servers` should now correctly show `10.10.30.10`.
+    * **Rename Computer:**
+        * Go to `Settings` -> `System` -> `About`.
+        * Click `Rename this PC`.
+        * New name: `WinClient01`. Click `Next`. Reboot when prompted.
+    * **Windows Updates:**
+        * After reboot, log in as `labadmin`.
+        * Go to `Settings` -> `Update & Security` (or just `Windows Update` in Win11).
+        * Check for and install all available updates. This may require multiple reboots. Continue until it reports "You're up to date."
+    * **Time Sync Check:** Verify the system time is accurate (it should eventually sync with the DC after joining the domain).
+    * **Join to Domain:**
+        * Go to `Settings` -> `System` -> `About`.
+        * Click `Rename this PC (advanced)` or `Domain or workgroup` (the exact wording might vary slightly, look for advanced system properties or computer name/domain change options).
+        * In the System Properties window, on the `Computer Name` tab, click `Change...`.
+        * Under "Member of", select `Domain:`. Enter **`lab.local`**. Click `OK`.
+        * When prompted for credentials, enter the domain administrator credentials:
+            * Username: `LAB\Administrator` (or `administrator@lab.local`)
+            * Password: The password you set for the `LAB-DC01` Administrator account.
+        * Click `OK`. You should see a "Welcome to the lab.local domain." message.
+        * Click `OK` to acknowledge, then `Close`, and **Reboot Now**.
+    * **Verify Domain Join:**
+        * After reboot, at the login screen, you should be able to switch users and log in with a domain account (e.g., `LAB\Administrator`) or your local `labadmin` account.
+        * Log in (e.g., as `labadmin` or `LAB\Administrator`).
+        * Go to `Settings` -> `System` -> `About`. Verify the `Full device name` is now `LAB-WCLIENT01.lab.local`.
