@@ -31,3 +31,5 @@
     * To create new client VMs, right-click the new template and select `Clone`.
     * Configure the clone's name, choose "Full clone" for independent machines, and assign it to the correct VLAN.
     * The cloned VM will boot into OOBE, allowing you to set a computer name, create a local user (or join domain directly if OOBE/network allows), and it will have a unique SID.
+
+## Integration of Deception Techniques...

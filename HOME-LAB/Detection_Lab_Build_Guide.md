@@ -155,7 +155,7 @@ Dell OptiPlex 2: 192.168.1.202
 | **Windows Server DC** | Windows Server 2022 Standard Eval (180-day ISO) | Active Directory Domain Controller            | Servers          | 30      | 2-4       | 4-6      | 80           | Primary target for AD security monitoring. Requires Eval ISO. Needs AD DS role configuration post-install.                                              |
 | **Windows Client 1**| Windows 10/11 Enterprise Eval (90-day ISO)      | User Workstation Target 1                     | User Endpoints   | 20      | 2-4       | 4-8      | 80           | Simulates Win endpoint. Target for Sysmon, agent (Wazuh/Beat). Requires Eval ISO. Will be domain-joined.                                              |
 | **Windows Client 2**| Windows 10/11 Enterprise Eval (90-day ISO)      | User Workstation Target 2                     | User Endpoints   | 20      | 2-4       | 4-8      | 80           | Second user endpoint for diverse testing/simulation. Eval ISO. Will be domain-joined.                                                               |
-| **Linux Server 1** | Ubuntu Server 22.04 LTS or Debian 12 (ISO)      | Linux Target Server (Web, DB, etc.)           | Servers          | 30      | 2         | 4        | 50           | Target for Linux host monitoring (Auditd, Osquery) & server attacks. Can host vulnerable apps later.                                                |
+| **Linux Server 1** | Ubuntu Server  LTS or Debian 12 (ISO)      | Linux Target Server (Web, DB, etc.)           | Servers          | 30      | 2         | 4        | 50           | Target for Linux host monitoring (Auditd, Osquery) & server attacks. Can host vulnerable apps later.                                                |
 | **Attacker VM** | Kali Linux or Parrot Security OS (Latest ISO)     | Offensive Operations / Testing Detections     | Attacker         | 99      | 2-4       | 4-8      | 60           | Used to simulate attacks against lab targets. Kept isolated on its own VLAN.                                                                        |
 | **Proxmox Node(s)** | N/A (Hypervisor Host)                             | Virtualization Platform                       | Host Management  | 10   | (Host)    | (Host)   | (Host)       | Underlying hypervisor.       |
 
@@ -461,7 +461,7 @@ Dell OptiPlex 2: 192.168.1.202
 
 ## Phase 3: VM Selection & Initial Build
 
-### 3.1. Build the Windows Server Domain Controller (DC)
+### 3.1. Build the Windows Server Domain Controller (`LAB-DC01`)
 
 * **Objective:** Install and configure the base Windows Server 2022 operating system, preparing it for promotion to a Domain Controller. This VM will reside on VLAN 30 (ServersVLAN).
 
@@ -671,6 +671,7 @@ Dell OptiPlex 2: 192.168.1.202
         * `Firewall`: Unchecked
     * **Confirm Tab:** Review and click `Finish`.
     * **Add VirtIO CD Drive:** After VM creation, ensure the VM's CD/DVD drive (`Hardware` > `CD/DVD Drive`) has the **`virtio-win-*.iso`** file mounted (you can add a second CD/DVD drive for this if you prefer to keep the Windows ISO also attached initially, or swap it after Windows install starts).
+      * **NOTE:** ensure that your Windows ISO is in placed first in the boot order
 
 * **3.2.3. Install Windows Client OS (Loading Drivers if Necessary):**
     * Start the `WinClient01` VM and open the `Console`.
@@ -801,3 +802,148 @@ Dell OptiPlex 2: 192.168.1.202
                 * After reboot, log in (as local or domain admin).
                 * Check `Settings` > `System` > `About`. Verify `Full device name` is now `LAB-WCLIENT02.lab.local`.
 
+### 3.4. Build the Linux Server VM (`LAB-LSRV01`)
+
+* **Objective:** Install and configure a base Linux server operating system (Ubuntu Server  LTS), connect it to the ServersVLAN, and prepare it for future roles.
+
+* **Actions:**
+
+    * **3.4.1. Obtain Ubuntu Server  LTS ISO:**
+      * Download the latest [Ubuntu Server LTS ISO](https://ubuntu.com/download/server) image.
+      * Ensure you download the standard server ISO for your architecture (likely amd64).
+      * Upload the downloaded `.iso` file to your Proxmox ISO storage.        
+
+    * **3.4.2. Create `LinuxSrv1` Virtual Machine in Proxmox:**
+      * Click **`Create VM`**.
+      * **General Tab:**
+          * `Name`: `LinuxSrv1` (or `LAB-LSRV01`)
+          * `VM ID`: Accept default suggested ID.
+      * **OS Tab:**
+          * Select the uploaded Ubuntu Server  LTS ISO.
+          * `Type`: `Linux`
+          * `Version`: (Select a recent Linux kernel version, e.g., `5.x` or `6.x` series).
+      * **System Tab:**
+          * `Graphic card`: Default
+          * `SCSI Controller`: `VirtIO SCSI single`
+          * **Check** `Qemu Agent`
+      * **Disks Tab:**
+          * `Bus/Device`: `SCSI`, Unit `0`
+          * `Storage`: Select NVMe storage.
+          * `Disk size (GiB)`: `50` (as per our table).
+          * `Cache`: Default (`No cache`)
+          * **Check** `Discard`
+          * **Check** `IO thread`
+      * **CPU Tab:**
+          * `Sockets`: `1`
+          * `Cores`: `2`
+      * **Memory Tab:**
+          * `Memory (MiB)`: `2048` (2 GiB - can be increased to 4096 MiB later if needed for more services).
+          * `Ballooning Device`: Can leave checked for Linux, or uncheck for fixed allocation.
+      * **Network Tab:**
+          * `Bridge`: `vmbr0`
+          * `VLAN Tag`: **`30`** *(Connects to ServersVLAN)*
+          * `Model`: `VirtIO (paravirtualized)`
+          * `Firewall`: Unchecked
+      * **Confirm Tab:** Review and click `Finish`.
+
+    * **3.4.3. Install Ubuntu Server LTS OS:**
+      * Start the `LinuxSrv1` VM and open the `Console`.
+      * Boot from the Ubuntu Server installation ISO.
+      * **Language:** Select your language.
+      * **Keyboard Layout:** Confirm or change your keyboard layout.
+      * **Installation Type:** Choose "Ubuntu Server" (not "Ubuntu Server (minimized)").
+      * **Network Configuration:**
+          * The installer should attempt DHCP on its network interface (e.g., `ens18`).
+          * Verify it gets an IP address in the `10.10.30.x` range from your pfSense DHCP server.
+          * If it does, select `Done`. (Static IP can be configured later via Netplan or DHCP reservation).
+      * **Proxy address:** Leave blank unless you require a proxy. Select `Done`.
+      * **Ubuntu Archive Mirror:** Use the default mirror address. Select `Done`.
+      * **Storage Configuration:**
+          * Select "Use an entire disk".
+          * Ensure the 50GB VirtIO disk is selected.
+          * Select "Set up this disk as an LVM group" (optional, but default and fine).
+          * Confirm the destructive action on the "Confirm destructive action" screen by selecting `Continue`.
+      * **Profile Setup:**
+          * `Your name:` (e.g., `Lab Administrator`)
+          * `Your server's name:` `lab-lsrv01` (this will be the hostname)
+          * `Pick a username:` `labadmin` (or your preferred Linux admin username)
+          * `Choose a password:` (Enter a strong password)
+          * `Confirm your password:`
+      * **SSH Setup:**
+          * **Highly Recommended:** Check the box for **`Install OpenSSH server`**. This allows you to connect via SSH later.
+          * You can skip importing SSH identities for now. Select `Done`.
+      * **Featured Server Snaps:** You can skip installing any of these for now by pressing Tab to highlight `Done` and pressing Enter.
+      * **Installation:** The system will install. Wait for it to complete.
+      * **Reboot:** When you see "Installation complete!", navigate to **`Reboot Now`** and press Enter.
+      * **Detach ISO:** Quickly go to the Proxmox UI for `LinuxSrv1` -> `Hardware` -> `CD/DVD Drive`. Click `Edit` and select **`Do not use any media`**. Click `OK`. (This is to prevent booting from the ISO again).
+
+    * **3.4.4. Perform Essential Post-Installation Tasks:**
+      * Log in to the server via the Proxmox console or SSH (e.g., `ssh labadmin@IP_ADDRESS_OF_LINUXSRV1`) using the credentials you created during installation.
+      * **Verify Network Configuration and Correct DNS:**
+          * **Initial IP Check:**
+              * Run `ip a` (or `ip addr show`). Confirm your primary network interface (e.g., `ens18`) has an IP address in the `10.10.30.x` range obtained via DHCP.
+              * Check the default gateway: `ip route show | grep default` (should be `10.10.30.1`).
+          * **Check DNS Resolver Status & Upstream Servers:**
+              * Run `resolvectl status`.
+              * Examine the output for your main network interface (e.g., `Link 2 (ens18)`). The `DNS Servers` list should ideally show `10.10.30.10` (your DC) as the primary or first server listed. `DNS Domain` should show `lab.local`.
+          * **If `DNS Servers` list is incorrect (does not list or prioritize `10.10.30.10` as learned from DHCP):**
+              * **Step A: Verify/Correct pfSense DHCP Settings for ServersVLAN (VLAN 30):**
+                  * Log in to your pfSense Web GUI (`https://10.10.10.1`).
+                  * Go to `Services` -> `DHCP Server` -> `ServersVLAN` tab.
+                  * Scroll down to the `Servers` section. Ensure the **`DNS Servers`** field has `10.10.30.10` as the first entry. You can add `1.1.1.1` and `8.8.8.8` as subsequent entries for fallback if desired.
+                  * Click `Save` at the bottom of the pfSense page if you made any changes, and then click `Apply Changes`.
+              * **Step B: Renew DHCP Lease on `LinuxSrv1`:**
+                  * `sudo reboot` the Linux Server. (`dhclient` typically isn't installed by default)
+              * **Step C: Re-check DNS Resolver Status on `LinuxSrv1`:**
+                  * Run `resolvectl status` again. The `DNS Servers` list should now correctly reflect `10.10.30.10` as the primary.
+          * **Configure Netplan for Explicit DNS (Recommended for AD Integration & Consistency):**
+              * Even if DHCP is now providing the correct DNS, explicitly setting it in Netplan on the client ensures its preference.
+              * Find your Netplan configuration file (usually in `/etc/netplan/`, e.g., `00-installer-config.yaml`).
+              * Edit the file: `sudo nano /etc/netplan/YOUR_CONFIG_FILE.yaml`.
+              * Modify it to look similar to this, ensuring `dhcp4: true` is kept if you still want the IP and gateway from DHCP, but override/specify DNS:
+                ```yaml
+                network:
+                  ethernets:
+                    ens18: # Replace ens18 with your actual interface name
+                      dhcp4: true
+                      nameservers:
+                        search: [lab.local]
+                        addresses: [10.10.30.10, 1.1.1.1, 8.8.8.8] # DC first, then public backups
+                  version: 2
+                ```
+              * Apply the Netplan configuration:
+                ```bash
+                sudo netplan apply
+                ```
+          * **Final DNS Verification on `LinuxSrv1`:**
+              * Run `resolvectl status` one more time to see the applied settings.
+              * Test name resolution for both internal and external names:
+                ```bash
+                nslookup lab-dc01.lab.local
+                nslookup [www.google.com](https://www.google.com)
+                ping -c 3 lab-dc01.lab.local
+                ping -c 3 google.com
+                ```
+              * All these tests should now succeed.
+      * **Update System:**
+          ```bash
+          sudo apt update
+          sudo apt upgrade -y
+          sudo apt autoremove -y # Optional: removes unused packages
+          ```
+      * **Install QEMU Guest Agent (if not already installed by default with Ubuntu Server):**
+          ```bash
+          sudo apt install qemu-guest-agent -y
+          sudo systemctl start qemu-guest-agent
+          sudo systemctl enable qemu-guest-agent
+          ```
+      * **Configure Fixed IP via DHCP Reservation in pfSense (Recommended if not using static Netplan IP):**
+          * *(This step is an alternative to setting a fully static IP in Netplan. If you set nameservers in Netplan but keep `dhcp4: true` for IP, this is good).*
+          * Find the MAC address of `LinuxSrv1`'s network interface (`ip a show ens18`).
+          * In pfSense Web GUI -> `Services` -> `DHCP Server` -> `ServersVLAN` tab.
+          * Scroll to "DHCP Static Mappings". Click `+ Add`.
+          * Enter MAC address, desired `IP Address` (e.g., `10.10.30.20` - outside dynamic range), `Hostname` (`lab-lsrv01`), `Description`.
+          * Click `Save`, then `Apply Changes` in pfSense.
+          * On `LinuxSrv1`, renew DHCP lease or reboot to pick up the reserved IP.
+      * **Verify Hostname:** Ensure it's `lab-lsrv01` (check with `hostnamectl`).
+      * **Time Sync Check:** Verify system time is accurate (`timedatectl`).
