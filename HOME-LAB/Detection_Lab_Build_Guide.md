@@ -947,3 +947,104 @@ Dell OptiPlex 2: 192.168.1.202
           * On `LinuxSrv1`, renew DHCP lease or reboot to pick up the reserved IP.
       * **Verify Hostname:** Ensure it's `lab-lsrv01` (check with `hostnamectl`).
       * **Time Sync Check:** Verify system time is accurate (`timedatectl`).
+
+
+### 3.5. Build the Attacker VM (`Kali01`)
+
+* **Objective:** Install and configure a penetration testing distribution (Kali Linux) to serve as the source for simulated attacks and testing detections. This VM will reside on VLAN 99 (AttackerVLAN).
+
+* **Actions:**
+
+    * **3.5.1. Obtain Kali Linux ISO:**
+        * Download the latest **Kali Linux Installer** image (usually 64-bit).
+        * **Official Link:** Go to [Kali Website](https://www.kali.org/get-kali/#kali-platforms) and choose the "Installer Images" option.
+        * Upload the downloaded `.iso` file to your Proxmox ISO storage.
+
+    * **3.5.2. Create `AttackerVM` Virtual Machine in Proxmox:**
+        * Click **`Create VM`**.
+        * **General Tab:**
+            * `Name`: `AttackerVM` (or `LAB-KALI01`)
+            * `VM ID`: Accept default suggested ID.
+        * **OS Tab:**
+            * Select the uploaded Kali Linux ISO.
+            * `Type`: `Linux`
+            * `Version`: (Select a recent Linux kernel version, e.g., `5.x` or `6.x` series).
+        * **System Tab:**
+            * `Graphic card`: Default. (Consider `VirtIO-GPU` if desired later).
+            * `SCSI Controller`: `VirtIO SCSI single`.
+            * **Check** `Qemu Agent`.
+        * **Disks Tab:**
+            * `Bus/Device`: `SCSI`, Unit `0`.
+            * `Storage`: Select NVMe storage.
+            * `Disk size (GiB)`: `60`.
+            * `Cache`: Default (`No cache`).
+            * **Check** `Discard`.
+            * **Check** `IO thread`.
+        * **CPU Tab:**
+            * `Sockets`: `1`.
+            * `Cores`: `2` (or `4`).
+        * **Memory Tab:**
+            * `Memory (MiB)`: `4096`.
+            * `Ballooning Device`: Can leave checked.
+        * **Network Tab:**
+            * `Bridge`: `vmbr0`.
+            * `VLAN Tag`: **`99`**.
+            * `Model`: `VirtIO (paravirtualized)`.
+            * `Firewall`: Unchecked.
+        * **Confirm Tab:** Review and click `Finish`.
+
+    * **3.5.3. Install Kali Linux OS:**
+        * Start the `AttackerVM` VM and open the `Console`.
+        * Boot from the Kali Linux installation ISO.
+        * Select **"Graphical install"**.
+        * **Language, Location, Keyboard Layout:** Select preferences.
+        * **Network Configuration:** `Hostname`: e.g., `kali`; `Domain name`: leave blank or `lab.local`.
+        * **User Accounts:** Set up a full name, username (e.g., `kaliuser`), and strong password.
+        * **Partition Disks:** "Guided - use entire disk", select the VirtIO disk, "All files in one partition", "Finish partitioning and write changes", Confirm "Yes".
+        * **Software Selection:** Default selections are usually fine. `Continue`.
+        * **Install GRUB Bootloader:** `Yes`, select virtual disk (e.g., `/dev/sda`).
+        * **Installation Complete:** `Continue` to reboot.
+        * **Detach ISO:** In Proxmox UI for `AttackerVM` -> `Hardware` -> `CD/DVD Drive` -> `Edit` -> select **`Do not use any media`**. Click `OK`.
+
+    * **3.5.4. Perform Essential Post-Installation Tasks:**
+        * Log in to Kali Linux using the username and password created.
+        * **Verify Network and pfSense DHCP Configuration:**
+            * Open a terminal.
+            * Check IP: Run `ip a`. Verify an IP address in the `10.10.99.x` range (from DHCP on VLAN 99) and that the `Default Gateway` is `10.10.99.1`.
+            * Check current DNS: Run `cat /etc/resolv.conf`. This file (or `resolvectl status` for `systemd-resolved` systems) will show the DNS servers provided by DHCP.
+            * **Ensure pfSense DHCP for AttackerVLAN (VLAN 99) is providing correct DNS:**
+                * Log in to your pfSense Web GUI (`https://10.10.10.1`).
+                * Navigate to `Services` -> `DHCP Server` -> `AttackerVLAN` tab.
+                * Confirm **`Enable DHCP server on AttackerVLAN interface`** is **checked**.
+                * Confirm the **`Range`** is correct (e.g., `10.10.99.100` to `10.10.99.200`).
+                * For **`DNS Servers`**: It is recommended to use public DNS servers for the Attacker VM. Ensure they are set, for example:
+                    * Primary: `1.1.1.1`
+                    * Secondary: `8.8.8.8`
+                * If you made changes, click `Save` at the bottom of the pfSense page, then `Apply Changes`.
+                * **On the `AttackerVM`**, if pfSense DHCP settings were changed, renew the lease to get the new settings:
+                    ```bash
+                    sudo dhclient -r # Release current lease (may need interface name, e.g., eth0)
+                    sudo dhclient    # Get new lease (may need interface name)
+                    # Or simply reboot the AttackerVM: sudo reboot
+                    ```
+                * Re-check `cat /etc/resolv.conf` or `resolvectl status` on Kali to confirm it now has the correct public DNS servers.
+            * Test internet connectivity: `ping -c 3 google.com`.
+        * **Update System & Tools (Kali often has many updates post-install):**
+            ```bash
+            sudo apt update
+            sudo apt full-upgrade -y
+            sudo apt autoremove -y
+            ```
+        * **Install QEMU Guest Agent (if not default or if IP doesn't show in Proxmox summary):**
+            ```bash
+            sudo apt install qemu-guest-agent -y
+            sudo systemctl start qemu-guest-agent
+            sudo systemctl enable qemu-guest-agent
+            ```
+        * **(Optional) Configure Fixed IP via DHCP Reservation in pfSense:**
+            * Find MAC address of `AttackerVM` (`ip a`).
+            * In pfSense -> `Services` -> `DHCP Server` -> `AttackerVLAN` tab, add a static mapping (e.g., to `10.10.99.20`).
+            * Renew lease on Kali or reboot.
+        * **Timezone (Optional but recommended for consistency):**
+            * Check current timezone: `timedatectl`.
+            * To set to UTC: `sudo timedatectl set-timezone Etc/UTC`.
