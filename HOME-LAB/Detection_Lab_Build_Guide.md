@@ -1048,3 +1048,91 @@ Dell OptiPlex 2: 192.168.1.202
         * **Timezone (Optional but recommended for consistency):**
             * Check current timezone: `timedatectl`.
             * To set to UTC: `sudo timedatectl set-timezone Etc/UTC`.
+
+### 3.6. Build the Security Onion VM (`SecurityOnion`)
+
+* **Actions:**
+
+    * **3.6.1. Obtain Security Onion 2.4 ISO:**
+        * Download the latest **Security Onion 2.4.x Installation ISO**
+        * **Official Source:** Go to the Security Onion Solutions GitHub releases page. Look for the latest 2.4.x release and download the file named similar to `securityonion-2.4.X-XXX.iso`.
+        * **Link (navigate to latest release):** [https://github.com/Security-Onion-Solutions/securityonion/releases](https://github.com/Security-Onion-Solutions/securityonion/releases)
+        * Upload the downloaded `.iso` file to your Proxmox ISO storage.
+
+    * **3.6.2. Create `SecurityOnion` Virtual Machine in Proxmox:**
+        * Click **`Create VM`**.
+        * **General Tab:**
+            * `Name`: `SecurityOnion` (or `LAB-SO01`)
+            * `VM ID`: Accept default suggested ID.
+        * **OS Tab:**
+            * Select the uploaded Security Onion 2.4 ISO.
+            * `Type`: `Linux`
+            * `Version`: (Select a recent Linux kernel, e.g., `5.x` or `6.x` series).
+        * **System Tab:**
+            * `Graphic card`: Default.
+            * `SCSI Controller`: **`LSI 53C895A`** or **`Default (LSI 53C895A)`**. (Security Onion's installer is based on Rocky Linux; using a broadly compatible controller like LSI for the OS disk is often recommended to avoid boot/install driver issues. VirtIO can be used for *additional data disks* later if needed).
+            * **Check** `Qemu Agent`.
+        * **Disks Tab:**
+            * `Bus/Device`: **`SCSI`**, Unit `0`.
+            * `Storage`: Select NVMe storage.
+            * `Disk size (GiB)`: **`300`** (Minimum. `500` GiB or more is better for longer log retention).
+            * `Cache`: **`Default (No cache)`** (safer default for data integrity).
+            * `Discard`: Can leave unchecked if using LSI controller, or check if your storage supports it well with LSI passthrough (less critical than with VirtIO disk).
+            * `IO thread`: Typically not applicable/beneficial if not using a VirtIO disk controller for the OS disk.
+        * **CPU Tab:**
+            * `Sockets`: `1`.
+            * `Cores`: **`4`** (Minimum. `6` or `8` is recommended if resources permit).
+        * **Memory Tab:**
+            * `Memory (MiB)`: **`16384`** (16 GiB - Absolute minimum for a standalone install. **`24576`** (24GiB) or **`32768`** (32GiB) is strongly recommended for better performance).
+            * `Ballooning Device`: Uncheck for critical services like a SIEM for stable memory allocation.
+        * **Network Tab (Management Interface Only for Now):**
+            * `Bridge`: `vmbr0`.
+            * `VLAN Tag`: **`10`** *(Connects to ManagementVLAN)*.
+            * `Model`: `VirtIO (paravirtualized)` (Network VirtIO drivers are generally well-supported by the underlying OS).
+            * `Firewall`: Unchecked.
+        * **Confirm Tab:** Review and click `Finish`.
+
+    * **3.6.3. Install Security Onion Base OS:**
+        * Start the `SecurityOnion` VM and open the `Console`.
+        * Boot from the Security Onion installation ISO.
+        * At the GRUB menu, select **"Install SecurityOnion X.Y.Z"** (or similar default install option) and press Enter.
+        * The installer will load. It's a text-based/curses installer.
+        * **User Account:** You will be prompted to create a username and password for the operating system administrator. Choose these carefully and document them.
+        * **Network Configuration:** It should attempt to configure its network interface (`ens18` or similar) via DHCP. Verify it gets an IP address in the `10.10.10.x` range from your pfSense DHCP on VLAN 10.
+        * **Installation Type:** The installer will partition the disk and install the base OS (Rocky Linux). This part is mostly automated.
+        * **Reboot:** Once the base OS installation is complete, it will prompt for a reboot. Select "Reboot".
+        * **Detach ISO:** Quickly go to the Proxmox UI for `SecurityOnion` -> `Hardware` -> `CD/DVD Drive`. Click `Edit` and select **`Do not use any media`**. Click `OK`.
+
+    * **3.6.4. Run `so-setup` (Security Onion Setup Script):**
+        * After the VM reboots into the installed OS, log in as the OS administrator user you created.
+        * The Security Onion setup script, **`so-setup`**, should launch automatically. If it doesn't, you can usually type `sudo so-setup` to start it.
+        * **Follow the Prompts Carefully:** This script guides you through the main Security Onion configuration.
+            * **Installation Type:** Choose **`STANDALONE`**. (This installs Manager, Sensor, and Search components on this single VM. `EVAL` is a more limited option).
+            * **Network Configuration:** Confirm or set the static IP address for the management interface. **A static IP is highly recommended.** You can let it use the DHCP-assigned one first, then change it via `so-setup` or use a DHCP reservation in pfSense (see below).
+            * **Components:** Accept the defaults for a standalone setup.
+            * **User Accounts for Security Onion Console (SOC):** Create an administrator account (email address format, e.g., `socadmin@lab.local`) and password for accessing the web-based SOC. **Document these credentials securely.**
+            * **EULAs/Agreements:** Accept any necessary agreements.
+            * **This process will download and install numerous Docker containers and configure services. It will take a long time (30 minutes to several hours depending on your internet speed and VM performance). Be patient.**
+        * The script will indicate when it has completed successfully. It might prompt for another reboot.
+
+    * **3.6.5. Essential Post-Setup Tasks & Verification:**
+        * **Access Security Onion Console (SOC):**
+            * From a machine on your ManagementVLAN (VLAN 10, e.g., your `Temp-WebUI-Access` VM, or your host if it can route to `10.10.10.x`), open a web browser.
+            * Navigate to `https://<IP_ADDRESS_OF_SECURITYONION>`. (e.g., `https://10.10.10.30`).
+            * Accept any browser security warnings for the self-signed certificate.
+            * Log in with the SOC admin user credentials you created during `so-setup`.
+        * **(Recommended) Static IP / DHCP Reservation:**
+            * If you didn't set a static IP during `so-setup`, it's highly recommended now. Either configure it within Security Onion's OS (Rocky Linux - using `nmcli` or `nmtui`) OR, more simply for lab consistency:
+            * Find the MAC address of `SecurityOnion`'s management NIC.
+            * In pfSense Web GUI -> `Services` -> `DHCP Server` -> `LAN_MGMT` tab (or your VLAN 10 interface name).
+            * Add a static mapping for `SecurityOnion`'s MAC to a fixed IP like **`10.10.10.30`**.
+            * `Hostname`: `lab-so01`. `Description`: `Security Onion`.
+            * Save and Apply Changes in pfSense. Reboot Security Onion or renew its lease.
+        * **System Updates for Security Onion (`soup`):**
+            * SSH into your Security Onion VM or use the console.
+            * Run the Security Onion update command:
+              ```bash
+              sudo soup
+              ```
+            * This will update all Security Onion components, OS packages, and rulesets. Run this regularly. It may require a reboot.
+        * **Time Sync Check:** Ensure the time is accurate and set to UTC on the Security Onion VM (`timedatectl`). Critical for SIEM.
