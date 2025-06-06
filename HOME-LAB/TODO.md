@@ -33,3 +33,7 @@
     * The cloned VM will boot into OOBE, allowing you to set a computer name, create a local user (or join domain directly if OOBE/network allows), and it will have a unique SID.
 
 ## Integration of Deception Techniques...
+
+## Creation of DFIR VLAN
+
+* Flare, SANS DFIR, Kali Purple, Remnux, etc. for dedicated DFIR/Malware Analysis 

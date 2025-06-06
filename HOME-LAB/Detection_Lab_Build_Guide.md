@@ -875,7 +875,7 @@ Dell OptiPlex 2: 192.168.1.202
       * **Featured Server Snaps:** You can skip installing any of these for now by pressing Tab to highlight `Done` and pressing Enter.
       * **Installation:** The system will install. Wait for it to complete.
       * **Reboot:** When you see "Installation complete!", navigate to **`Reboot Now`** and press Enter.
-      * **Detach ISO:** Quickly go to the Proxmox UI for `LinuxSrv1` -> `Hardware` -> `CD/DVD Drive`. Click `Edit` and select **`Do not use any media`**. Click `OK`. (This is to prevent booting from the ISO again).
+      * **Detach ISO:** Quickly go to the Proxmox UI for `LinuxSrv1` > `Hardware` > `CD/DVD Drive`. Click `Edit` and select **`Do not use any media`**. Click `OK`. (This is to prevent booting from the ISO again).
 
     * **3.4.4. Perform Essential Post-Installation Tasks:**
       * Log in to the server via the Proxmox console or SSH (e.g., `ssh labadmin@IP_ADDRESS_OF_LINUXSRV1`) using the credentials you created during installation.
@@ -889,7 +889,7 @@ Dell OptiPlex 2: 192.168.1.202
           * **If `DNS Servers` list is incorrect (does not list or prioritize `10.10.30.10` as learned from DHCP):**
               * **Step A: Verify/Correct pfSense DHCP Settings for ServersVLAN (VLAN 30):**
                   * Log in to your pfSense Web GUI (`https://10.10.10.1`).
-                  * Go to `Services` -> `DHCP Server` -> `ServersVLAN` tab.
+                  * Go to `Services` > `DHCP Server` > `ServersVLAN` tab.
                   * Scroll down to the `Servers` section. Ensure the **`DNS Servers`** field has `10.10.30.10` as the first entry. You can add `1.1.1.1` and `8.8.8.8` as subsequent entries for fallback if desired.
                   * Click `Save` at the bottom of the pfSense page if you made any changes, and then click `Apply Changes`.
               * **Step B: Renew DHCP Lease on `LinuxSrv1`:**
@@ -940,7 +940,7 @@ Dell OptiPlex 2: 192.168.1.202
       * **Configure Fixed IP via DHCP Reservation in pfSense (Recommended if not using static Netplan IP):**
           * *(This step is an alternative to setting a fully static IP in Netplan. If you set nameservers in Netplan but keep `dhcp4: true` for IP, this is good).*
           * Find the MAC address of `LinuxSrv1`'s network interface (`ip a show ens18`).
-          * In pfSense Web GUI -> `Services` -> `DHCP Server` -> `ServersVLAN` tab.
+          * In pfSense Web GUI > `Services` > `DHCP Server` > `ServersVLAN` tab.
           * Scroll to "DHCP Static Mappings". Click `+ Add`.
           * Enter MAC address, desired `IP Address` (e.g., `10.10.30.20` - outside dynamic range), `Hostname` (`lab-lsrv01`), `Description`.
           * Click `Save`, then `Apply Changes` in pfSense.
@@ -1004,7 +1004,7 @@ Dell OptiPlex 2: 192.168.1.202
         * **Software Selection:** Default selections are usually fine. `Continue`.
         * **Install GRUB Bootloader:** `Yes`, select virtual disk (e.g., `/dev/sda`).
         * **Installation Complete:** `Continue` to reboot.
-        * **Detach ISO:** In Proxmox UI for `AttackerVM` -> `Hardware` -> `CD/DVD Drive` -> `Edit` -> select **`Do not use any media`**. Click `OK`.
+        * **Detach ISO:** In Proxmox UI for `AttackerVM` > `Hardware` > `CD/DVD Drive` > `Edit` > select **`Do not use any media`**. Click `OK`.
 
     * **3.5.4. Perform Essential Post-Installation Tasks:**
         * Log in to Kali Linux using the username and password created.
@@ -1014,7 +1014,7 @@ Dell OptiPlex 2: 192.168.1.202
             * Check current DNS: Run `cat /etc/resolv.conf`. This file (or `resolvectl status` for `systemd-resolved` systems) will show the DNS servers provided by DHCP.
             * **Ensure pfSense DHCP for AttackerVLAN (VLAN 99) is providing correct DNS:**
                 * Log in to your pfSense Web GUI (`https://10.10.10.1`).
-                * Navigate to `Services` -> `DHCP Server` -> `AttackerVLAN` tab.
+                * Navigate to `Services` > `DHCP Server` > `AttackerVLAN` tab.
                 * Confirm **`Enable DHCP server on AttackerVLAN interface`** is **checked**.
                 * Confirm the **`Range`** is correct (e.g., `10.10.99.100` to `10.10.99.200`).
                 * For **`DNS Servers`**: It is recommended to use public DNS servers for the Attacker VM. Ensure they are set, for example:
@@ -1043,7 +1043,7 @@ Dell OptiPlex 2: 192.168.1.202
             ```
         * **(Optional) Configure Fixed IP via DHCP Reservation in pfSense:**
             * Find MAC address of `AttackerVM` (`ip a`).
-            * In pfSense -> `Services` -> `DHCP Server` -> `AttackerVLAN` tab, add a static mapping (e.g., to `10.10.99.20`).
+            * In pfSense > `Services` > `DHCP Server` > `AttackerVLAN` tab, add a static mapping (e.g., to `10.10.99.20`).
             * Renew lease on Kali or reboot.
         * **Timezone (Optional but recommended for consistency):**
             * Check current timezone: `timedatectl`.
@@ -1051,15 +1051,15 @@ Dell OptiPlex 2: 192.168.1.202
 
 ### 3.6. Build the Security Onion VM (`SecurityOnion`)
 
+* **Objective:** Install and configure Security Onion 2.4 to act as the lab's Security Information and Event Management (SIEM), Network Intrusion Detection System (NIDS), and central log collector. This VM will reside on VLAN 10 (ManagementVLAN).
+
 * **Actions:**
 
     * **3.6.1. Obtain Security Onion 2.4 ISO:**
-        * Download the latest **Security Onion 2.4.x Installation ISO**
-        * **Official Source:** Go to the Security Onion Solutions GitHub releases page. Look for the latest 2.4.x release and download the file named similar to `securityonion-2.4.X-XXX.iso`.
-        * **Link (navigate to latest release):** [https://github.com/Security-Onion-Solutions/securityonion/releases](https://github.com/Security-Onion-Solutions/securityonion/releases)
-        * Upload the downloaded `.iso` file to your Proxmox ISO storage.
+        * Download the latest **[Security Onion 2.4.x Installation ISO](https://github.com/Security-Onion-Solutions/securityonion/releases)** and upload the downloaded `.iso` file to your Proxmox ISO storage.
 
     * **3.6.2. Create `SecurityOnion` Virtual Machine in Proxmox:**
+        * **Important Note on Network Interfaces (NICs):** The Security Onion `STANDALONE` installation requires a minimum of two NICs: one for management access and one for network traffic sniffing (NIDS). We will create both now.
         * Click **`Create VM`**.
         * **General Tab:**
             * `Name`: `SecurityOnion` (or `LAB-SO01`)
@@ -1070,69 +1070,110 @@ Dell OptiPlex 2: 192.168.1.202
             * `Version`: (Select a recent Linux kernel, e.g., `5.x` or `6.x` series).
         * **System Tab:**
             * `Graphic card`: Default.
-            * `SCSI Controller`: **`LSI 53C895A`** or **`Default (LSI 53C895A)`**. (Security Onion's installer is based on Rocky Linux; using a broadly compatible controller like LSI for the OS disk is often recommended to avoid boot/install driver issues. VirtIO can be used for *additional data disks* later if needed).
+            * `SCSI Controller`: **`VirtIO SCSI single`**.
             * **Check** `Qemu Agent`.
         * **Disks Tab:**
             * `Bus/Device`: **`SCSI`**, Unit `0`.
             * `Storage`: Select NVMe storage.
             * `Disk size (GiB)`: **`300`** (Minimum. `500` GiB or more is better for longer log retention).
-            * `Cache`: **`Default (No cache)`** (safer default for data integrity).
-            * `Discard`: Can leave unchecked if using LSI controller, or check if your storage supports it well with LSI passthrough (less critical than with VirtIO disk).
-            * `IO thread`: Typically not applicable/beneficial if not using a VirtIO disk controller for the OS disk.
+            * `Cache`: **`Default (No cache)`**.
+            * **Check** `Discard`.
+            * **Check** `IO thread`.
         * **CPU Tab:**
             * `Sockets`: `1`.
             * `Cores`: **`4`** (Minimum. `6` or `8` is recommended if resources permit).
         * **Memory Tab:**
-            * `Memory (MiB)`: **`16384`** (16 GiB - Absolute minimum for a standalone install. **`24576`** (24GiB) or **`32768`** (32GiB) is strongly recommended for better performance).
-            * `Ballooning Device`: Uncheck for critical services like a SIEM for stable memory allocation.
-        * **Network Tab (Management Interface Only for Now):**
-            * `Bridge`: `vmbr0`.
-            * `VLAN Tag`: **`10`** *(Connects to ManagementVLAN)*.
-            * `Model`: `VirtIO (paravirtualized)` (Network VirtIO drivers are generally well-supported by the underlying OS).
-            * `Firewall`: Unchecked.
+            * `Memory (MiB)`: **`16384`** (16 GiB - Minimum. **`24576`** (24GiB) or **`32768`** (32GiB) is strongly recommended).
+            * `Ballooning Device`: Uncheck for stable memory allocation.
+        * **Network Tab:**
+            * **Device 1 (`net0` - Management Interface):**
+                * `Bridge`: `vmbr0`.
+                * `VLAN Tag`: **`10`**.
+                * `Model`: `VirtIO (paravirtualized)`.
+                * `Firewall`: Unchecked.
+            * **Add Second Network Device:** Click the `Add` button below the first network device.
+            * **Device 2 (`net1` - Monitor/Sniffing Interface):**
+                * `Bridge`: `vmbr0`.
+                * `VLAN Tag`: **LEAVE BLANK**.
+                * `Model`: `VirtIO (paravirtualized)`.
+                * `Firewall`: Unchecked.
         * **Confirm Tab:** Review and click `Finish`.
 
     * **3.6.3. Install Security Onion Base OS:**
         * Start the `SecurityOnion` VM and open the `Console`.
-        * Boot from the Security Onion installation ISO.
-        * At the GRUB menu, select **"Install SecurityOnion X.Y.Z"** (or similar default install option) and press Enter.
-        * The installer will load. It's a text-based/curses installer.
-        * **User Account:** You will be prompted to create a username and password for the operating system administrator. Choose these carefully and document them.
-        * **Network Configuration:** It should attempt to configure its network interface (`ens18` or similar) via DHCP. Verify it gets an IP address in the `10.10.10.x` range from your pfSense DHCP on VLAN 10.
-        * **Installation Type:** The installer will partition the disk and install the base OS (Rocky Linux). This part is mostly automated.
-        * **Reboot:** Once the base OS installation is complete, it will prompt for a reboot. Select "Reboot".
-        * **Detach ISO:** Quickly go to the Proxmox UI for `SecurityOnion` -> `Hardware` -> `CD/DVD Drive`. Click `Edit` and select **`Do not use any media`**. Click `OK`.
+        * Boot from the Security Onion installation ISO and select the **"Install..."** option.
+        * Follow the text-based installer prompts to create an OS administrator user and password.
+        * Verify the network configuration uses DHCP and gets an IP in the `10.10.10.x` range.
+        * Allow the installer to partition the disk and install the base OS.
+        * When complete, select "Reboot".
+        * **Detach ISO:** Quickly go to the Proxmox UI for `SecurityOnion` > `Hardware` > `CD/DVD Drive`. Click `Edit` and select **`Do not use any media`**.
 
-    * **3.6.4. Run `so-setup` (Security Onion Setup Script):**
-        * After the VM reboots into the installed OS, log in as the OS administrator user you created.
-        * The Security Onion setup script, **`so-setup`**, should launch automatically. If it doesn't, you can usually type `sudo so-setup` to start it.
-        * **Follow the Prompts Carefully:** This script guides you through the main Security Onion configuration.
-            * **Installation Type:** Choose **`STANDALONE`**. (This installs Manager, Sensor, and Search components on this single VM. `EVAL` is a more limited option).
-            * **Network Configuration:** Confirm or set the static IP address for the management interface. **A static IP is highly recommended.** You can let it use the DHCP-assigned one first, then change it via `so-setup` or use a DHCP reservation in pfSense (see below).
-            * **Components:** Accept the defaults for a standalone setup.
-            * **User Accounts for Security Onion Console (SOC):** Create an administrator account (email address format, e.g., `socadmin@lab.local`) and password for accessing the web-based SOC. **Document these credentials securely.**
-            * **EULAs/Agreements:** Accept any necessary agreements.
-            * **This process will download and install numerous Docker containers and configure services. It will take a long time (30 minutes to several hours depending on your internet speed and VM performance). Be patient.**
-        * The script will indicate when it has completed successfully. It might prompt for another reboot.
+    * **3.6.4. Run `so-setup iso` (Security Onion Setup Script):**
+        * After the VM reboots, log in as the OS administrator user you created.
+        * The **`so-setup`** script should launch automatically. If not, navigate to **`SecurityOnion/iso/`** and run **`./so-setup iso`**
 
-    * **3.6.5. Essential Post-Setup Tasks & Verification:**
-        * **Access Security Onion Console (SOC):**
-            * From a machine on your ManagementVLAN (VLAN 10, e.g., your `Temp-WebUI-Access` VM, or your host if it can route to `10.10.10.x`), open a web browser.
-            * Navigate to `https://<IP_ADDRESS_OF_SECURITYONION>`. (e.g., `https://10.10.10.30`).
-            * Accept any browser security warnings for the self-signed certificate.
-            * Log in with the SOC admin user credentials you created during `so-setup`.
-        * **(Recommended) Static IP / DHCP Reservation:**
-            * If you didn't set a static IP during `so-setup`, it's highly recommended now. Either configure it within Security Onion's OS (Rocky Linux - using `nmcli` or `nmtui`) OR, more simply for lab consistency:
-            * Find the MAC address of `SecurityOnion`'s management NIC.
-            * In pfSense Web GUI -> `Services` -> `DHCP Server` -> `LAN_MGMT` tab (or your VLAN 10 interface name).
-            * Add a static mapping for `SecurityOnion`'s MAC to a fixed IP like **`10.10.10.30`**.
-            * `Hostname`: `lab-so01`. `Description`: `Security Onion`.
-            * Save and Apply Changes in pfSense. Reboot Security Onion or renew its lease.
-        * **System Updates for Security Onion (`soup`):**
-            * SSH into your Security Onion VM or use the console.
-            * Run the Security Onion update command:
-              ```bash
-              sudo soup
-              ```
-            * This will update all Security Onion components, OS packages, and rulesets. Run this regularly. It may require a reboot.
-        * **Time Sync Check:** Ensure the time is accurate and set to UTC on the Security Onion VM (`timedatectl`). Critical for SIEM.
+        * **TROUBLESHOOTING NOTE: "IP being routed by Linux..." Error:**
+            * During setup, you may encounter an error stating: `The IP being routed by Linux is not the IP address assigned to the management interface`.
+            * **Cause:** This happens because your second NIC (the monitor interface, e.g., `ens19`) has automatically received an IP address from your home network's DHCP server, creating a conflicting default route. The monitor NIC should not have an IP address.
+            * **Solution:**
+                1. Press `<Ok>` to exit the `so-setup` script.
+                2. Use the NetworkManager Text UI (`nmtui`) to disable IP configuration on the monitor NIC. Start it with:
+                    ```bash
+                    sudo nmtui
+                    ```
+                3. Select **`Edit a connection`** and press Enter.
+                4. Select the connection profile for your monitor interface (e.g., `ens19` or a generic name like `Wired connection 1`). Press Enter on `<Edit...>`.
+                5. **(Recommended) Rename Profile:** Change `Profile name` to something descriptive like `Monitor-Interface-(ens19)`.
+                6. **Disable IP:**
+                    * Change `IPv4 CONFIGURATION` from `<Automatic>` to **`<Disabled>`**.
+                    * Change `IPv6 CONFIGURATION` from `<Automatic>` to **`<Disabled>`**.
+                7. Navigate to `<OK>` and press Enter to save. Quit `nmtui`.
+                8. **Reboot the VM** (`sudo reboot`) to ensure the changes apply cleanly.
+                9. After reboot, log back in and verify `ens19` has no IP address using `ip addr show ens19`.
+                10. Rerun the setup script:
+                ```bash
+                cd /SecurityOnion/iso/
+                sudo ./so-setup iso
+                ```
+
+        * **Follow the Prompts Carefully:**
+            * **Interface Selection:** The script will ask you to identify your interfaces.
+                * **Management Interface:** Choose `ens18` (or your confirmed VLAN 10 NIC).
+                * **Monitor Interface:** Choose `ens19` (or your confirmed untagged NIC).
+            * **Installation Type:** Choose **`STANDALONE`**.
+            * **User Accounts for Security Onion Console (SOC):** Create an administrator account (e.g., `defender@lab.local`) and password for the web UI.
+        * **Verify Security Onion Settings**
+        <img src="./images/SecO_Final_Settings.png"> 
+
+        * **Wait for Installation:** This process will take a considerable amount of time.
+
+* **3.6.5. Essential Post-Setup Tasks & Verification:**
+  * **Access Security Onion Console (SOC):**
+      * From a machine on your ManagementVLAN (VLAN 10, e.g., your `Temp-WebUI-Access` VM), open a web browser.
+      * Navigate to `https://<IP_ADDRESS_OF_SECURITYONION>` (e.g., `https://10.10.10.30`).
+      * Accept any browser security warnings for the self-signed certificate.
+      * Log in with the SOC admin user credentials you created during `so-setup`.
+  * **(Recommended) Configure Fixed IP via DHCP Reservation & Verify DHCP Scope DNS:**
+      * **Objective:** Ensure the Security Onion VM has a permanent, predictable IP address and that all devices on the Management VLAN use the correct DNS servers.
+      * **Find MAC Address:** On the `SecurityOnion` VM console, find its management NIC's MAC address using `ip a show <interface_name>`.
+      * **Configure pfSense DHCP for ManagementVLAN:**
+          * Log in to your pfSense Web GUI (`https://10.10.10.1`).
+          * Navigate to `Services` > `DHCP Server` > `LAN_MGMT` tab (or your VLAN 10 interface name).
+          * **Verify DNS Servers:** Scroll down to the `Servers` section. For devices on this VLAN to resolve internal `lab.local` names, the primary DNS server must be your Domain Controller. Set the fields as follows:
+              * `DNS Server 1`: **`10.10.30.10`**
+              * `DNS Server 2`: **`1.1.1.1`** (Optional, for public DNS fallback)
+          * **Add Static Mapping:** Scroll down further to "DHCP Static Mappings for this Interface". Click `+ Add`.
+              * Enter the **MAC address** of `SecurityOnion`.
+              * `IP Address`: **`10.10.10.30`**.
+              * `Hostname`: `lab-so01`.
+              * `Description`: `Security Onion`.
+          * Click **`Save`** at the bottom of the page, then click the **`Apply Changes`** button that appears at the top.
+      * **Renew Lease on `SecurityOnion`:** On the `SecurityOnion` VM console, renew its DHCP lease to obtain the reserved IP and correct DNS settings. You can do this by rebooting (`sudo reboot`) or by running `sudo dhclient -r && sudo dhclient <interface_name>`.
+  * **System Updates for Security Onion (`soup`):**
+      * SSH into your Security Onion VM (at `ssh user@10.10.10.30`) or use the console.
+      * Run the Security Onion update command:
+          ```bash
+          sudo soup
+          ```
+      * This will update all Security Onion components, OS packages, and rulesets. Run this regularly. It may require a reboot.
+  * **Time Sync Check:** Ensure the time is accurate and set to UTC on the Security Onion VM (`timedatectl`). Critical for SIEM.
