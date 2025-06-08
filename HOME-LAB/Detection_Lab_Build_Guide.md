@@ -1177,3 +1177,95 @@ Dell OptiPlex 2: 192.168.1.202
           ```
       * This will update all Security Onion components, OS packages, and rulesets. Run this regularly. It may require a reboot.
   * **Time Sync Check:** Ensure the time is accurate and set to UTC on the Security Onion VM (`timedatectl`). Critical for SIEM.
+
+## Phase 4: Logging Enhancement & Configuration
+
+**Objective:** Centrally configure and deploy comprehensive logging policy to all Windows machines in the `lab.local` domain. This phase will enrich the telemetry from our endpoints by implementing an advanced audit policy baseline, detailed PowerShell logging, and deep system monitoring with Sysmon.
+
+### 4.1. Create the Master Logging GPO
+
+* **Objective:** Create a single, dedicated Group Policy Object (GPO) that will contain all of our consolidated logging configurations.
+
+* **Actions:**
+    * **4.1.1.** Log in to your Domain Controller, `LAB-DC01`, as `LAB\Administrator`.
+    * **4.1.2.** Open **Server Manager**, go to `Tools` -> `Group Policy Management`.
+    * **4.1.3.** Expand the forest tree: `Forest: lab.local` -> `Domains` -> `lab.local`.
+    * **4.1.4.** Right-click on the `lab.local` domain and select **"Create a GPO in this domain, and Link it here..."**.
+    * **4.1.5.** Name the new GPO: **`LAB - Comprehensive Logging Policy`**. Click `OK`.
+
+
+### 4.2. Deploy Yamato-Security Baseline for Advanced Auditing
+
+* **Objective:** Implement the comprehensive Yamato-Security logging baseline by using their provided automation script. This is the fastest and most accurate method.
+
+* **Actions:**
+
+    * **4.2.1. Download and Extract the Baseline:**
+        * On your Domain Controller, `LAB-DC01`, download the ZIP file for the Yamato-Security "EnableWindowsLogSettings" project from GitHub.
+        * **Link:** [https://github.com/Yamato-Security/EnableWindowsLogSettings](https://github.com/Yamato-Security/EnableWindowsLogSettings)
+        * Extract the contents of the ZIP file to a known location, for example, `C:\Yamato-Security`.
+
+    * **4.2.2. Review and Run the Automation Script:**
+        * To run the script, open **Command Prompt (`cmd`) or PowerShell as Administrator**.
+        * Navigate to the directory where you extracted the files:
+            ```cmd
+            cd C:\Yamato-Security\EnableWindowsLogSettings-main
+            ```
+        * Execute the primary batch script:
+            ```cmd
+            YamatoSecurityConfigureWinEventLogs.bat
+            ```
+        * The script will run and apply numerous logging configurations to the **local policy of the Domain Controller**.
+
+    * **4.2.3. Apply Settings to Group Policy:**
+        * The script configures the *local* policy on the DC. To ensure these settings are distributed to all computers in your domain, we need to import them into our GPO.
+        * Open **Group Policy Management**.
+        * Right-click the **`LAB - Comprehensive Logging Policy`** GPO and select **`Edit...`**.
+        * In the Group Policy Management Editor, right-click on `Computer Configuration` (or a sub-level like `Policies`) and look for an `Import` option if available for the specific settings changed by the script.
+        * **Alternatively, and often more simply:** The settings applied locally on the DC will be captured if you create a GPO backup *from the DC* and then import that into your `LAB - Comprehensive Logging Policy`. However, the simplest path is often to ensure the script's changes are replicated in the GPO manually or via the repo's specific GPO import instructions if provided.
+
+### 4.3. Configure Enhanced PowerShell Logging
+
+* **Objective:** Add PowerShell logging policies to the same GPO to capture script block content and transcripts, which are crucial for detecting modern adversary TTPs.
+
+* **Actions (within the same `LAB - Comprehensive Logging Policy` GPO):**
+    * **4.3.1.** Right-click the GPO and select **`Edit...`**.
+    * **4.3.2.** Navigate to: `Computer Configuration` -> `Policies` -> `Administrative Templates` -> `Windows Components` -> `Windows PowerShell`.
+    * **4.3.3. Enable Module Logging:** Double-click **`Turn on Module Logging`**, select **`Enabled`**, click `Show...`, and enter `*` to log all modules. Click `OK` twice.
+    * **4.3.4. Enable Script Block Logging:** Double-click **`Turn on PowerShell Script Block Logging`**, select **`Enabled`**, and check **`Log script block invocation start / stop events`**. Click `OK`.
+    * **4.3.5. Enable Transcription:** Double-click **`Turn on PowerShell Transcription`**, select **`Enabled`**, set an output directory like `C:\PS_Transcripts\`, and check `Include invocation headers`. Click `OK`.
+
+
+### 4.4. Prepare and Deploy Microsoft Sysmon
+
+* **Objective:** Deploy Sysmon with a community-best-practice configuration file using our GPO to capture deep system-level telemetry.
+
+* **Actions (within the same `LAB - Comprehensive Logging Policy` GPO):**
+    * **4.4.1. Download Sysmon and Configuration File:**
+        * Download **Sysmon** from the Microsoft Sysinternals site and extract `Sysmon64.exe`.
+        * Download the **SwiftOnSecurity Sysmon configuration** from GitHub: [https://github.com/SwiftOnSecurity/sysmon-config](https://github.com/SwiftOnSecurity/sysmon-config). Rename the `sysmonconfig-export.xml` file to `sysmon-config.xml`.
+    * **4.4.2. Prepare NETLOGON Share:**
+        * On `LAB-DC01`, copy both **`Sysmon64.exe`** and **`sysmon-config.xml`** into the `NETLOGON` share folder at `C:\Windows\SYSVOL\sysvol\lab.local\scripts`.
+    * **4.4.3. Create GPO Startup Script:**
+        * In the GPO Editor for your policy, navigate to: `Computer Configuration` -> `Policies` -> `Windows Settings` -> `Scripts (Startup/Shutdown)`.
+        * Double-click **`Startup`** and click **`Add...`**.
+        * `Script Name`: Browse to `\\lab.local\NETLOGON\Sysmon64.exe`.
+        * `Script Parameters`: Enter `-accepteula -i \\lab.local\NETLOGON\sysmon-config.xml`
+        * Click `OK` -> `Apply` -> `OK`.
+    * **4.4.4.** Close the Group Policy Management Editor.
+
+### 4.5. Apply and Verify the Comprehensive Logging Policy
+
+* **Objective:** Force the new GPO to apply to a client machine and verify that all three logging mechanisms (Advanced Audit, PowerShell, Sysmon) are working correctly.
+
+* **Actions:**
+    * **4.5.1.** Log in to `WinClient01`.
+    * **4.5.2.** Open Command Prompt or PowerShell **as Administrator**.
+    * **4.5.3.** Force the Group Policy update: `gpupdate /force`.
+    * **4.5.4.** **Reboot** the client machine.
+    * **4.5.5. Verify:**
+        * Log back into `WinClient01`.
+        * Open **Event Viewer** (`eventvwr.msc`).
+        * **Check Advanced Audit Policy:** Navigate to `Windows Logs` -> `Security`. Look for Event ID **4688** with "Process Command Line" details filled in.
+        * **Check PowerShell Logging:** Navigate to `Applications and Services Logs` -> `Microsoft` -> `Windows` -> `PowerShell` -> `Operational`. You should see detailed events, including Event ID 4104 for Script Block Logging.
+        * **Check Sysmon Logging:** Navigate to `Applications and Services Logs` -> `Microsoft` -> `Windows` -> `Sysmon` -> `Operational`. This log should be heavily populated with events like process creation (Event ID 1) and network connections (Event ID 3).
