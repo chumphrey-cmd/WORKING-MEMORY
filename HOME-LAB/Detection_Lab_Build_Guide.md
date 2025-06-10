@@ -1188,11 +1188,10 @@ Dell OptiPlex 2: 192.168.1.202
 
 * **Actions:**
     * **4.1.1.** Log in to your Domain Controller, `LAB-DC01`, as `LAB\Administrator`.
-    * **4.1.2.** Open **Server Manager**, go to `Tools` -> `Group Policy Management`.
-    * **4.1.3.** Expand the forest tree: `Forest: lab.local` -> `Domains` -> `lab.local`.
+    * **4.1.2.** Open **Server Manager**, go to `Tools` > `Group Policy Management`.
+    * **4.1.3.** Expand the forest tree: `Forest: lab.local` > `Domains` > `lab.local`.
     * **4.1.4.** Right-click on the `lab.local` domain and select **"Create a GPO in this domain, and Link it here..."**.
     * **4.1.5.** Name the new GPO: **`LAB - Comprehensive Logging Policy`**. Click `OK`.
-
 
 ### 4.2. Deploy Yamato-Security Baseline for Advanced Auditing
 
@@ -1201,16 +1200,12 @@ Dell OptiPlex 2: 192.168.1.202
 * **Actions:**
 
     * **4.2.1. Download and Extract the Baseline:**
-        * On your Domain Controller, `LAB-DC01`, download the ZIP file for the Yamato-Security "EnableWindowsLogSettings" project from GitHub.
+        * On your Domain Controller, `LAB-DC01`, download the `EnableWindowsLogSettings.bat` file the from Yamato-Security project on GitHub.
         * **Link:** [https://github.com/Yamato-Security/EnableWindowsLogSettings](https://github.com/Yamato-Security/EnableWindowsLogSettings)
-        * Extract the contents of the ZIP file to a known location, for example, `C:\Yamato-Security`.
 
     * **4.2.2. Review and Run the Automation Script:**
         * To run the script, open **Command Prompt (`cmd`) or PowerShell as Administrator**.
-        * Navigate to the directory where you extracted the files:
-            ```cmd
-            cd C:\Yamato-Security\EnableWindowsLogSettings-main
-            ```
+
         * Execute the primary batch script:
             ```cmd
             YamatoSecurityConfigureWinEventLogs.bat
@@ -1226,33 +1221,101 @@ Dell OptiPlex 2: 192.168.1.202
 
 ### 4.3. Configure Enhanced PowerShell Logging
 
-* **Objective:** Add PowerShell logging policies to the same GPO to capture script block content and transcripts, which are crucial for detecting modern adversary TTPs.
+* **Objective:** Add PowerShell logging policies to the same GPO to capture script block content and transcripts, which are crucial for detecting modern adversary TTPs. 
+* **NOTE:** While the `EnableWindowsLoggingSetting.bat` file does include a section on enabling PowerShell Module and Script Block logging, we're including **`Log script block invocation start / stop events`** which provides a definitive stop and start time of command execution and **`Turn on PowerShell Transcription`** which provides a full copy of all PowerShell commands ran.
 
 * **Actions (within the same `LAB - Comprehensive Logging Policy` GPO):**
     * **4.3.1.** Right-click the GPO and select **`Edit...`**.
-    * **4.3.2.** Navigate to: `Computer Configuration` -> `Policies` -> `Administrative Templates` -> `Windows Components` -> `Windows PowerShell`.
+    * **4.3.2.** Navigate to: `Computer Configuration` > `Policies` > `Administrative Templates` > `Windows Components` > `Windows PowerShell`.
     * **4.3.3. Enable Module Logging:** Double-click **`Turn on Module Logging`**, select **`Enabled`**, click `Show...`, and enter `*` to log all modules. Click `OK` twice.
     * **4.3.4. Enable Script Block Logging:** Double-click **`Turn on PowerShell Script Block Logging`**, select **`Enabled`**, and check **`Log script block invocation start / stop events`**. Click `OK`.
     * **4.3.5. Enable Transcription:** Double-click **`Turn on PowerShell Transcription`**, select **`Enabled`**, set an output directory like `C:\PS_Transcripts\`, and check `Include invocation headers`. Click `OK`.
 
 
-### 4.4. Prepare and Deploy Microsoft Sysmon
+### 4.4. Prepare and Deploy Microsoft Sysmon with PowerShell Script
 
-* **Objective:** Deploy Sysmon with a community-best-practice configuration file using our GPO to capture deep system-level telemetry.
+* **Objective:** Deploy Sysmon and configure its log size reliably in a single, ordered process using a PowerShell startup script distributed by GPO.
 
-* **Actions (within the same `LAB - Comprehensive Logging Policy` GPO):**
+* **NOTE:** The **`EnabledWindowsLogSettings.bat`** file handles a lot of the heavy lifiting, HOWEVER, the Sysmon logging configuration hits a "chicken-and-egg" snag during GPO deployment where the .bat file will attempt to modify the size of the Sysmon log, but Sysmon is not installed and may run into errors. To resolve this, a simple `Deploy-Sysmon.ps1` will be used for a work-around.   
+
+* **Actions:**
+
     * **4.4.1. Download Sysmon and Configuration File:**
-        * Download **Sysmon** from the Microsoft Sysinternals site and extract `Sysmon64.exe`.
-        * Download the **SwiftOnSecurity Sysmon configuration** from GitHub: [https://github.com/SwiftOnSecurity/sysmon-config](https://github.com/SwiftOnSecurity/sysmon-config). Rename the `sysmonconfig-export.xml` file to `sysmon-config.xml`.
-    * **4.4.2. Prepare NETLOGON Share:**
-        * On `LAB-DC01`, copy both **`Sysmon64.exe`** and **`sysmon-config.xml`** into the `NETLOGON` share folder at `C:\Windows\SYSVOL\sysvol\lab.local\scripts`.
-    * **4.4.3. Create GPO Startup Script:**
-        * In the GPO Editor for your policy, navigate to: `Computer Configuration` -> `Policies` -> `Windows Settings` -> `Scripts (Startup/Shutdown)`.
-        * Double-click **`Startup`** and click **`Add...`**.
-        * `Script Name`: Browse to `\\lab.local\NETLOGON\Sysmon64.exe`.
-        * `Script Parameters`: Enter `-accepteula -i \\lab.local\NETLOGON\sysmon-config.xml`
-        * Click `OK` -> `Apply` -> `OK`.
-    * **4.4.4.** Close the Group Policy Management Editor.
+        * **Download Sysmon:** Go to the official Microsoft Sysinternals page for Sysmon. Download the tool and extract the ZIP file. You will need the **`Sysmon64.exe`** file.
+        * **Download SwiftOnSecurity Configuration:** Go to the GitHub repository: [https://github.com/SwiftOnSecurity/sysmon-config](https://github.com/SwiftOnSecurity/sysmon-config). Download the project ZIP and extract it. Rename the `sysmonconfig-export.xml` file to a simpler **`sysmon-config.xml`**.
+
+    * **4.4.2. Create the PowerShell Deployment Script:**
+        * The following PowerShell script will be used to install or update Sysmon and then configure its log size. The canonical version of this script is also available in this [repository](https://github.com/chumphrey-cmd/WORKING-MEMORY/blob/main/HOME-LAB/Deploy-Sysmon.ps1) for direct download on you DC...
+        * On your `LAB-DC01`, open a text editor (like PowerShell ISE or Notepad).
+        * Paste the following code into a new file:
+
+            ```powershell
+            # Script: Deploy-Sysmon.ps1
+            # Purpose: Installs/Updates Sysmon and then sets the event log size.
+
+            # --- Configuration ---
+            $SysmonExe = "Sysmon64.exe"
+            $SysmonConfig = "sysmon-config.xml"
+            $LogName = "Microsoft-Windows-Sysmon/Operational"
+            $LogSizeMB = 1024 # Set desired size in MB (1024 = 1 GB)
+            $LogSizeBytes = $LogSizeMB * 1024 * 1024
+
+            # --- Script Logic ---
+            # Get the directory where this script is running from.
+            # This allows it to find the other files when run from the NETLOGON share.
+            $ScriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path
+
+            # Check if the Sysmon service is installed by checking for its presence
+            $SysmonService = Get-Service -Name "Sysmon64" -ErrorAction SilentlyContinue
+
+            if ($null -eq $SysmonService) {
+                # --- INSTALLATION (Service does not exist) ---
+                Write-Host "Sysmon service not found. Installing..."
+                $InstallArgs = "-accepteula -i `"$($ScriptDirectory)\$SysmonConfig`""
+                Start-Process -FilePath "$($ScriptDirectory)\$SysmonExe" -ArgumentList $InstallArgs -Wait
+                
+                # Verify installation before setting log size
+                if (Get-Service -Name "Sysmon64" -ErrorAction SilentlyContinue) {
+                    Write-Host "Sysmon installed successfully. Setting log size to $($LogSizeMB)MB..."
+                    wevtutil.exe sl $LogName /ms:$LogSizeBytes
+                } else {
+                    Write-Host "ERROR: Sysmon installation failed."
+                }
+
+            } else {
+                # --- CONFIGURATION UPDATE (Service already exists) ---
+                Write-Host "Sysmon already installed. Updating configuration..."
+                $UpdateArgs = "-c `"$($ScriptDirectory)\$SysmonConfig`""
+                Start-Process -FilePath "$($ScriptDirectory)\$SysmonExe" -ArgumentList $UpdateArgs -Wait
+
+                Write-Host "Verifying Sysmon log size is set to $($LogSizeMB)MB..."
+                wevtutil.exe sl $LogName /ms:$LogSizeBytes
+            }
+
+            Write-Host "Sysmon deployment script finished."
+            ```
+        * Save this file as **`Deploy-Sysmon.ps1`**.
+
+    * **4.4.3. Prepare NETLOGON Share:**
+        * On `LAB-DC01`, navigate to the `NETLOGON` share folder at `C:\Windows\SYSVOL\sysvol\lab.local\scripts`.
+        * Copy these **three files** into this folder:
+            1. `Sysmon64.exe`
+            2. `sysmon-config.xml`
+            3. `Deploy-Sysmon.ps1`
+
+    * **4.4.4. Update the GPO Startup Script:**
+        * Edit your **`LAB - Comprehensive Logging Policy`** GPO.
+        * Navigate to: `Computer Configuration` > `Policies` > `Windows Settings` > `Scripts (Startup/Shutdown)`.
+        * Double-click **`Startup`**.
+        * If you had a previous entry for `Sysmon64.exe`, select it and `Remove` it.
+        * Click `Add...`.
+        * In the "Add a Script" window, configure the following:
+            * `Script Name`: **`powershell.exe`**
+            * `Script Parameters`:
+                ```
+                -ExecutionPolicy Bypass -File "\\lab.local\NETLOGON\Deploy-Sysmon.ps1"
+                ```
+        * Click `OK`, then `Apply`, then `OK`. Close the GPO editor.
 
 ### 4.5. Apply and Verify the Comprehensive Logging Policy
 
@@ -1266,6 +1329,6 @@ Dell OptiPlex 2: 192.168.1.202
     * **4.5.5. Verify:**
         * Log back into `WinClient01`.
         * Open **Event Viewer** (`eventvwr.msc`).
-        * **Check Advanced Audit Policy:** Navigate to `Windows Logs` -> `Security`. Look for Event ID **4688** with "Process Command Line" details filled in.
-        * **Check PowerShell Logging:** Navigate to `Applications and Services Logs` -> `Microsoft` -> `Windows` -> `PowerShell` -> `Operational`. You should see detailed events, including Event ID 4104 for Script Block Logging.
-        * **Check Sysmon Logging:** Navigate to `Applications and Services Logs` -> `Microsoft` -> `Windows` -> `Sysmon` -> `Operational`. This log should be heavily populated with events like process creation (Event ID 1) and network connections (Event ID 3).
+        * **Check Advanced Audit Policy:** Navigate to `Windows Logs` > `Security`. Look for Event ID **4688** with "Process Command Line" details filled in.
+        * **Check PowerShell Logging:** Navigate to `Applications and Services Logs` > `Microsoft` > `Windows` > `PowerShell` > `Operational`. You should see detailed events, including Event ID 4104 for Script Block Logging.
+        * **Check Sysmon Logging:** Navigate to `Applications and Services Logs` > `Microsoft` > `Windows` > `Sysmon` > `Operational`. This log should be heavily populated with events like process creation (Event ID 1) and network connections (Event ID 3).
