@@ -55,9 +55,10 @@ The content here evolves as technology advances and new security challenges emer
 
 
 
-### HOME-LAB - IN PROGRESS...
+### HOME-LAB
 
-- To be updated with folders and current configuration setup.
+- [DETECTION LAB BUILD GUIDE](./HOME-LAB/Detection_Lab_Build_Guide.md)
+  - Contains ongoing updates and procedures to configure, network, and deploy your own Detecion Lab.
 
 
 ### TOOLS
