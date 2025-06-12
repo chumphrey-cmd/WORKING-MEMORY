@@ -72,30 +72,44 @@ tar -czf airgap-deployment.tar.gz airgap/
 ### 1. Transfer and Extract Package
 ```bash
 # Copy airgap-deployment.tar.gz to RHEL system
+cp -r airgap.tar.gz /opt/
+
+cd /opt
+
 tar xzf airgap.tar.gz
+
 cd airgap
 ```
 
-### 2. Install Docker
+### 2. Install Open WebUI using Podman
 
-```bash
-cd docker/deps
+1. Install Podman instead of Docker:
+   ```bash
+   sudo yum install podman podman-docker --allowerasing
+   ```
+   The `--allowerasing` flag will handle the conflicts with runc that you were experiencing
 
-# Install packages in correct order
-sudo rpm -i containerd.io-*.rpm
-sudo rpm -i docker-ce-cli-*.rpm
-sudo rpm -i docker-ce-*.rpm
-sudo rpm -i docker-buildx-plugin-*.rpm
-sudo rpm -i docker-compose-plugin-*.rpm
+2. Load your OpenWebUI image with Podman:
 
-# Start and enable Docker service
-sudo systemctl start docker
-sudo systemctl enable docker
+   ```bash
+   podman load < openwebui_image.tar
+   ```
 
-# Verify installation
-docker --version
-docker compose version
-```
+3. Run OpenWebUI with Podman:
+   ```bash
+   podman run -d \
+     --name open-webui \
+     -p 3000:8080 \
+     --network=host \
+     -e OLLAMA_BASE_URL=http://localhost:11434 \
+     -v open-webui:/app/backend/data \
+     ghcr.io/open-webui/open-webui:main
+   ```
+
+4. Create a systemd service for auto-start:
+   ```bash
+   systemctl --user enable podman-restart
+   ```
 
 
 ### 3. Install Ollama
@@ -106,7 +120,11 @@ sudo useradd -r -s /bin/false -U -m -d /usr/share/ollama ollama
 sudo usermod -a -G ollama $(whoami)
 
 # Extract Ollama to /usr
-sudo tar -C /usr -xzf ollama/ollama-linux-amd64.tgz
+sudo tar -C /usr -xzf ollama
+
+# Verify installation
+which ollama
+ollama --version
 
 # Create models directory
 sudo install -d -m 755 -o ollama -g ollama /usr/share/ollama
