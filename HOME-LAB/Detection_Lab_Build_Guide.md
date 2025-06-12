@@ -1193,31 +1193,30 @@ Dell OptiPlex 2: 192.168.1.202
     * **4.1.4.** Right-click on the `lab.local` domain and select **"Create a GPO in this domain, and Link it here..."**.
     * **4.1.5.** Name the new GPO: **`LAB - Comprehensive Logging Policy`**. Click `OK`.
 
-### 4.2. Deploy Yamato-Security Baseline for Advanced Auditing
+### 4.2. Deploy Yamato-Security Logging Baseline via GPO Startup Script
 
-* **Objective:** Implement the comprehensive Yamato-Security logging baseline by using their provided automation script. This is the fastest and most accurate method.
+* **Objective:** Deploy the comprehensive Yamato-Security logging baseline to all domain computers by having them run the configuration script automatically upon startup, managed by Group Policy.
 
 * **Actions:**
 
-    * **4.2.1. Download and Extract the Baseline:**
-        * On your Domain Controller, `LAB-DC01`, download the `EnableWindowsLogSettings.bat` file the from Yamato-Security project on GitHub.
-        * **Link:** [https://github.com/Yamato-Security/EnableWindowsLogSettings](https://github.com/Yamato-Security/EnableWindowsLogSettings)
+    * **4.2.1. Download and Place the Baseline on the NETLOGON Share:**
+        * On your Domain Controller, `LAB-DC01`, download the ZIP file for the Yamato-Security [EnableWindowsLogSettings](https://github.com/Yamato-Security/EnableWindowsLogSettings)
+        * Extract the contents of the ZIP file.
+        * Navigate into the extracted folder (e.g., `EnableWindowsLogSettings-main`).
+        * Copy the **`YamatoSecurityConfigureEventLogs.bat`** of this folder into the `NETLOGON` share folder, which is located at:
+            `C:\Windows\SYSVOL\sysvol\lab.local\scripts`
 
-    * **4.2.2. Review and Run the Automation Script:**
-        * To run the script, open **Command Prompt (`cmd`) or PowerShell as Administrator**.
-
-        * Execute the primary batch script:
-            ```cmd
-            YamatoSecurityConfigureWinEventLogs.bat
-            ```
-        * The script will run and apply numerous logging configurations to the **local policy of the Domain Controller**.
-
-    * **4.2.3. Apply Settings to Group Policy:**
-        * The script configures the *local* policy on the DC. To ensure these settings are distributed to all computers in your domain, we need to import them into our GPO.
-        * Open **Group Policy Management**.
-        * Right-click the **`LAB - Comprehensive Logging Policy`** GPO and select **`Edit...`**.
-        * In the Group Policy Management Editor, right-click on `Computer Configuration` (or a sub-level like `Policies`) and look for an `Import` option if available for the specific settings changed by the script.
-        * **Alternatively, and often more simply:** The settings applied locally on the DC will be captured if you create a GPO backup *from the DC* and then import that into your `LAB - Comprehensive Logging Policy`. However, the simplest path is often to ensure the script's changes are replicated in the GPO manually or via the repo's specific GPO import instructions if provided.
+    * **4.2.2. Add the Script to your GPO:**
+        * Open the **Group Policy Management** console on `LAB-DC01`.
+        * Right-click on your **`LAB - Comprehensive Logging Policy`** GPO and select **`Edit...`**.
+        * Navigate to:
+          `Computer Configuration` > `Policies` > `Windows Settings` > `Scripts (Startup/Shutdown)`.
+        * In the right pane, double-click **`Startup`**.
+        * In the Startup Properties window, click **`Add...`**.
+        * In the "Add a Script" window:
+            * **`Script Name`**: Click `Browse...`. It will open to the NETLOGON scripts path. Select **`EnableAllLogSettings.bat`**.
+            * **`Script Parameters`**: Leave this blank.
+        * Click `OK`.
 
 ### 4.3. Configure Enhanced PowerShell Logging
 
@@ -1236,7 +1235,7 @@ Dell OptiPlex 2: 192.168.1.202
 
 * **Objective:** Deploy Sysmon and configure its log size reliably in a single, ordered process using a PowerShell startup script distributed by GPO.
 
-* **NOTE:** The **`EnabledWindowsLogSettings.bat`** file handles a lot of the heavy lifiting, HOWEVER, the Sysmon logging configuration hits a "chicken-and-egg" snag during GPO deployment where the .bat file will attempt to modify the size of the Sysmon log, but Sysmon is not installed and may run into errors. To resolve this, a simple `Deploy-Sysmon.ps1` will be used for a work-around.   
+* **NOTE:** The **`YamatoSecurityConfigureWinEventLogs.bat`** file handles a lot of the heavy lifiting, HOWEVER, the Sysmon logging configuration hits a "chicken-and-egg" snag during GPO deployment where the .bat file will attempt to modify the size of the Sysmon log, but Sysmon is not installed and may run into errors. To resolve this, a simple `Deploy-Sysmon.ps1` will be used for a work-around.   
 
 * **Actions:**
 
@@ -1303,11 +1302,38 @@ Dell OptiPlex 2: 192.168.1.202
             2. `sysmon-config.xml`
             3. `Deploy-Sysmon.ps1`
 
-    * **4.4.4. Update the GPO Startup Script:**
+    * **4.4.4. (Optional but Recommended) Test the Deployment Script Manually:**
+        * **Objective:** Verify the `Deploy-Sysmon.ps1` script works correctly on a single client (`WinClient02` is a good choice) before deploying it via GPO.
+        * **Actions on `WinClient02`:**
+            1.  **Prepare Test Environment:**
+                * Log in to `WinClient02` with administrative rights.
+                * Create a temporary folder: `C:\Temp\SysmonTest`.
+                * Copy the three files (`Deploy-Sysmon.ps1`, `Sysmon64.exe`, `sysmon-config.xml`) into this test folder.
+            2.  **Run Test Case 1 (Initial Installation):**
+                * Open PowerShell **as Administrator**.
+                * Navigate to the test directory: `cd C:\Temp\SysmonTest`.
+                * Execute the script, simulating the GPO action:
+                  ```powershell
+                  powershell.exe -ExecutionPolicy Bypass -File .\Deploy-Sysmon.ps1
+                  ```
+                * **Observe Output:** Confirm the script reports that Sysmon was not found and is being installed.
+                * **Verify Installation:**
+                    * Check the service state: `sc query sysmon64` (should be `RUNNING`).
+                    * Check for logs in Event Viewer: `Applications and Services Logs > Microsoft > Windows > Sysmon > Operational`.
+            3.  **Run Test Case 2 (Configuration Update):**
+                * In the same PowerShell window, run the exact same command again.
+                * **Observe Output:** This time, confirm the script reports that Sysmon is already installed and that it is updating the configuration.
+            4.  **Cleanup After Testing:**
+                * To return the client to a clean state before the GPO deployment, uninstall Sysmon from the test machine:
+                  ```powershell
+                  .\Sysmon64.exe -u force
+                  ```
+                * You can then delete the `C:\Temp\SysmonTest` folder.
+    
+    * **4.4.5. Update the GPO Startup Script:**
         * Edit your **`LAB - Comprehensive Logging Policy`** GPO.
         * Navigate to: `Computer Configuration` > `Policies` > `Windows Settings` > `Scripts (Startup/Shutdown)`.
         * Double-click **`Startup`**.
-        * If you had a previous entry for `Sysmon64.exe`, select it and `Remove` it.
         * Click `Add...`.
         * In the "Add a Script" window, configure the following:
             * `Script Name`: **`powershell.exe`**
@@ -1316,6 +1342,10 @@ Dell OptiPlex 2: 192.168.1.202
                 -ExecutionPolicy Bypass -File "\\lab.local\NETLOGON\Deploy-Sysmon.ps1"
                 ```
         * Click `OK`, then `Apply`, then `OK`. Close the GPO editor.
+
+    * **Important Note on Script Order:**
+        * You will now have two scripts listed in your "Startup" properties: `YamatoSecurityConfigureWinEventLogs.bat` and the `powershell.exe` command for deploying Sysmon.
+        * The order generally does not matter since they configure independent systems (Native Logs vs. Sysmon), but you can order them if you wish. The GPO will execute them in the order they appear.
 
 ### 4.5. Apply and Verify the Comprehensive Logging Policy
 
