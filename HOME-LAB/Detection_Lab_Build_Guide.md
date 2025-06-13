@@ -1221,7 +1221,7 @@ Dell OptiPlex 2: 192.168.1.202
 ### 4.3. Configure Enhanced PowerShell Logging
 
 * **Objective:** Add PowerShell logging policies to the same GPO to capture script block content and transcripts, which are crucial for detecting modern adversary TTPs. 
-* **NOTE:** While the `EnableWindowsLoggingSetting.bat` file does include a section on enabling PowerShell Module and Script Block logging, we're including **`Log script block invocation start / stop events`** which provides a definitive stop and start time of command execution and **`Turn on PowerShell Transcription`** which provides a full copy of all PowerShell commands ran.
+* **NOTE:** While the `YamatoSecurityConfigureWinEventLogs.bat` file does include a section on enabling PowerShell Module and Script Block logging, we're including **`Log script block invocation start / stop events`** which provides a definitive stop and start time of command execution and **`Turn on PowerShell Transcription`** which provides a full copy of all PowerShell commands ran.
 
 * **Actions (within the same `LAB - Comprehensive Logging Policy` GPO):**
     * **4.3.1.** Right-click the GPO and select **`Edit...`**.
@@ -1329,6 +1329,14 @@ Dell OptiPlex 2: 192.168.1.202
                   .\Sysmon64.exe -u force
                   ```
                 * You can then delete the `C:\Temp\SysmonTest` folder.
+
+            ```powershell
+            Remove-Item -Path C:\Temp\SysmonTest -Recurse -Force
+            ```
+
+            ```cmd
+            rmdir /S /Q C:\Temp\SysmonTest
+            ```
     
     * **4.4.5. Update the GPO Startup Script:**
         * Edit your **`LAB - Comprehensive Logging Policy`** GPO.
