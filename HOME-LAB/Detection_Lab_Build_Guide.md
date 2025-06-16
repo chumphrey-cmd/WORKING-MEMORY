@@ -1241,7 +1241,7 @@ Dell OptiPlex 2: 192.168.1.202
 
     * **4.4.1. Download Sysmon and Configuration File:**
         * **Download Sysmon:** Go to the official Microsoft Sysinternals page for Sysmon. Download the tool and extract the ZIP file. You will need the **`Sysmon64.exe`** file.
-        * **Download SwiftOnSecurity Configuration:** Go to the GitHub repository: [https://github.com/SwiftOnSecurity/sysmon-config](https://github.com/SwiftOnSecurity/sysmon-config). Download the project ZIP and extract it. Rename the `sysmonconfig-export.xml` file to a simpler **`sysmon-config.xml`**.
+        * **Download SwiftOnSecurity Configuration:** Go to the GitHub repository: [https://github.com/SwiftOnSecurity/sysmon-config](https://github.com/SwiftOnSecurity/sysmon-config) and download **`sysmonconfig-export.xml`**
 
     * **4.4.2. Create the PowerShell Deployment Script:**
         * The following PowerShell script will be used to install or update Sysmon and then configure its log size. The canonical version of this script is also available in this [repository](https://github.com/chumphrey-cmd/WORKING-MEMORY/blob/main/HOME-LAB/Deploy-Sysmon.ps1) for direct download on you DC...
@@ -1254,7 +1254,7 @@ Dell OptiPlex 2: 192.168.1.202
 
             # --- Configuration ---
             $SysmonExe = "Sysmon64.exe"
-            $SysmonConfig = "sysmon-config.xml"
+            $SysmonConfig = "sysmonconfig-export.xml"
             $LogName = "Microsoft-Windows-Sysmon/Operational"
             $LogSizeMB = 1024 # Set desired size in MB (1024 = 1 GB)
             $LogSizeBytes = $LogSizeMB * 1024 * 1024
@@ -1299,42 +1299,68 @@ Dell OptiPlex 2: 192.168.1.202
         * On `LAB-DC01`, navigate to the `NETLOGON` share folder at `C:\Windows\SYSVOL\sysvol\lab.local\scripts`.
         * Copy these **three files** into this folder:
             1. `Sysmon64.exe`
-            2. `sysmon-config.xml`
+            2. `sysmonconfig-export.xml`
             3. `Deploy-Sysmon.ps1`
 
-    * **4.4.4. (Optional but Recommended) Test the Deployment Script Manually:**
-        * **Objective:** Verify the `Deploy-Sysmon.ps1` script works correctly on a single client (`WinClient02` is a good choice) before deploying it via GPO.
-        * **Actions on `WinClient02`:**
-            1.  **Prepare Test Environment:**
-                * Log in to `WinClient02` with administrative rights.
-                * Create a temporary folder: `C:\Temp\SysmonTest`.
-                * Copy the three files (`Deploy-Sysmon.ps1`, `Sysmon64.exe`, `sysmon-config.xml`) into this test folder.
-            2.  **Run Test Case 1 (Initial Installation):**
-                * Open PowerShell **as Administrator**.
-                * Navigate to the test directory: `cd C:\Temp\SysmonTest`.
-                * Execute the script, simulating the GPO action:
-                  ```powershell
-                  powershell.exe -ExecutionPolicy Bypass -File .\Deploy-Sysmon.ps1
-                  ```
-                * **Observe Output:** Confirm the script reports that Sysmon was not found and is being installed.
-                * **Verify Installation:**
-                    * Check the service state: `sc query sysmon64` (should be `RUNNING`).
-                    * Check for logs in Event Viewer: `Applications and Services Logs > Microsoft > Windows > Sysmon > Operational`.
-            3.  **Run Test Case 2 (Configuration Update):**
-                * In the same PowerShell window, run the exact same command again.
-                * **Observe Output:** This time, confirm the script reports that Sysmon is already installed and that it is updating the configuration.
-            4.  **Cleanup After Testing:**
-                * To return the client to a clean state before the GPO deployment, uninstall Sysmon from the test machine:
-                  ```powershell
-                  .\Sysmon64.exe -u force
-                  ```
-                * You can then delete the `C:\Temp\SysmonTest` folder.
+    * **4.4.4. (Optional but Recommended) Test the Deployment Script Manually** 
 
+      * **Objective:** Verify the `Deploy-Sysmon.ps1` script works correctly on a single client (`WinClient02` is a good choice) before deploying it via GPO.
+
+      * **Actions on `WinClient02`:**
+
+        1.  **Prepare Test Environment:**
+            * Log in to `WinClient02` with administrative rights.
+            * Create a temporary folder: `C:\Temp\SysmonTest`.
+            * Copy the three files (`Deploy-Sysmon.ps1`, `Sysmon64.exe`, `sysmonconfig-export.xml`) into this test folder.
+
+        2.  **Run Test Case 1 (Initial Installation):**
+            * Open PowerShell **as Administrator**.
+
+            * Navigate to the test directory: `cd C:\Temp\SysmonTest`.
+
+            * Execute the script, simulating the GPO action:
+
+              ```powershell
+              powershell.exe -ExecutionPolicy Bypass -File .\Deploy-Sysmon.ps1
+              ```
+            * **Observe Output:** Confirm the script reports that Sysmon was not found and is being installed.
+            * **Verify Installation:**
+                * **Check Service State:**
+                ```cmd
+                :: The state should be RUNNING.
+                sc query sysmon64
+                ```
+
+              * **Check Event Logs:** Open Event Viewer and confirm logs are being generated in `Applications and Services Logs > Microsoft > Windows > Sysmon > Operational`.
+
+                * **Verify Applied Configuration:** 
+                  * **Step A:** Open your `sysmonconfig-export.xml` file in a text editor and look at the first line to see the schema version (e.g., `<Sysmon schemaversion="X.XX">`).
+
+                  * **Step B:** In your PowerShell prompt, run the command to dump the active Sysmon configuration and ensure it matches the source `sysmonconfig-export.xml`.
+
+                  ```powershell
+                  .\Sysmon64.exe -c | more
+                  ```
+
+      1.  **Run Test Case 2 (Configuration Update):**
+          * In the same PowerShell window, run the exact same command again to test the update logic:
             ```powershell
+            powershell.exe -ExecutionPolicy Bypass -File .\Deploy-Sysmon.ps1
+            ```
+          * **Observe Output:** This time, confirm the script reports that Sysmon is already installed and that it is updating the configuration. You can run `.\Sysmon64.exe -c` again to ensure the config is still correctly applied.
+
+      2.  **Cleanup After Testing:**
+          * To return the client to a clean state before the GPO deployment, first uninstall Sysmon from the test machine:
+            ```powershell
+            .\Sysmon64.exe -u force
+            ```
+          * Then, remove the temporary directory using either of the following commands:
+            ```powershell
+            # Using PowerShell (Recommended)
             Remove-Item -Path C:\Temp\SysmonTest -Recurse -Force
             ```
-
             ```cmd
+            :: Or, using Command Prompt (cmd.exe)
             rmdir /S /Q C:\Temp\SysmonTest
             ```
     
@@ -1349,7 +1375,7 @@ Dell OptiPlex 2: 192.168.1.202
                 ```
                 -ExecutionPolicy Bypass -File "\\lab.local\NETLOGON\Deploy-Sysmon.ps1"
                 ```
-        * Click `OK`, then `Apply`, then `OK`. Close the GPO editor.
+        * Click `Apply` then `OK` and close the GPO editor.
 
     * **Important Note on Script Order:**
         * You will now have two scripts listed in your "Startup" properties: `YamatoSecurityConfigureWinEventLogs.bat` and the `powershell.exe` command for deploying Sysmon.

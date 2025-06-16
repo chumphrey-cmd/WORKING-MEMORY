@@ -3,7 +3,7 @@
 
 # --- Configuration ---
 $SysmonExe = "Sysmon64.exe"
-$SysmonConfig = "sysmon-config.xml"
+$SysmonConfig = "sysmonconfig-export.xml"
 $LogName = "Microsoft-Windows-Sysmon/Operational"
 $LogSizeMB = 1024 # Set desired size in MB (1024 = 1 GB)
 $LogSizeBytes = $LogSizeMB * 1024 * 1024
