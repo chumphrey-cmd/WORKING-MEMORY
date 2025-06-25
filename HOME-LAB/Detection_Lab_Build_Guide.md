@@ -1203,7 +1203,7 @@ Dell OptiPlex 2: 192.168.1.202
         * On your Domain Controller, `LAB-DC01`, download the ZIP file for the Yamato-Security [EnableWindowsLogSettings](https://github.com/Yamato-Security/EnableWindowsLogSettings)
         * Extract the contents of the ZIP file.
         * Navigate into the extracted folder (e.g., `EnableWindowsLogSettings-main`).
-        * Copy the **`YamatoSecurityConfigureEventLogs.bat`** of this folder into the `NETLOGON` share folder, which is located at:
+        * Copy the **`EnableAllLogSettings.bat`** of this folder into the `NETLOGON` share folder, which is located at:
             `C:\Windows\SYSVOL\sysvol\lab.local\scripts`
 
     * **4.2.2. Add the Script to your GPO:**
@@ -1217,6 +1217,20 @@ Dell OptiPlex 2: 192.168.1.202
             * **`Script Name`**: Click `Browse...`. It will open to the NETLOGON scripts path. Select **`EnableAllLogSettings.bat`**.
             * **`Script Parameters`**: Leave this blank.
         * Click `OK`.
+
+    * **4.2.3. Add Explicit GPO Setting for Command Line Auditing:**
+        * Navigate to: `Computer Configuration` > `Policies` > `Administrative Templates` > `System` > `Audit Process Creation`.
+        * Double-click the setting **`Include command line in process creation events`**.
+        * Select the **`Enabled`** radio button. Click `OK`.
+
+> **Note: Conflicts between `EnableAllLogSettings.bat` and Group Policy Management Editor (GPME)**
+> The **`EnableAllLogSettings.bat`** script contains the "Enable command line auditing (Detailed Tracking)" section and command used to enable command line logging, but we also had to enable it manually in the GPO editor. This is due to how Group Policy works:
+>
+> * The **`EnableAllLogSettings.bat`** script used the `reg add` command to modify the **live registry** directly on any machine it runs on. It's a direct, forceful change to the machine's current state.
+>
+> * The GPO Editor does **not** read the live registry. It reads and writes to the GPO's backing files, which are stored in the SYSVOL folder (e.g., **`Registry.pol`** inside the GPO's unique folder).
+>
+> * Settings applied to the **`EnableAllLogSettings.bat`** script won't be reflected in the GPO Editor, which will still show the policy as "Not configured" because settings defined in the GPO will always take precedence and overwrite the **`EnableAllLogSettings.bat`** script.
 
 ### 4.3. Configure Enhanced PowerShell Logging
 
