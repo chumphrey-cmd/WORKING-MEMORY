@@ -89,6 +89,72 @@ scp -r [file_transfer] root@[proxmox_ip]:/forensics-zpool/forensics-training
 - Obtain SANS FOR508 VMs or desired forensic VMs on another machine.
 - Place VM images (OVAs, disks, etc.) onto a USB drive/external storage.
 
+## 4. Importing VMware VMs into Proxmox: Common File Types and Procedure
+
+### 4.1 Common VMware File Types and Their Purpose
+
+| File Extension | Purpose                                                                 |
+|:--------------:|-------------------------------------------------------------------------|
+| `.vmdk`        | **Virtual disk file:** Contains the VM’s data (operating system, files) |
+| `.vmx`         | **VM configuration file:** Contains VM hardware/settings (text, readable)|
+| `.nvram`       | VM’s virtual BIOS/EFI (stores boot data/settings)                       |
+| `.vmsd`        | Snapshot management metadata                                            |
+| `.vmxf`        | Additional config for VM teams/multiple VM products                     |
+| `.log`         | VMware log files                                                        |
+| `.iso`         | CD/DVD image: sometimes used to install or boot the VM                  |
+
+- The `.vmdk` files are essential virtual disk files needed for import.
+- `.vmx` is useful for referencing VM settings but not directly used by Proxmox.
+- Other files like `.nvram`, `.vmsd`, `.vmxf`, logs are generally optional for import.
+
+### 4.2 Procedure for Importing VMware VMDKs into Proxmox
+
+#### Step 1: Copy VMware Files to Proxmox Storage
+
+- Transfer your `.vmdk` files and associated VM folder contents (including `.vmx`) to a directory in your Proxmox storage, for example:  
+  `/forensics-zpool/training/import/`
+
+#### Step 2: Create a New VM in Proxmox
+
+- In the Proxmox web UI, create a new VM matching the original VM’s OS type and settings.
+- **Recommended hardware configuration for forensic analysis:**
+  - **CPU:** 4 (set as 1 socket, 4 cores)
+  - **RAM:** 32 GB (32768 MB)
+- Do **not** start the VM after creation.
+
+#### Step 3: Import the VMDK Disk(s) into the New VM
+
+- Use the Proxmox shell or SSH to run the import command for each `.vmdk` file:
+
+```bash
+ qm disk import <vmid> <source> <storage>
+
+qm disk import 100 [path_to_vm] forensics-zpool
+```
+
+#### Step 4: Attach Imported Disks in Proxmox UI
+
+- Go to the VM's **Hardware** tab in the Proxmox UI.
+- The imported disks will appear as "Unused Disks." Attach them as the main boot disk or as additional disks.
+- Remove any placeholder disks created at VM setup if they are not needed.
+- Set the boot order so your imported disk is first (if it contains the OS).
+
+#### Step 5: Optional Additional Configuration
+
+- Add any `.iso` files as virtual CD/DVD drives if needed for booting or troubleshooting.
+- If the guest OS was previously running VMware Tools, uninstall them after boot, and install Proxmox/QEMU guest drivers for best performance.
+
+#### Step 6: Boot and Test the VM
+
+- Start the VM and verify that it boots and operates correctly.
+- Troubleshoot device drivers or network adapters as needed.
+
+### 4.3 Notes on Other VMware Files
+
+- `.vmx`: Reference for original VM hardware settings.
+- `.nvram`, `.vmsd`, `.vmxf`: Not usually required for import or boot in Proxmox.
+- Logs and other auxiliary files: Not necessary for VM operation in Proxmox.
+
 ## 5. Import Forensics VM(s) into Proxmox
 
 - Plug USB into Proxmox server.
