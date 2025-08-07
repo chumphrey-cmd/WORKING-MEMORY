@@ -73,12 +73,11 @@ zfs create forensics-zpool/training
 - Add this as directory storage in Proxmox:
 
   - Go to **Datacenter > Storage > Add > Directory**.
-  - Set Path to `/forensics-zpool/forensics-training`.
-  - Name it something descriptive (e.g., `training-dir`).
+  - Set Path to `/forensics-zpool/training`.
   - Enable allowed content types (`Disk image`, `ISO`, `Container`, etc.) as needed.
   - Click **Add**.
 
-- Copy your forensic images, VM exports, or case files into `/forensics-zpool/forensics-training` using shell, SCP, SFTP, or WebUI.
+- Copy your forensic images, VM exports, or case files into `/forensics-zpool/training` using shell, SCP, SFTP, or WebUI.
 
 ```bash
 scp -r [file_transfer] root@[proxmox_ip]:/forensics-zpool/forensics-training
@@ -118,26 +117,29 @@ scp -r [file_transfer] root@[proxmox_ip]:/forensics-zpool/forensics-training
 
 - In the Proxmox web UI, create a new VM matching the original VM’s OS type and settings.
 - **Recommended hardware configuration for forensic analysis:**
-  - **CPU:** 4 (set as 1 socket, 4 cores)
-  - **RAM:** 32 GB (32768 MB)
-- Do **not** start the VM after creation.
+  - **CPU:** 4 (set as 1 socket, 4 cores)
+  - **RAM:** 32 GB (32768 MB)
+  - **Firewall:** uncheck
+  - Do **NOT** start the VM after creation.
 
 #### Step 3: Import the VMDK Disk(s) into the New VM
 
 - Use the Proxmox shell or SSH to run the import command for each `.vmdk` file:
 
 ```bash
- qm disk import <vmid> <source> <storage>
+qm disk import <vmid> <source> <storage>
 
 qm disk import 100 [path_to_vm] forensics-zpool
 ```
 
 #### Step 4: Attach Imported Disks in Proxmox UI
 
-- Go to the VM's **Hardware** tab in the Proxmox UI.
+- Go to the VM's **`Hardware`** tab in the Proxmox UI.
 - The imported disks will appear as "Unused Disks." Attach them as the main boot disk or as additional disks.
 - Remove any placeholder disks created at VM setup if they are not needed.
+- Double-click "Unused Disks" and select "Add".
 - Set the boot order so your imported disk is first (if it contains the OS).
+  - Navigate to **`VM > Options > Boot Order`** and set your boot disk to the fist option.
 
 #### Step 5: Optional Additional Configuration
 
@@ -149,26 +151,97 @@ qm disk import 100 [path_to_vm] forensics-zpool
 - Start the VM and verify that it boots and operates correctly.
 - Troubleshoot device drivers or network adapters as needed.
 
-### 4.3 Notes on Other VMware Files
+## 5. Transfer Memory Images/Evidence
 
-- `.vmx`: Reference for original VM hardware settings.
-- `.nvram`, `.vmsd`, `.vmxf`: Not usually required for import or boot in Proxmox.
-- Logs and other auxiliary files: Not necessary for VM operation in Proxmox.
+### 5.1 Create Evidence Directory Structure
 
-## 5. Import Forensics VM(s) into Proxmox
+- Create an **`evidence`** directory inside of the **`/forensics-zpool/training`**.
+- This will serve as the shared storage location between your Proxmox host and forensic VMs.
 
-- Plug USB into Proxmox server.
-- Copy VM images to a Proxmox storage directory (e.g., `/var/lib/vz`).
-- Use Proxmox web interface or command line to import or create VMs from these images.
+### 5.2 Setup 9p Filesystem Passthrough for Linux VMs
 
-## 6. Transfer Memory Images/Evidence
+For airgapped Linux VMs or environments where virtiofs is not available, use 9p filesystem passthrough:
 
-- Place memory images (e.g., `.raw`, `.mem`, `.img`) onto a USB drive or external media.
-- Plug into Proxmox server and copy them to a storage area accessible to the target forensic VM.
-  - **Option 1:** Create and attach a dedicated virtual disk to the VM, then copy images there.
-  - **Option 2:** Use USB passthrough to make the physical USB directly visible to the VM for direct file transfer.
+#### Step 1: Configure 9p Share in Proxmox
 
-## 7. Analyze in Forensic VM
+- **Stop your VM first** before making hardware changes.
+- Add the 9p share via Proxmox shell or SSH:
+
+  ```bash
+  qm set <VMID> --args "-virtfs local,path=/forensics-zpool/training/evidence,mount_tag=evidence-share,security_model=passthrough"
+  ```
+
+  Replace **`VMID`** with your actual VM ID.
+- **Start your VM** after configuration.
+
+#### Step 2: Mount the Share Inside Your Linux VM
+
+- Create the mount point:
+
+  ```bash
+  sudo mkdir /mnt/evidence
+  ```
+
+- Mount the 9p share:
+
+  ```bash
+  sudo mount -t 9p -o trans=virtio evidence-share /mnt/evidence
+  ```
+
+- Make the mount persistent:
+
+  ```bash
+  echo "evidence-share /mnt/evidence 9p trans=virtio,nofail 0 0" | sudo tee -a /etc/fstab
+  ```
+
+### 5.3 Transfer Evidence Files
+
+- Place memory images (e.g., `.raw`, `.mem`, `.img`, `.vmem`) onto a USB drive or external media.
+- Plug into Proxmox server or laptop and copy them to `/forensics-zpool/training/evidence/`.
+- Files will be accessible from your VM at `/mnt/evidence/`.
+
+### 5.4 Verify File Transfer and Mount Success
+
+#### Test Mount Status
+
+```bash
+# Verify the mount is active
+mount | grep evidence-share
+
+# Check available space (should show your ZFS pool size)
+df -h /mnt/evidence
+```
+
+#### Test File Synchronization
+
+**From Proxmox host:**
+
+```bash
+# Create test file on host
+echo "Test from Proxmox host - $(date)" > /forensics-zpool/training/evidence/test-host.txt
+```
+
+**From your Linux VM:**
+
+```bash
+# Wait 2-5 seconds for sync, then check
+ls -la /mnt/evidence/test-host.txt
+cat /mnt/evidence/test-host.txt
+
+# Create test file from VM
+echo "Test from VM - $(date)" > /mnt/evidence/test-vm.txt
+```
+
+**Back on Proxmox host:**
+
+```bash
+# Verify VM file appears on host
+ls -la /forensics-zpool/training/evidence/test-vm.txt
+```
+
+> **Note:** The 9p method has a sync delay of 2-5 seconds.
+
+## 6. Analyze in Forensic VM
 
 - Boot up the forensic VM inside Proxmox.
 - Ensure evidence disk or storage with memory images is accessible in the VM.
@@ -181,3 +254,4 @@ qm disk import 100 [path_to_vm] forensics-zpool
 - Use internal-only networking for VM isolation and security.
 - Additional resources for tools to integrate in the furture.
   - [Computer Forensics](https://github.com/xiosec/Computer-forensics)
+  - [FOR508 Resources](https://sansorg.egnyte.com/fl/FiM8JG50Qe#folder-link/FOR508-Dropbox-I01)
