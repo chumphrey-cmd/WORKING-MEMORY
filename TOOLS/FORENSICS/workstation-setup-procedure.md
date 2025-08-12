@@ -163,6 +163,9 @@ qm disk import 100 [path_to_vm] forensics-zpool
 #### Step 4: Attach Imported Disks in Proxmox UI
 
 - Go to the VM's **`Hardware`** tab in the Proxmox UI.
+
+> **NOTE:** If deploying a Windows VM, set the **Bus/Device** type as **`SATA`** to ensure that the Windows VM Deploys.
+
 - The imported disks will appear as "Unused Disks." Attach them as the main boot disk or as additional disks.
 - Remove any placeholder disks created at VM setup if they are not needed.
 - Double-click "Unused Disks" and select "Add".
@@ -175,6 +178,19 @@ qm disk import 100 [path_to_vm] forensics-zpool
 - Update Proxmox VM Configuration for UTC
   - Go to **`VM > Options > "Use local time for RTC"`**
   - Set **`"No"`** for all VMs (this ensures that UTC is used and prevents time conversion issues between host and guest).
+
+> **NOTE:** leave this setting as **`Default (Enabled for Windows)`**. Your Windows VM will inherit the UTC time setting created previously.
+
+##### Mounting an Additional Drive (Windows)
+
+- Poweroff the VM and navigate to the Hardware tab
+- Look for "Unused Disk" entries
+- Double-click the unused and select it and click: **Edit**
+- **Configure the disk:**
+  - **Bus/Device:** Set to **SATA**
+  - **Select an available SATA port** (e.g., SATA1 if another drive is SATA0)
+- Click **"Add"** to attach the disk
+- The addition drive should now be present in the file system.
 
 #### Step 6: Boot, Test, and Configure the VM
 
@@ -202,6 +218,8 @@ date -u
 
 ##### Windows VM UTC Time Configuration
 
+> **NOTE:** you shouldn't need to run the commands below as Proxmox is set for UTC, however, if for some reason your created VM doesn't inherit those time settings follow the steps below.
+
 ```cmd
 # Run as Administrator
 # Set registry to use UTC (prevents Windows from adjusting for local time)
@@ -226,7 +244,7 @@ Set-Service w32time -StartupType Disabled
 - Create an **`evidence`** directory inside of the **`/forensics-zpool/training`**.
 - This will serve as the shared storage location between your Proxmox host and forensic VMs.
 
-### 5.2 Setup 9p Filesystem Passthrough for Linux VMs
+### 5.2A Setup 9p Filesystem Passthrough for Airgapped Linux VMs
 
 For airgapped Linux VMs or environments where virtiofs is not available, use 9p filesystem passthrough:
 
@@ -261,6 +279,60 @@ For airgapped Linux VMs or environments where virtiofs is not available, use 9p 
   ```bash
   echo "evidence-share /mnt/evidence 9p trans=virtio,nofail 0 0" | sudo tee -a /etc/fstab
   ```
+
+### 5.2B Setup Filesystem Passthrough for Airgapped Windows VMs
+
+#### Step 1: Create the Unformatted Virtual Disk Image
+
+```bash
+# Create a raw, unformatted disk image
+qemu-img create -f raw /forensics-zpool/training/windows-evidence-access.img 500G
+
+# Alternative: Use qcow2 format for dynamic growth
+qemu-img create -f qcow2 /forensics-zpool/training/windows-evidence-access.qcow2 500G
+```
+
+> **NOTE:** No formatting is performed at this stage, the disk will be formatted for NTFS later on.
+
+#### Step 2: Import the Disk Image to Proxmox
+
+```bash
+# Import the created disk image into Proxmox storage
+qm disk import <vm_id> /forensics-zpool/training/windows-evidence-access.img forensics-zpool
+```
+
+#### Step 3: Attach to Windows VM
+
+1. **Stop your Windows VM** (if running)
+2. **Go to VM → Hardware**
+3. **Look for "Unused Disk"** entries - you should see your imported evidence disk
+4. **Double-click the unused disk** or select it and click **Edit**
+5. **Configure as SATA** for maximum compatibility
+6. **Click "Add"** to attach the disk
+7. **Start your Windows VM**
+
+#### Step 4: Identify and Format the New Disk in Windows
+
+**Open Disk Management:**
+
+1. **Right-click the Start button** (Windows logo)
+2. **Select "Disk Management"** from the context menu
+
+**Locate and Initialize the New Disk:**
+
+1. **Scroll down in Disk Management** to locate the **"Unallocated"** space
+2. **Look for your new disk** (should show ~500GB unallocated space)
+3. **Right-click on the "Unallocated" space**
+4. **Select "New Simple Volume"**
+5. **Proceed through the New Simple Volume Wizard with suggested settings:**
+   - **Volume Size:** Accept default (uses full disk)
+   - **Drive Letter:** Choose available letter (e.g., H:, I:, Z:)
+   - **File System:** **Select "NTFS"** (critical for forensic work)
+   - **Volume Label:** Enter "Evidence" or "Forensic-Data"
+   - **Quick Format:** Check this option
+6. **Click "Finish"**
+
+#### Step 5: Verify Drive Access...
 
 ### 5.3 Transfer Evidence Files
 
