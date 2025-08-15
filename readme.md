@@ -62,8 +62,11 @@
 
 ### TOOLS
 
-- [OPEN WEB UI](./LLM-WM/OPEN-WEB-UI-SETUP/)
-  - Implementation guides on Open Web UI Setup for Ollama.
+- [FORENSICS](./TOOLS/FORENSICS/)
+  - Setup and practice for Digital Forensics and Incident Response on local hardware.
+
+- [OPEN WEB UI](./TOOLS/OLLAMA-OPEN-WEB-UI/)
+  - Implementation guides on Open Web UI setup for Ollama and hardware integration.
 
 - [LLM WORK FLOW](./TOOLS/LLM-WORK-FLOW/)
   - Contains my personal playbook on AI-assisted programming development to extract the most out the tool to become a power user.
