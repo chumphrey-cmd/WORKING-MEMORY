@@ -1,8 +1,7 @@
 # Working Memory (WM) 🧠🗄️
 
-A living knowledge base that serves as my digital second brain. This repository contains curated information, tools, and techniques I'm finding valuable throughout my Blue Team journey.
-
-The content here evolves as technology advances and new security challenges emerge. Feel free to explore, contribute, or adapt this knowledge for your own defensive operations.
+> A living knowledge base and monorepo that serves as my digital second brain. This repository contains information, tools, and techniques I'm finding valuable throughout my InfoSec
+> journey. The content here evolves as technology advances and my interests change. Feel free to explore, contribute, or adapt this knowledge for your own.
 
 **Happy Hunting** 🏹🛡️⚔️
 
@@ -40,12 +39,14 @@ The content here evolves as technology advances and new security challenges emer
   - Contains personal training that I've developed both for myself and other analyst.
 
 
+### HOME-LAB
 
-### RED-TEAM-WM
+- [DETECTION LAB BUILD GUIDE](./HOME-LAB/Detection_Lab_Build_Guide.md)
+  - Contains ongoing updates and procedures to configure, network, and deploy your own Detecion Lab.
 
-- [WIRELESS EXPLOITATION](./RED-TEAM-WM/WIRELESS-EXPLOITATION/)
-  - Contains commands, scripts, procedures, tools, and insights to enumerate Wireless Access Points and IoT devices.
 
+### PROGRAMMING
+> In progress...
 
 
 ### PURPLE-TEAM-WM
@@ -53,12 +54,10 @@ The content here evolves as technology advances and new security challenges emer
 - [ATTACKER TTPs AND INCIDENT HANDLING](./PURPLE-TEAM-WM/ATTACKER-TTPs-AND-INCIDENT-HANDLING/)
   - Contains accumulated notes, insights and procedures to identify and remediate attacker actions.
 
+### RED-TEAM-WM
 
-
-### HOME-LAB
-
-- [DETECTION LAB BUILD GUIDE](./HOME-LAB/Detection_Lab_Build_Guide.md)
-  - Contains ongoing updates and procedures to configure, network, and deploy your own Detecion Lab.
+- [WIRELESS EXPLOITATION](./RED-TEAM-WM/WIRELESS-EXPLOITATION/)
+  - Contains commands, scripts, procedures, tools, and insights to enumerate Wireless Access Points and IoT devices.
 
 
 ### TOOLS
