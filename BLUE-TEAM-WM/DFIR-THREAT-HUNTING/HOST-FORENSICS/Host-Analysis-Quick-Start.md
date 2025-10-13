@@ -1,6 +1,7 @@
 # Host Analysis Quick Start
 
 - [Host Analysis Quick Start](#host-analysis-quick-start)
+	- [List of  Sysmon Event IDs for Threat Hunting](#list-of--sysmon-event-ids-for-threat-hunting)
 	- [Malware Persitence Locations](#malware-persitence-locations)
 		- [Common Autostart Locations (Hunting Artifact 🏹)](#common-autostart-locations-hunting-artifact-)
 		- [Services (Hunting Artifact 🏹)](#services-hunting-artifact-)
@@ -31,6 +32,10 @@
 		- [Quick Wins - PowerShell (Hunting Artifact 🏹)](#quick-wins---powershell-hunting-artifact-)
 
 
+
+## List of  Sysmon Event IDs for Threat Hunting
+
+- [Sysmon Event IDs](https://systemweakness.com/list-of-sysmon-event-ids-for-threat-hunting-4250b47cd567)
 
 ## Malware Persitence Locations
 
