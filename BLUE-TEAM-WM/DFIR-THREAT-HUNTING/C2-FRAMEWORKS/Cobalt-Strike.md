@@ -1,40 +1,40 @@
-# Cobalt Strike
+## Cobalt Strike (SANS DFIR IoCs) [1]
 
 > **NOTE:** Cobalt Strike's strength is found within it's flexibility, durability, and elasticity. Essentially, it's able to string together many exploits in a robust and customizable C2 framework better than most other frameworks out there...
 
-## Process Tree Detection
+### Process Tree Detection
 
 > From memory extraction...
 
 <img src="./files/Process_Tree_Detection.png">
 
-### IoCs
+#### IoCs
 1. Prescence of `WmiPrvSE.exe` spawning multiple `powershell.exe` processes/sacrifical processes.
 2. Multiple `rundll32.exe` processes generated (default **sacrifical process** for Cobalt Strike; can be changed but still noisy!) 
 
 
-## Cobalt Strike PowerShell and WMI Processes
+### Cobalt Strike PowerShell and WMI Processes
 
 > Here we are drilling down on the `rundll32.exe` process of interest...
 
 <img src="./files/PowerShell_and_WMI_Processes.png">
 
-### IoCs
+#### IoCs
 1. Naked command line with **no additional parameters specified** (default setting).
 > That being said, the setting can be changed via the malleable C2 Setting
 > 
 > **HOWEVER** even with a change in the default settings, having multiple command lines with no parameters specified looks **very odd**!
 
-## SysWOW64 Activity
+### SysWOW64 Activity
 
 > Here we are looking for the execution of 32-bit code (SysWOW64) associated with with the multiple sacrifical processes of `powershell.exe`
 
 <img src="./files/SysWOW64_Activity.png">
 
-### IoCs
+#### IoCs
 1. Multiple instances of running **`SysWOW64`**, which indicates the prescence of 32-bit code linked with Cobalt Strike! 
 
-## Named Pipe Detection (from Memory)
+### Named Pipe Detection (from Memory)
 
 > Most common and **default** named pipes used by Cobalt Strike
 
@@ -53,26 +53,26 @@
 
 > Here is an example of changing the output of Named Pipe names so that it is more difficult to detect, **HOWEVER**, even with an alternate named pipe name seeing an internal workstation connecting to another internal workstation via named pipe is still odd...
 
-### IoCs
+#### IoCs
 1. Each of the named pipes **must** all be changed from defaults, otherwise they can be identified. Attackers often don't modify the defaults because they are still able to go undetected!
 
-## Named Pipe Detection (with Sysmon)
+### Named Pipe Detection (with Sysmon)
 
 <img src="./files/Named_Pipe_Sysmon.png">
 
-### IoCs
+#### IoCs
 1. Enable **Named Pipe** creation events within Sysmon
 2. Look for Events **17** and **18** indicating named creation
 3. Pay attention to **PipeName** for default or unique names associated with Cobalt Strike
 4. Pay attention to **Image** to look for **SysWOW64** (unique to Cobalt Strike for 32-bit code) and oddly named executables (e.g., `perfmonsvc64.exe`) that seem out of place
 
-## Idenfication of Named Pipes at Scale (with Sysmon)
+### Idenfication of Named Pipes at Scale (with Sysmon)
 
 > Here we are filtering for Event Codes 17 and 18 (named pipe creation), pay special attention to **PipeName** and **Executable (Image Binary)** columns.
 
 <img src="./files/Named_Pipes_at_Scale.png">
 
-### IoCs
+#### IoCs
 1. Within **Executable (Image Binary)** column we see **`32-bit PowerShell`** being ran multiple insances of **`rundll32.exe`**
 2. Within **PipeName** column we seemingly **random Pipe Names**
     > **NOTE:** the length of the "random" named pipes are associated with the commands executed (e.g., mimikatz = **8 characters**, named piped = **8 characters**) 
@@ -101,7 +101,7 @@ rule cs_job_pipe
 
 * [Detection Name Pipe Creation](https://labs.withsecure.com/publications/detecting-cobalt-strike-default-modules-via-named-pipe-analysis)
 
-## Identifying Cobalt Strike via PowerShell
+### Identifying Cobalt Strike via PowerShell
 
 **Enable PS Script Block Logging**
 
@@ -121,7 +121,7 @@ Recommendations:
 * Centralize your logs
 * Create filters to search for indicators
 
-### IoCs
+#### IoCs
 
 > Output of the **`powershell-import`** utility within Cobalt Strike...
 
@@ -131,7 +131,7 @@ Recommendations:
 2. The prefix **`-exec bypass -EncodedCommand`** is very common for commands ran via Cobalt Strike.
 3. **`FromBase64String`** another common encoding for an imported PowerShell script.
 
-## Scaling Detection in PowerShell Logs
+### Scaling Detection in PowerShell Logs
 
 * Events may capture different parts of an attack
 * **4103** records module/pipeline output
@@ -150,7 +150,7 @@ Recommendations:
 
 * Look for obvious signs of encoding and obfuscation
 
-## Cobalt Strike Beacon Analysis
+## Cobalt Strike Beacon Analysis (Host IoCs) [2]
 
 ### `powershell` and `powershell-import`
 
@@ -269,9 +269,49 @@ Recommendations:
 2. The base64 encoded command decodes to `Invoke-WMIMethod win32_process -name create -argumentlist '<command>' -ComputerName <target>`
 
 
+## Cobalt Strike Beacon Analysis (Network IoCs) [6]
+
+**Beacons + How They Work**
+* Becaons are the terms used to describe communication between agent and Command & Control Server.
+  * **ESSENTIALLY** a "keep-alive" signal sent out to maintain connection with C2.
+* Agents sleep for specific time configured with a sleep parameter (used to reduce the amount of requests and evade defenses).
+  * **Jitter** is also used to make the sleep parameter more random.
+
+### HTTP Beacons
+
+* By default Cobalt Strike HTTP beacon makes a GET request to **send encrypted metadata in the Cookie header** and check if there is an available task to be executed.
+  * Metadata is encrypted with public key injected into beacon.
+
+#### IoCs
+1. Results of executed commands are sent to the server using **POST requests** with default url pattern **`/submit.php?id=<beaconID>`**
+2. Building a detection that identifies identical intervals between group HTTP request methods made by a source to destination IP.
+> **Detection:**
+> Reduce false-positives by specifying that the number of requests (**connection count**) is > 10 AND the percentage of the requests (**connection count**) coming from the source IP is > 80%
+
+```bash
+# Example Splunk Query
+index=YOUR_INDEX source="YOUR_HTTP_SOURCE"
+| sort 0 _time
+| streamstats current=f last(_time) as prevtime by src_ip, dest_port, dest_ip, http_method
+| eval timedelta = _time - prevtime
+| search timedelta > 0
+| eventstats count as total by src_ip, dest_port, dest_ip, host
+| stats count, min(_time) as _time, first(url) as uri by src_ip, dest_port, dest_ip, http_method, timedelta, total
+| eval prcnt = (count/total)*100
+| where prcnt > 80 AND count > 10
+| table _time, src_ip, dest_ip, dest_port, http_method, url, timedelta, count, total, prcnt
+```
+
+3. Hunting for a specfic number of the **received bytes** from the potential C2 server.
+
+### SMB Beacons
 
 ---
 
 **References**
-* https://www.youtube.com/watch?v=borfuQGrB8g
-* https://www.crowdstrike.com/en-us/blog/getting-the-bacon-from-cobalt-strike-beacon/
+1.  https://www.youtube.com/watch?v=borfuQGrB8g (DFIR for Cobalt Strike)
+2.  https://www.crowdstrike.com/en-us/blog/getting-the-bacon-from-cobalt-strike-beacon/ (Cobalt Strike - Host IoCs)
+3.  https://arxiv.org/html/2506.08922v1 (Using ML to Detect Cobalt Strike from Network Traffic Alone) - **To Review**
+4.  https://thedfirreport.com/2021/08/29/cobalt-strike-a-defenders-guide/ (DFIR Report pt. 1) - **To Review**
+5.  https://thedfirreport.com/2022/01/24/cobalt-strike-a-defenders-guide-part-2/ (DFIR Report pt. 2) - **To Review**
+6.  https://underdefense.com/guides/how-to-detect-cobaltstrike-command-control-communication/
