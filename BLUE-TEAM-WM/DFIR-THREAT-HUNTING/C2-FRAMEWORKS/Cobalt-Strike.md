@@ -43,6 +43,19 @@
     - [Domain Fronting](#domain-fronting)
     - [Reverse Proxy Detection](#reverse-proxy-detection)
       - [IoCs](#iocs-17)
+    - [HTTP/HTTPs (`jquery`)](#httphttps-jquery)
+    - [DNS Beacons](#dns-beacons)
+    - [SMB Beacons](#smb-beacons-1)
+      - [Named Pipe IoCs 🎯](#named-pipe-iocs-)
+    - [Rules (Sigma|Suricata|Yara)](#rules-sigmasuricatayara)
+    - [RITA](#rita)
+      - [RITA IoC 🎯](#rita-ioc-)
+    - [JA3/JA3S Fingerprinting](#ja3ja3s-fingerprinting)
+      - [JA3/JA3S IoCs 🎯](#ja3ja3s-iocs-)
+    - [JARM](#jarm)
+      - [JARM IoCs 🎯](#jarm-iocs-)
+    - [JA4+ Fingerprinting](#ja4-fingerprinting)
+      - [JA4+ IoCs 🎯](#ja4-iocs-)
 
 
 ## Cobalt Strike (SANS DFIR IoCs) 
@@ -669,6 +682,184 @@ index=YOUR_INDEX source="YOUR_SMB_SOURCE" smb_command="2:9"
 * The victim’s hostname is captured in this logon 
 * Source address = 127.0.0.1
 * Soruce port = 0
+
+### HTTP/HTTPs (`jquery`)
+
+* Here we are hunting for the **`jquery`** C2 profile since it is one of the most commonly used profiles by threat actors [5].
+* Once again the details of the C2 profile can be modified...malleable C2 profiles can generate unique network traffic based on the provided configuration. 
+* Because of how simple it is to change these parameters, creating network signatures for proactive defense can be difficult. 
+* Defenders can create signatures for publicly available profiles (using Sigma rules) or profiles extracted and made available thru open-source reporting [5].
+
+### DNS Beacons
+
+* Operators can choose to configure their server to respond to beacon requests in A, AAAA or TXT records. 
+* Useful for more covert operations, as the destination host could be a benign DNS server. 
+* Defenders will need to inspect the traffic data and look for suspicious DNS records.
+
+<img src="./files/dns_beacon_example.png">
+
+* DNS traffic can be randomized using malleable C2 profiles.
+
+<img src="./files/dns_beacon_malleable.png">
+
+* [DNS Beacon Reference](https://hstechdocs.helpsystems.com/manuals/cobaltstrike/current/userguide/content/topics/malleable-c2_dns-beacons.htm#_Toc65482850)
+
+### SMB Beacons
+
+* SMB beacons open a local port on the target host and listen for incoming communication from a parent beacon and is facilitated because of named pipes...
+
+#### Named Pipe IoCs 🎯
+
+* The operators can configure the pipename on the client; however, the default pipename starts with **`msagent_#`** for SMB beacons.
+* **[Guide to Named Pipes for Hunting Cobalt Strike](https://svch0st.medium.com/guide-to-named-pipes-and-hunting-for-cobalt-strike-pipes-dc46b2c5f575)**
+* SMB beacons are mostly used to make network detection harder and to get access to isolated systems where communication to the internet is prohibited.
+* SMB protocol is accessible in most internal networks, so it makes for a reliable C2 method
+
+**Default Named Pipes to Hunt**
+
+| Regex | Source |
+| --- | --- |
+| MSSE-[0-9a-f]{3}-server | Default Cobalt Strike Artifact Kit binaries |
+| status_[0-9a-f]{2} | Default psexec_psh |
+| postex_ssh_[0-9a-f]{4} | Default SSH beacon |
+| msagent_[0-9a-f]{2} | Default SMB beacon |
+| postex_[0-9a-f]{4} | Default Post Exploitation job (v4.2+) |
+| mojo.5688.8052.183894939787088877[0-9a-f]{2} | jquery-c2.4.2.profile |
+| mojo.5688.8052.35780273329370473[0-9a-f]{2} | jquery-c2.4.2.profile |
+| wkssvc[0-9a-f]{2} | jquery-c2.4.2.profile |
+| ntsvcs[0-9a-f]{2} | trick_ryuk.profile |
+| DserNamePipe[0-9a-f]{2} | trick_ryuk.profile |
+| SearchTextHarvester[0-9a-f]{2} | trick_ryuk.profile |
+| ntsvcs | zloader.profile |
+| scerpc | zloader.profile |
+| mypipe-f[0-9a-f]{2} | havex.profile |
+| mypipe-h[0-9a-f]{2} | havex.profile |
+| windows.update.manager[0-9a-f]{2} | windows-updates.profile |
+| windows.update.manager[0-9a-f]{3} | windows-updates.profile |
+| ntsvcs_[0-9a-f]{2} | salesforce_api.profile |
+| scerpc_[0-9a-f]{2} | salesforce_api.profile |
+| scerpc[0-9a-f]{2} | zoom.profile |
+| ntsvcs[0-9a-f]{2} | zoom.profile |
+
+### Rules (Sigma|Suricata|Yara)
+
+* A list of default/starter Sigma Rules can be found [here](https://thedfirreport.com/2021/08/29/cobalt-strike-a-defenders-guide/)
+
+> **NOTE:** Simply for **"Sigma Rules"**, **"Suricata"**, or **"Yara Rules"**
+
+### RITA
+
+* **[RITA download](https://github.com/activecm/rita)**
+* Real Intelligence Threat Analytics (RITA) is a frame work for detecting  C2 communication by taking Zeek log data to accurately detect beaconing activity!
+* The more data you have, the more accurate the results will be.
+
+#### RITA IoC 🎯
+
+The framework ingests [Zeek Logs](https://www.zeek.org/) in TSV or JSON format and supports:
+
+* **Beaconing Detection**: Search for signs of beaconing behavior in and out of your network
+* ***Long Connection Detection**: Easily see connections that have communicated for long periods of time
+* **DNS Tunneling Detection**: Search for signs of DNS based covert channels
+* **Threat Intel Feed Checking**: Query threat intel feeds to search for suspicious domains and hosts
+
+
+### JA3/JA3S Fingerprinting
+
+> Both are used to **passively fingerprint** clients unique signatures (TLS/SSL fingerprints) of values collected from fields in the Client Hello packets:
+> * SSL Version
+> * Accepted Ciphers
+> * List of Extensions
+> * Elliptic Curves
+> * Elliptic Curve Formats
+>
+> It's very difficult to spoof all all four of these packets making it an excellent IoC!
+
+* **[JA3/JA3S](https://github.com/salesforce/ja3)** 
+
+  * **JA3** a passive fingerprint for TLS clients by listening to the network traffic and passively fingerprints the client based on what it sees.  
+  * **JA3S** is able to generate a server fingerprint. It is unable to fingerprint the server application itself, only the connection.
+  * Combining JA3 + JA3S together on the same connection fingerprint the connection between a client and its server.
+  * The combination of the JA3/JA3S can produce the most accurate result.
+  * JA3S can capture the full cryptographic communication and combine the JA3 findings to generate the signature.
+  * The downside of this method is that it can produce inaccurate results if the Cobalt Strike is behind redirectors.
+
+#### JA3/JA3S IoCs 🎯
+
+**JA3 Cobalt Strike Infrastructure**
+* 72a589da586844d7f0818ce684948eea
+* a0e9f5d64349fb13191bc781f81f42e1
+
+**JA3S Cobalt Strike Infrastructure**
+* b742b407517bac9536a77a7b0fee28e9
+* ae4edc6faf64d08308082ad26be60767
+
+### JARM 
+
+* **[JARM](https://github.com/salesforce/jarm#how-jarm-works)** has the ability to actively fingerprint the TLS values of the remote server by interacting with the target server sending 10 TLS Client Hello packets and recording the specific attributes from the replies [9,10]
+
+> **ESSENTIALLY:** JARM actively scans the server and builds a fingerprint/hash of the server application.
+>
+> JARM factors in the OS, OS version, Libraries, version of those libraries, the order the libraries were called, custom configs, etc. to fingerprint the TLS Server response. 
+>
+> The combinations of factors make it **unlikely** that servers deployed by different organizations will have the same response. 
+> 
+> **SO**, once we have the JARM fingerprint it will very difficult and unlikely for an attacker to wipe their C2 hardware infrastructure/server after each operation...
+
+#### JARM IoCs 🎯
+
+* JARM tends to produce unique JARM fingerprints with minimal overlap with the Alexa Top 1M websites...
+
+| Malicious Server C2 | JARM Fingerprint | Overlap with Alexa Top 1M |
+| --- | --- | --- |
+| Trickbot | `22b22b09b22b22b22b22b22b22b22b352842cd5d6b0278445702035e06875c` | 0 |
+| AsyncRAT | `1dd40d40d00040d1dc1dd40d1dd40d3df2d6a0c2caaa0dc59908f0d3602943` | 0 |
+| Metasploit | `07d14d16d21d21d00042d43d000000aa99ce74e2c6d013c745aa52b5cc042d` | 0 |
+| Cobalt Strike | `07d14d16d21d21d07c42d41d00041d24a458a375eef0c576d23a7bab9a9fb1` | 0 |
+| Merlin C2 | `29d21b20d29d29d21c41d21b21b41d494e0df9532e75299f15ba73156cee38` | 303 |
+
+### JA4+ Fingerprinting
+
+Reference: 11 and 12
+
+* **[JA4+ download](https://github.com/FoxIO-LLC/ja4)**
+* **[JA4+ cheatsheet](https://x.com/4A4133/status/1887269972545839559)**
+* **[JA4+ database](https://ja4db.com/)**
+
+* Provides a suite of modular network fingerprints that are easy to use and easy to share, replacing the JA3 TLS fingerprinting standard from 2017. **Enables you to analyze and hunt ALL encrypted traffic!**
+
+> **ESSENTIALLY:** JA4+, similar to JA3/JA3S in that factors specific and difficult to modify details contributing to fingerprinting of devices using encrypted communications. 
+> 
+> **BUT** includes TLS Client, TLS Server Response, HTTP Client, Latency Measurment/Light Distance, x509 TLS certificates, SSH Traffic, Passive TCP Client, Passive TCP Server, and Active TCP Server Fingerprinting
+
+| Full Name | Short Name | Description |
+| --- | --- | --- |
+| JA4 | JA4 | TLS Client Fingerprinting |
+| JA4Server | JA4S | TLS Server Response / Session Fingerprinting |
+| JA4HTTP | JA4H | HTTP Client Fingerprinting |
+| JA4Latency | JA4L | Latency Measurement / Light Distance |
+| JA4X509 | JA4X | X509 TLS Certificate Fingerprinting |
+| JA4SSH | JA4SSH | SSH Traffic Fingerprinting |
+| JA4TCP | JA4T | Passive TCP Client Fingerprinting |
+| JA4TCPServer | JA4TS | Passive TCP Server Response Fingerprinting |
+| JA4TCPScan | JA4TScan | Active TCP Server Fingerprinting |
+
+#### JA4+ IoCs 🎯
+
+| Application |JA4+ Fingerprints |
+|----|----|
+| IcedID Malware Dropper | `JA4H=ge11cn020000_9ed1ff1f7b03_cd8dafe26982` |
+| IcedID Malware | `JA4=t13d201100_2b729b4bf6f3_9e7b989ebec8` <br/> `JA4S=t120300_c030_5e2616a54c73` |
+| Sliver Malware | `JA4=t13d190900_9dc949149365_97f8aa674fd9` <br/> `JA4S=t130200_1301_a56c5b993250` <br/> `JA4X=000000000000_4f24da86fad6_bf0f0589fc03` <br/> `JA4X=000000000000_7c32fa18c13e_bf0f0589fc03` |
+| Cobalt Strike | `JA4H=ge11cn060000_4e59edc1297a_4da5efaf0cbd` <br/> `JA4X=2166164053c1_2166164053c1_30d204a01551` |
+| SoftEther VPN | `JA4=t13d880900_fcb5b95cb75a_b0d3b4ac2a14` (client) <br/> `JA4S=t130200_1302_a56c5b993250` <br/> `JA4X=d55f458d5a6c_d55f458d5a6c_0fc8c171b6ae` |
+| Qakbot | `JA4X=2bab15409345_af684594efb4_000000000000` |
+| Pikabot | `JA4X=1a59268f55e5_1a59268f55e5_795797892f9c` |
+| Darkgate | `JA4H=po10nn060000_cdb958d032b0` |
+| LummaC2 | `JA4H=po11nn050000_d253db9d024b` |
+| Evilginx | `JA4=t13d191000_9dc949149365_e7c285222651` |
+| Reverse SSH Shell | `JA4SSH=c76s76_c71s59_c0s70` |
+
+
 ---
 
 **References**
@@ -680,3 +871,7 @@ index=YOUR_INDEX source="YOUR_SMB_SOURCE" smb_command="2:9"
 6.  https://underdefense.com/guides/how-to-detect-cobaltstrike-command-control-communication/
 7.  https://www.elastic.co/guide/en/ecs/current/ecs-http.html
 8.  https://github.com/MichaelKoczwara/Awesome-CobaltStrike-Defence
+9.  https://medium.com/@jalthouse
+10. https://medium.com/salesforce-engineering/easily-identify-malicious-servers-on-the-internet-with-jarm-e095edac525a
+11. https://blog.foxio.io/ja4%2B-network-fingerprinting
+12. https://blog.foxio.io/ja4t-tcp-fingerprinting
