@@ -44,12 +44,13 @@
     - [Reverse Proxy Detection](#reverse-proxy-detection)
       - [IoCs](#iocs-17)
     - [HTTP/HTTPs (`jquery`)](#httphttps-jquery)
-    - [DNS Beacons](#dns-beacons)
-    - [SMB Beacons](#smb-beacons-1)
-      - [Named Pipe IoCs 🎯](#named-pipe-iocs-)
+    - [DNS](#dns)
+      - [Shanon Entropy IoC 🎯](#shanon-entropy-ioc-)
+    - [Named Pipe IoCs 🎯](#named-pipe-iocs-)
     - [Rules (Sigma|Suricata|Yara)](#rules-sigmasuricatayara)
     - [RITA](#rita)
       - [RITA IoC 🎯](#rita-ioc-)
+    - [General Beaconing IoCs 🎯](#general-beaconing-iocs-)
     - [JA3/JA3S Fingerprinting](#ja3ja3s-fingerprinting)
       - [JA3/JA3S IoCs 🎯](#ja3ja3s-iocs-)
     - [JARM](#jarm)
@@ -690,7 +691,7 @@ index=YOUR_INDEX source="YOUR_SMB_SOURCE" smb_command="2:9"
 * Because of how simple it is to change these parameters, creating network signatures for proactive defense can be difficult. 
 * Defenders can create signatures for publicly available profiles (using Sigma rules) or profiles extracted and made available thru open-source reporting [5].
 
-### DNS Beacons
+### DNS
 
 * Operators can choose to configure their server to respond to beacon requests in A, AAAA or TXT records. 
 * Useful for more covert operations, as the destination host could be a benign DNS server. 
@@ -704,11 +705,22 @@ index=YOUR_INDEX source="YOUR_SMB_SOURCE" smb_command="2:9"
 
 * [DNS Beacon Reference](https://hstechdocs.helpsystems.com/manuals/cobaltstrike/current/userguide/content/topics/malleable-c2_dns-beacons.htm#_Toc65482850)
 
-### SMB Beacons
+#### Shanon Entropy IoC 🎯
 
-* SMB beacons open a local port on the target host and listen for incoming communication from a parent beacon and is facilitated because of named pipes...
+Reference: 14
 
-#### Named Pipe IoCs 🎯
+> Used to exfiltrate data out of the network via DNS queries. The operator has to shove that data into a random subdomain.
+
+* Normal: www.google.com (Low entropy, short).
+* Tunneling: xyzxyz...[encrypted_data]...xyz.badguy-domain.com (High entropy, very long).
+
+**Detection: Shannon Entropy**
+
+> **ESSENTIALLY**, the total randomness associated with the attacker domain named used for exfiltration.
+
+**IoC:** High Entropy (randomness) + High Length = Potential Tunneling Indicator.
+
+### Named Pipe IoCs 🎯
 
 * The operators can configure the pipename on the client; however, the default pipename starts with **`msagent_#`** for SMB beacons.
 * **[Guide to Named Pipes for Hunting Cobalt Strike](https://svch0st.medium.com/guide-to-named-pipes-and-hunting-for-cobalt-strike-pipes-dc46b2c5f575)**
@@ -761,6 +773,18 @@ The framework ingests [Zeek Logs](https://www.zeek.org/) in TSV or JSON format a
 * ***Long Connection Detection**: Easily see connections that have communicated for long periods of time
 * **DNS Tunneling Detection**: Search for signs of DNS based covert channels
 * **Threat Intel Feed Checking**: Query threat intel feeds to search for suspicious domains and hosts
+
+### General Beaconing IoCs 🎯
+
+Reference: 13
+
+* **Inter-Arrival Time (IAT) or Average** - the time interval between incoming tasks or communications between the when the client reaches out to a server. The time difference and average between communication.
+
+* **Standard Deviation (SD)** - a measure of the amount of variance of values as it relates to its mean (average). 
+  * Low SD = values that are close the mean (expected values)
+  * Hight SD = values that are spread out outside of the expected mean (potential outliers)
+
+* **IoC**: Searching for IPs with regular time intervals and a low SD or variance 
 
 
 ### JA3/JA3S Fingerprinting
@@ -875,3 +899,5 @@ Reference: 11 and 12
 10. https://medium.com/salesforce-engineering/easily-identify-malicious-servers-on-the-internet-with-jarm-e095edac525a
 11. https://blog.foxio.io/ja4%2B-network-fingerprinting
 12. https://blog.foxio.io/ja4t-tcp-fingerprinting
+13. https://www.activecountermeasures.com/blog-beacon-analysis-the-key-to-cyber-threat-hunting/
+14. https://redcanary.com/blog/threat-detection/threat-hunting-entropy/
