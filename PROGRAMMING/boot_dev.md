@@ -4,11 +4,11 @@
 
 ### None (NoneType)
 * **None** is the Type `NoneType`
-  * **Essentially**, No value / not set / doesn’t exist (but different than 0 since 0 can is technically an integer)...
-  * Useful in error handling, failing gracefully, optional function arguments, variables that will be filled later, items that are there and items that potentially aren't there, etc.
+  * **Essentially**, No value / not set / doesn’t exist (but different than 0 since 0 can be technically an integer)...
+  * Useful in error handling, failing gracefully, optional function arguments, variables that will be filled later, items that are there, and items that potentially aren't there, etc.
   * Used in situations where a user hasn't selected any option (e.g., limbo)
 
-* In the case of print debugging use `type`:
+* In the case of print debugging, use `type`:
 
 ```python
 print(type(var_1))
@@ -32,11 +32,11 @@ sword_length = 200
 
 `return`: Makes the value available to the caller of the function 
 
-> [!NOTE] return further explained:
+> [!NOTE]
 >
-> `return` keeps the result just in case if you want to use the result on somewhere else within your program. Another way to think about it is that `return` function’s like an **output port** than a storage area.
+> `return` keeps the result just in case you want to use the result somewhere else within your program. Another way to think about it is that the `return` function is like an **output port** rather  than a storage area.
 > 
-> It's used inside a function to send a value back to the place where the function was called. Once return is executed, the function stops running, and any code written after it is ignored.
+> It's used inside a function to send a value back to the place where the function was called. Once the return is executed, the function stops running, and any code written after it is ignored.
 
 * A **function call** is like asking a helper: “Here are some inputs, please compute something and hand me back the result (via `return`)."
 * `return` is the moment the helper hands you the result and stops working.
@@ -53,7 +53,7 @@ print(result)
 
 ### `f-strings` (Formatted Strings)
 
-> Basically a really flexible way to create strings and complex statements that require the use previously defined variables that change over time.
+> Basically, a really flexible way to create strings and complex statements that require the use of previously defined variables that change over time.
 
 For example:
 
@@ -71,12 +71,12 @@ print(f_string("Jane"))
 # Jane for the f-string example
 ```
 * Here we can use f-strings to take the changing variable of `your_name` and append additional text to the desired name. 
-* Obviously f-strings is far more powerful than the example provided, but this gives you the gist...
+* Obviously, f-strings are far more powerful than the example provided, but this gives you the gist...
 
 ### Parameters vs. Arguments
 
 **Parameters**
-* Are the placeholders, names, or symbols that are used inside of the function. They can be whatever you want them to be (`a`, `b`, `var`)
+* Are the placeholders, names, or symbols that are used inside the function. They can be whatever you want them to be (`a`, `b`, `var`)
 * **P**arameter = **P**laceholder
 
 **Arguments**
@@ -94,7 +94,7 @@ sum = add(5, 6)
 
 ### Default Values
 
-> Allow you to specify the default output for the function parameter in the event that the arguments are optional. Prevents the function or program from breaking.
+> Allows you to specify the default output for the function parameter if the arguments are optional. Prevents the function or program from breaking.
 
 ```python
 def get_greeting(email, name="there"):
