@@ -261,3 +261,33 @@ num = int(binary_string, 2)
 print(num)
 # 4
 ```
+
+## Comparisons (if...else)
+
+### if
+
+> [!NOTE]
+>
+> Within if statements, the **`return`** block is used as a sort of stop-gap/check within the function. IF the function sucessfully completes the comparison, DON'T continue any further and repeat the comparison until the end.
+
+```python
+def show_status(boss_health):
+    if boss_health > 0:
+        print("Ganondorf is alive!")
+        return
+    print("Ganondorf is unalive!")
+```
+If boss_health is greater than 0, then this will be printed: **`Ganondorf is alive!`** 
+Otherwise, **`Ganondorf is unalive!`**
+
+### if-elif-else
+
+```python
+def player_status(health):
+    if health <= 0:
+        return "dead"
+    elif health <= 5:
+        return "injured"
+    else:
+        return "healthy"
+```
