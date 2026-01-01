@@ -291,3 +291,147 @@ def player_status(health):
     else:
         return "healthy"
 ```
+
+## Loops
+
+### Simple "for loop" in Python
+
+```python
+
+# Simple for loop syntax...
+
+for i in range(0, 10):
+    print(i)
+```
+
+```python
+
+# Simple for loop with step count...
+
+for i in range(0, 10, 2):
+    print(i)
+# prints:
+# 0
+# 2
+# 4
+# 6
+# 8
+
+for i in range(3, 0, -1):
+    print(i)
+# prints:
+# 3
+# 2
+# 1
+```
+
+```python
+# A more complex for-loop with a nested if-statement...
+def countdown_to_start():
+    for i in range(10, 0, -1):
+
+        if i == 1:
+            print(f"{i}...Fight!")
+
+        else:
+            print(f"{i}...")
+```
+
+### Simple "while loop" in Python
+
+```python
+while 1:
+    print("1 evaluates to True")
+
+# prints:
+# 1 evaluates to True
+# 1 evaluates to True
+# (...continuing)
+```
+
+```python
+num = 0
+while num < 3:
+    num += 1
+    print(num)
+
+# prints:
+# 1
+# 2
+# 3
+# (the loop stops when num >= 3)
+```
+
+### `continue` statements
+
+* **`continue`**: means "go directly to the next iteration of this loop." Whatever else was supposed to happen in the current iteration is skipped.
+
+```python
+# Remember, `range` is inclusive of the start, but exclusive of the end
+counter = 0
+for number in range(1, 51):
+    counter = counter + 1
+
+    if counter == 7:
+        counter = 0 # Reset the counter
+        continue # Skip this number
+
+    print(number)
+```
+
+```python
+# A more complex example that handles includes a counter + conditional...
+
+def award_enchantments(start, end, step):
+    counter = 0
+    for quest_number in range(start, end, step):
+        counter = counter + 1
+
+        if counter < 3:
+            continue
+        else:
+            counter = 0
+        
+        enchantment_strength = quest_number * 5
+        print(
+            f"Enchantment of strength {enchantment_strength} awarded for completing {quest_number} quests!"
+        )
+```
+
+* **`continue`** can also halt the current iteration and jump to the next one, which saves the program from doing unnecessary work.
+
+```python
+numbers = [16, -4, 25, -9, 36, 0, 49]
+
+for number in numbers:
+    if number < 0:
+        continue  # Skip negatives to avoid complex numbers
+
+    print(f"The square root of {number} is {number ** 0.5}.")
+```
+
+### `break` statements
+
+* **`break`**: are used to stop the execution of a loop (e.g., like a fail-safe to prevent indefinite execution).
+
+```python 
+for n in range(42):
+    print(f"{n} * {n} = {n * n}")
+    if n * n > 150:
+        break
+
+# 0 * 0 = 0
+# 1 * 1 = 1
+# 2 * 2 = 4
+# 3 * 3 = 9
+# 4 * 4 = 16
+# 5 * 5 = 25
+# 6 * 6 = 36
+# 7 * 7 = 49
+# 8 * 8 = 64
+# 9 * 9 = 81
+# 10 * 10 = 100
+# 11 * 11 = 121
+# 12 * 12 = 144
+# 13 * 13 = 169
+```
