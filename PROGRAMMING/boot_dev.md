@@ -337,6 +337,19 @@ def countdown_to_start():
             print(f"{i}...")
 ```
 
+```python
+# A deceptively simple (complex) for-loop that stumped me...
+# Specifies a start point for you to iterate from "xp = 0" and adds the current xp to (i * 5) to get total xp for the specific level
+
+def calculate_experience_points(level):
+    xp = 0
+    
+    for i in range(1, level):
+        xp = xp + (i * 5)
+
+    return xp
+```
+
 ### Simple "while loop" in Python
 
 ```python
@@ -360,6 +373,18 @@ while num < 3:
 # 2
 # 3
 # (the loop stops when num >= 3)
+```
+
+```python
+# Another deceptively simple while-loop that stumped me...
+# while-loop that ensures that mana < max_mana AND num_potions > 0, if those conditions are met, +1 to mana and -1 to potions...
+
+def meditate(mana, max_mana, num_potions):
+    while mana < max_mana and num_potions > 0:
+        mana += 1
+        num_potions -= 1
+        
+    return mana, num_potions
 ```
 
 ### `continue` statements
