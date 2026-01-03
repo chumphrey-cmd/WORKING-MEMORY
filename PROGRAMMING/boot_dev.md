@@ -135,6 +135,34 @@ def some_function(foo, bar):
 # -3 (an integer, rounded down from -2.333)
 ```
 
+### Floor Division and Integer Output Puzzle
+
+```python
+'''
+Here we are ensuring that we're doing pure integer math rather than introducing floats (we want 10 instead of 10.0).
+Initially, "int((current_mah / capacity_mah) * 100)" was used, but this would introduce bugs later on with situations with more complex numbers.
+'''
+def battery_percent_remaining(current_mah, capacity_mah):
+    int_percent = current_mah * 100 // capacity_mah
+    return int_percent
+
+
+def minutes_remaining(current_mah, drain_ma):
+    total_minutes = current_mah * 60 // drain_ma
+    return total_minutes
+
+
+def format_battery_status(current_mah, capacity_mah, drain_ma):
+    format_percent = battery_percent_remaining(current_mah, capacity_mah)
+    format_min_remaining = minutes_remaining(current_mah, drain_ma)
+
+    hour = format_min_remaining // 60
+    minutes = format_min_remaining % 60
+
+    final_output = f"{format_percent}% - {hour}h {minutes}m"
+    return final_output
+```
+
 ### Operators
 
 **`+=`**: Increment
@@ -151,7 +179,7 @@ star_rating -= 1
 # star_rating is now 3
 ```
 
-**`+=`**: Multiply
+**`*=`**: Multiply
 ```python
 star_rating = 4
 star_rating *= 2
@@ -459,4 +487,23 @@ for n in range(42):
 # 11 * 11 = 121
 # 12 * 12 = 144
 # 13 * 13 = 169
+```
+
+## Lists
+
+### List Updates
+
+```python
+inventory = ["Leather", "Iron Ore", "Healing Potion"]
+inventory[0] = "Leather Armor"
+# inventory: ['Leather Armor', 'Iron Ore', 'Healing Potion']
+```
+
+### Appending
+
+```python
+cards = []
+cards.append("nvidia")
+cards.append("amd")
+# the cards list is now ['nvidia', 'amd']
 ```
