@@ -63,7 +63,8 @@
 
 * Reference: 1
 
-> **NOTE:** Cobalt Strike's strength is found within it's flexibility, durability, and elasticity. Essentially, it's able to string together many exploits in a robust and customizable C2 framework better than most other frameworks out there...
+> [!NOTE] 
+> Cobalt Strike's strength is found within it's flexibility, durability, and elasticity. Essentially, it's able to string together many exploits in a robust and customizable C2 framework better than most other frameworks out there...
 
 ### Process Tree Detection
 
@@ -138,7 +139,9 @@
 #### IoCs
 1. Within **Executable (Image Binary)** column we see **`32-bit PowerShell`** being ran multiple insances of **`rundll32.exe`**
 2. Within **PipeName** column we seemingly **random Pipe Names**
-    > **NOTE:** the length of the "random" named pipes are associated with the commands executed (e.g., mimikatz = **8 characters**, named piped = **8 characters**) 
+
+> [!NOTE] 
+the length of the "random" named pipes are associated with the commands executed (e.g., mimikatz = **8 characters**, named piped = **8 characters**) 
 
 ```bash
 
@@ -160,7 +163,8 @@ rule cs_job_pipe
 
 * Additional [Malleable Profiles](https://gist.github.com/MHaggis/6c600e524045a6d49c35291a21e10752) that can used for additional IoCs to hunt for!
 
-> **NOTE:** one set of attackers will always use the **default** profiles, whereas another set of attackers will look to **modify the defaults**
+> [!NOTE] 
+> one set of attackers will always use the **default** profiles, whereas another set of attackers will look to **modify the defaults**
 
 * [Detection Name Pipe Creation](https://labs.withsecure.com/publications/detecting-cobalt-strike-default-modules-via-named-pipe-analysis)
 
@@ -354,7 +358,8 @@ Recommendations:
 #### IoCs
 1. Results of executed commands are sent to the server using **POST requests** with default url pattern **`/submit.php?id=<beaconID>`**
 
-> **NOTE:** in Cobalt Strike, things like the POST request in HTTP traffic is malleable, so it may not always be reliable IoC!
+> [!NOTE] 
+> in Cobalt Strike, things like the POST request in HTTP traffic is malleable, so it may not always be reliable IoC!
 
 2. Building a detection that identifies identical intervals between group HTTP request methods made by a source to destination IP.
 
@@ -377,7 +382,8 @@ index=YOUR_INDEX source="YOUR_HTTP_SOURCE"
 
 **Elastic Detection**
 
-> **NOTE:** for Elastic, you'll need to use the DevConsole to create an analytic similar to the Splunk Query above.
+> [!NOTE] 
+> for Elastic, you'll need to use the DevConsole to create an analytic similar to the Splunk Query above.
 
 ```json
 // Example Elastic (KQL) Query (needs to be tested...)
@@ -455,7 +461,8 @@ index=YOUR_INDEX source="YOUR_HTTP_SOURCE"
 | table _time, src_ip, dest_ip, dest_port, http_method, url, response_payload, prcnt, count
 ```
 
-> **NOTE:** **`response_payload`** is the size of the HTTP packet without a header (e.g., **`http.request.body.bytes`** in Elastic [7])
+> [!NOTE] 
+> **`response_payload`** is the size of the HTTP packet without a header (e.g., **`http.request.body.bytes`** in Elastic [7])
 
 **Elastic Detection**
 
@@ -536,11 +543,13 @@ index=YOUR_INDEX source="YOUR_HTTP_SOURCE"
 
 1. SMB beacons need a parent beacon to communicate with it, so it listens for tasks instead. For communication SMB beacon uses named pipes with default named pipe of **`msagent_*`** 
 
-> **NOTE:** once again, this is malleable, so it may not always be reliable IoC!
+> [!NOTE] 
+> once again, this is malleable, so it may not always be reliable IoC!
 
 2. Building a detection that identifies identical intervals for SMB communication.
 
-> **NOTE:** Detection for SMB beacons isn’t as straightforward as HTTP beaconing. Because of how SMB works, write to file could happen across different TCP sessions. That’s why we should build detection around FID (File ID) which is a file handle returned when connection to a malicious named pipe was established.
+> [!NOTE] 
+> Detection for SMB beacons isn’t as straightforward as HTTP beaconing. Because of how SMB works, write to file could happen across different TCP sessions. That’s why we should build detection around FID (File ID) which is a file handle returned when connection to a malicious named pipe was established.
 
 **Splunk Detection**
 
@@ -757,7 +766,8 @@ Reference: 14
 
 * A list of default/starter Sigma Rules can be found [here](https://thedfirreport.com/2021/08/29/cobalt-strike-a-defenders-guide/)
 
-> **NOTE:** Simply for **"Sigma Rules"**, **"Suricata"**, or **"Yara Rules"**
+> [!NOTE] 
+> Just search for **"Sigma Rules"**, **"Suricata"**, or **"Yara Rules"**
 
 ### RITA
 
@@ -789,6 +799,7 @@ Reference: 13
 
 ### JA3/JA3S Fingerprinting
 
+> [!NOTE]
 > Both are used to **passively fingerprint** clients unique signatures (TLS/SSL fingerprints) of values collected from fields in the Client Hello packets:
 > * SSL Version
 > * Accepted Ciphers
@@ -821,7 +832,8 @@ Reference: 13
 
 * **[JARM](https://github.com/salesforce/jarm#how-jarm-works)** has the ability to actively fingerprint the TLS values of the remote server by interacting with the target server sending 10 TLS Client Hello packets and recording the specific attributes from the replies [9,10]
 
-> **ESSENTIALLY:** JARM actively scans the server and builds a fingerprint/hash of the server application.
+> [!NOTE]
+> JARM actively scans the server and builds a fingerprint/hash of the server application.
 >
 > JARM factors in the OS, OS version, Libraries, version of those libraries, the order the libraries were called, custom configs, etc. to fingerprint the TLS Server response. 
 >
