@@ -507,3 +507,103 @@ cards.append("nvidia")
 cards.append("amd")
 # the cards list is now ['nvidia', 'amd']
 ```
+
+### Pop
+
+* **`.pop()`** is the opposite of **`.append()`**. Pop removes the last element from a list and returns it for use. 
+
+```python
+vegetables = ["broccoli", "cabbage", "kale", "tomato"]
+last_vegetable = vegetables.pop()
+# vegetables = ['broccoli', 'cabbage', 'kale']
+# last_vegetable = 'tomato'
+```
+
+### Iterating Over a List (using Indexes)
+
+```python
+def get_item_counts(items):
+    potion_count = 0
+    bread_count = 0
+    shortsword_count = 0
+
+    '''
+    "i": is the specific index that is iterating over the list, 
+    "items": are the items that are within the items list.
+    '''
+
+    for i in range(0, len(items)): # MORE VERBOSE SYNTAX (used if you DO NOT need to know the index number)
+        
+        if items[i] == "Potion":
+            potion_count += 1
+
+        elif items[i] == "Bread":
+            bread_count += 1
+
+        elif items[i] == "Shortsword":
+            shortsword_count += 1
+
+    return potion_count, bread_count, shortsword_count
+```
+
+### Iterating Over a List (no Index)
+
+```python
+trees = ['oak', 'pine', 'maple']
+for tree in trees: # MUCH CLEANER SYNTAX
+    print(tree)
+# Prints:
+# oak
+# pine
+# maple
+```
+
+### Float
+
+#### Finding Maximums
+
+* The built-in float() function can create a numeric floating point value of negative infinity. Instead of initializing a base value like 0 or -100000, we can use float("-inf") to represent negative infinity. Because every value will be greater than negative infinity, we can use it as a starting point to help us achieve our goal of finding the max value.
+
+```python
+negative_infinity = float("-inf")
+positive_infinity = float("inf")
+```
+
+```python
+'''
+Finding the maximum value using a for loop and "float("-inf") as the comparison argument. 
+
+NOTE: ensure that you mind the location of where `return` statments are called...
+
+'''
+def find_max(nums):
+    max_so_far = float("-inf")
+  
+    for num in nums:
+        if num > max_so_far:
+            max_so_far = num
+
+    return max_so_far
+```
+
+### Modulo Operator (%)
+
+> [!NOTE]
+>
+> An excellent way to determine if a number is even using the **`%`**. An odd number is a number that when divided by 2, the remainder is not 0. 
+> 
+> **`x % 2 = 0 (EVEN NUMBER)`** 
+> 
+> **`x % 2 != 0 (ODD NUMBER)`**
+
+```python
+def get_odd_numbers(num):
+    odd_numbers = []
+
+    for i in range(0, num):
+        
+        if i % 2 != 0: # if the value when divided by i % 2 is not 0, the output will be all odd numbers. 
+            odd_numbers.append(i)
+
+    return odd_numbers
+```
