@@ -433,7 +433,7 @@ for number in range(1, 51):
 ```
 
 ```python
-# A more complex example that handles includes a counter + conditional...
+# A more complex example that includes a counter + conditional...
 
 def award_enchantments(start, end, step):
     counter = 0
@@ -586,6 +586,41 @@ def find_max(nums):
     return max_so_far
 ```
 
+#### Loops, State, Counters, and Tracking Maximums
+
+```python
+'''
+Quite a tricky puzzle where we work with the Collatz sequence for a positive integer. 
+
+We're: 
+1. Using a while-loop to ensure that the integer does not equal 1
+2. Determining whether or not it is positive or negative
+3. Incrementing steps (# of times the conditional runs) each time that the loop is ran when the positive "n" integer input
+4. As the loop is running, if the current value is greater than the previous max_value, update the max_value to current value
+
+'''
+def collatz_stats(n):
+
+    current = n
+    steps = 0
+    max_value = n
+
+    while current != 1:
+    
+        if current % 2 == 0:
+            current = current // 2
+
+        else:
+            current = 3 * current + 1
+
+        steps += 1
+            
+        if current > max_value:
+            max_value = current
+
+    return steps, max_value
+```
+
 ### Modulo Operator (%)
 
 > [!NOTE]
@@ -606,4 +641,155 @@ def get_odd_numbers(num):
             odd_numbers.append(i)
 
     return odd_numbers
+```
+
+### Slicing Lists
+
+```python
+my_list[ start : stop : step ]
+```
+
+```python
+def get_champion_slices(champions):
+
+    # Starts with the third champion and goes to the end of the list.
+    first = champions[2:]
+
+    # Returns champions list that starts at the beginning of the list and includes all champions except for the very last champion.
+    second = champions[:-1]
+
+    # Returns champions list that only includes the champions in even numbered indexes
+    third = champions[::2]
+
+    return first, second, third
+```
+
+```python
+# slice scores list from index 1, up to but not including 5, skipping every 2nd value". All of the sections are optional.
+
+scores = [50, 70, 30, 20, 90, 10, 50]
+# Display list
+print(scores[1:5:2])
+# Prints [70, 20]
+```
+
+#### Omitting Sections
+
+```python
+# numbers[:3] means "get all items from the start up to (but not including) index 3". numbers[3:] means "get all items from index 3 to the end".
+
+numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+numbers[:3] # Gives [0, 1, 2]
+numbers[3:] # Gives [3, 4, 5, 6, 7, 8, 9]
+```
+
+#### Using only the "step" Section
+
+```python
+numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+numbers[::2] # Gives [0, 2, 4, 6, 8]
+```
+
+#### Negative Indices
+
+* Used to count from the end of the list. For example, `numbers[-1]` gives the last item in the list, `numbers[-2]` gives the second last item, and so on.
+
+```python
+numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+numbers[-3:] # Gives [7, 8, 9]
+```
+
+### List Operations - Concatenation
+
+```python
+total = [1, 2, 3] + [4, 5, 6]
+print(total)
+# Prints: [1, 2, 3, 4, 5, 6]
+```
+
+### List Operations - Contains
+
+```python
+fruits = ["apple", "orange", "banana"]
+print("banana" in fruits)
+# Prints: True
+
+fruits = ["apple", "orange", "banana"]
+print("banana" not in fruits)
+# Prints: False
+```
+
+### List Deletion
+
+* **`del`**: deletes items from objects. You can delete specific indexes or entire slices.
+
+```python
+nums = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+# delete the fourth item
+del nums[3]
+print(nums)
+# Output: [1, 2, 3, 5, 6, 7, 8, 9]
+
+# delete the second item up to (but not including) the fourth item
+nums = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+del nums[1:3]
+print(nums)
+# Output: [1, 4, 5, 6, 7, 8, 9]
+
+# delete all elements
+nums = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+del nums[:]
+print(nums)
+# Output: []
+
+# delete the first element and the last two elements
+nums = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+del nums[0]
+del nums[-2:]
+print(nums)
+# Output: [2, 3, 4, 5, 6, 7]
+```
+
+### Tuples
+
+* **`tuples`**: data that are ordered and unchangeable. You can think of a tuple as a List with a fixed size. Tuples are created with round brackets. Often used to store very small groups (like 2 or 3 items) of data
+
+```python
+my_tuple = ("this is a tuple", 45, True)
+print(my_tuple[0])
+# this is a tuple
+print(my_tuple[1])
+# 45
+print(my_tuple[2])
+# True
+```
+
+* Special case if you want to store a single item inside of a tuple. You MUST use a **`,`**
+```python
+dog = ("Fido",)
+```
+
+#### Accessing Tuples
+
+```python
+my_tuples = [
+    ("this is the first tuple in the list", 45, True),
+    ("this is the second tuple in the list", 21, False)
+]
+print(my_tuples[0][0]) # this is the first tuple in the list
+print(my_tuples[0][1]) # 45
+print(my_tuples[1][0]) # this is the second tuple in the list
+print(my_tuples[1][2]) # False
+```
+
+```python
+# Tuple Unpacking
+
+dog = ("Fido", 4)
+dog_name, dog_age = dog
+print(dog_name)
+# Fido
+print(dog_age)
+# 4
 ```
