@@ -860,6 +860,7 @@ Reference: 11 and 12
 * **[JA4+ download](https://github.com/FoxIO-LLC/ja4)**
 * **[JA4+ cheatsheet](https://x.com/4A4133/status/1887269972545839559)**
 * **[JA4+ database](https://ja4db.com/)**
+* **[JA4+ Implementation Steps for Zeek Sensor](https://github.com/FoxIO-LLC/ja4/tree/main/zeek)**
 
 * Provides a suite of modular network fingerprints that are easy to use and easy to share, replacing the JA3 TLS fingerprinting standard from 2017. **Enables you to analyze and hunt ALL encrypted traffic!**
 
