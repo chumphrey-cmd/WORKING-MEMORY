@@ -751,6 +751,34 @@ print(nums)
 # Output: [2, 3, 4, 5, 6, 7]
 ```
 
+### List Reversal
+
+```python
+
+'''
+So this was a bit of cheeky and quick solution that is technically correct, BUT it skips over the fundamentals of list slicing...
+'''
+
+def reverse_list(items):
+    return items[::-1] # Successfully reverses the list `items`, BUT this is only common in Python...
+```
+
+```python
+'''
+This is the fundamentals based solution that provides iteration, loop creation, and new list appending. Very good for teaching...
+
+Start: len(items) - 1: Built-in just gets you the total length of the list (e.g., 1, 2, 3), NOT the proper index (e.g., 0, 1, 2)
+Stop: -1: This value ensures that our range includes the index of "0", if we were to stop at "0" was would exclude the index "0" (e.g., ) 
+Step: -1: This value is consistent with the more efficient [::-1] reversal slicing and ensures that the list is reversed
+'''
+
+def reverse_list(items):
+    new_list = []
+    for i in range(len(items) - 1, -1, -1): 
+        new_list.append(items[i])
+    return new_list
+```
+
 ### Tuples
 
 * **`tuples`**: data that are ordered and unchangeable. You can think of a tuple as a List with a fixed size. Tuples are created with round brackets. Often used to store very small groups (like 2 or 3 items) of data
@@ -792,4 +820,87 @@ print(dog_name)
 # Fido
 print(dog_age)
 # 4
+```
+
+### Helpful List Modifications
+
+#### Splitting
+
+*  **`.split()`** method in Python is called on a string and returns a list by splitting the string based on a given delimiter. If no delimiter is provided, it will split the string on whitespace.
+
+```python
+message = "hello there sam"
+words = message.split()
+print(words)
+# Prints: ["hello", "there", "sam"]
+```
+
+#### Joining
+
+*  **`.join()`** method is called on a delimiter (what goes between all the words in the list), and takes a list of strings as input.
+
+```python
+list_of_words = ["hello", "there", "sam"]
+sentence = " ".join(list_of_words)
+print(sentence)
+# Prints: "hello there sam"
+```
+
+### Filter Messages
+
+> The challenge below was on the trickier side, the goal was to use the directions provided to:
+>   1. Search a list for any instance of "dang".
+>   2. Append the word to a `dangs` list.
+>   3. Append and join the non-dang or "good words" into a complete list.
+>   4. Get the count of how often dang was used.
+> The trickiest part of the challenge was the nested for-loop within a for-loop. We needed to first create a for-loop to split the original message into strings and then create another for-loop that iterates on each word from the split words so that we could search for any instance of "dang". 
+
+```python
+
+def filter_messages(messages):
+    filtered_messages = [] # filters dang
+    words_removed = [] # counts "dangs" removed from messages
+
+    for message in messages:
+        split = message.split()
+        good_words = []
+        dangs = []
+        
+        for word in split:
+            if word == "dang":
+                dangs.append(word)
+            else:
+                good_words.append(word)
+        
+        filtered_messages.append(" ".join(good_words)) # quick way to both join all of the good words and then append as a one-liner
+
+        dangs_list = len(dangs)
+
+        words_removed.append(dangs_list)
+        
+    return filtered_messages, words_removed
+
+```
+
+### List Checking and Percentages 
+
+> A bit of an easier challenge compared to the previous one, here we are taking elements of iteration on a message and using it to compare against items in another list. 
+> My initial solve was very bulky and expensive, so I trimmed down the correct item checking function to just use a `correct_ingredients` counter that ONLY increments if a player’s item is within the recipe.
+
+
+```python
+def check_ingredient_match(recipe, inventory):
+    missing_ingredients = []
+    correct_ingredients = 0 # setting correct as a counter to check if inventory actually matches recipe 
+    
+    for items in recipe: # simple for loop that checks if player inventory contains items in recipe
+        if items in inventory:
+            correct_ingredients += 1
+            
+        else:
+            missing_ingredients.append(items)
+            
+    percentage = correct_ingredients / len(recipe) * 100
+        
+    return percentage, missing_ingredients
 ```
