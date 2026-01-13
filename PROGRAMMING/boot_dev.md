@@ -489,7 +489,7 @@ for n in range(42):
 # 13 * 13 = 169
 ```
 
-## Lists
+## Lists `[]`
 
 ### List Updates
 
@@ -904,3 +904,111 @@ def check_ingredient_match(recipe, inventory):
         
     return percentage, missing_ingredients
 ```
+
+## Dictionaries `{}`
+
+* Are used to store data values in `key` -> `value` pairs. Dictionaries are a great way to store groups of information.
+
+```python
+# Simple dictionary example...
+
+def get_character_record(name, server, level, rank):
+    record = {
+        "name": name,
+        "server": server,
+        "level": level,
+        "rank": rank,
+        "id": f"{name}#{server}"
+    }
+
+    return record
+```
+
+
+### Setting Dictionary Values
+
+* Example of setting dictionary values using a simple for-loop
+
+```python
+names = ["jack bronson", "jill mcarty", "john denver"]
+
+names_dict = {}
+for name in names:
+    # .split() returns a list of strings
+    # where each string is a single word from the original
+    name_list = name.split()
+
+    # here we update the dictionary
+    names_dict[name_list[0]] = name_list[1]
+
+print(names_dict)
+# Prints: {'jack': 'bronson', 'jill': 'mcarty', 'john': 'denver'}
+```
+
+### Updating Dictionary Values
+
+```python
+full_names = ["jack bronson", "james mcarty", "jack denver"]
+
+names_dict = {}
+for full_name in full_names:
+    # .split() returns a list of strings
+    # where each string is a single word from the original
+    names = full_name.split()
+    first_name = names[0]
+    last_name = names[1]
+    names_dict[first_name] = last_name
+
+print(names_dict)
+# {
+#   'jack': 'denver',
+#   'james': 'mcarty'
+# }
+```
+
+### Deleting Dictionary Values
+
+```python
+names_dict = {
+    "jack": "bronson",
+    "jill": "mcarty",
+    "joe": "denver"
+}
+
+del names_dict["joe"]
+
+print(names_dict)
+# Prints: {'jack': 'bronson', 'jill': 'mcarty'}
+```
+
+### Checking for Existence and Incrementing
+
+```python
+cars = {
+    "ford": "f150",
+    "toyota": "camry"
+}
+
+print("ford" in cars)
+# Prints: True
+
+print("gmc" in cars)
+# Prints: False
+```
+
+```python
+def count_enemies(enemy_names):
+    enemies_dict = {}
+    for enemy_name in enemy_names:
+
+        if enemy_name in enemies_dict:
+            enemies_dict[enemy_name] += 1 # If the value is found in the dictionary, increment that value {'gremlin': 3}
+
+        else:
+            enemies_dict[enemy_name] = 1 # Setting the dictionary value to 1 if the value is missing {'jackal': 1, 'kobold': 1, 'gremlin': 1}
+        
+    return enemies_dict
+```
+
+### Iterating Over Python Dictionary
+
