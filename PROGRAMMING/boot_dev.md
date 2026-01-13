@@ -1010,5 +1010,37 @@ def count_enemies(enemy_names):
     return enemies_dict
 ```
 
-### Iterating Over Python Dictionary
+### Iterating Over a Dictionary
+* Neat way to iterate over a dictionary to identify the highest value assigned to the “key” within the dictionary. 
+* Here we checked to determine if the list itself was empty, if so, the function or loop should end.
 
+```python
+
+def get_most_comm​on_enemy(enemies_dict):
+    max_so_far = float("-inf")
+    max_name = None
+
+    if not enemies_dict:
+
+        return max_name
+
+    for name, value in enemies_dict.items():
+
+        #print(f"Debug: {name}, {value}")
+
+        if value > max_so_far:
+            max_so_far = value
+            max_name = name
+    return max_name
+```
+### Chaining Dictionaries
+
+* Used to access nested dictionaries
+
+```python
+
+# Similar location and identification as using `jq` in when trying to parse JSON files
+outer_dictionary["outer_key"]["inner_key"]["inner_inner_key"]
+```
+
+### Merge Dictionaries
