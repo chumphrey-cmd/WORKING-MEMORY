@@ -136,3 +136,22 @@ pbcopy < ~/.ssh/id_ed25519.pub
 ```bash
 ssh -T git@github.com
 ```
+
+> [!NOTE]
+> Additional troubleshooting may be needed if you recieve the following error:
+> * **`error: gpg failed to sign the data fatal: failed to write commit object`**
+> *  To resolve, follow these [steps](https://docs.github.com/en/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key#telling-git-about-your-ssh-key).
+
+```bash
+# Format SSH for GPG
+git config --global gpg.format ssh
+```
+
+```bash
+# Assign public SSH key as a global variable
+git config --global user.signingkey /PATH/TO/.SSH/KEY.PUB
+```
+
+
+
+
