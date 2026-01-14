@@ -43,7 +43,7 @@
 * https://learn.microsoft.com/en-us/windows/wsl/install
 * Verify that Git Bash is installed and present within VSCode IDE.
 
-## Add SSH Keys to GitHub
+## Add SSH Keys to GitHub (Windows)
 
 1. **Launch the Git Bash from VSCode**
 
@@ -86,3 +86,53 @@ Select and copy the entire output.
 ssh -T git@github.com
 ```
 You should see a success message.
+
+## Add SSH Keys to GitHub (MacOS)
+
+> [!NOTE]
+> This process is closely related to the Windows with a few differences... I've just extracted the essential commands we need for the process. Here's the [link](https://medium.com/codex/git-authentication-on-macos-setting-up-ssh-to-connect-to-your-github-account-d7f5df029320) for the full process...
+
+### Generate a new SSH key on your computer (or use an existing SSH key)
+
+1. **Generate a New SSH Key**
+
+```bash
+ssh-keygen -t ed25519 -C "your_email@example.com"
+```
+* Replace email with your GitHub email and press Enter. Accept the default file location and passphrase options by pressing Enter again when prompted.
+
+### Add the SSH key to the ssh-agent
+
+1. **Start the SSH Agent via Bash Terminal**
+
+```bash
+eval "$(ssh-agent -s)"
+```
+
+2. Add your SSH private key to the **`ssh-agent`**
+
+```bash
+ssh-add --apple-use-keychain ~/.ssh/id_ed25519
+```
+
+3. **Set up the config file for some convenient options**
+
+* If you don’t already have the `config` file inside your `/.ssh` folder, create one:
+
+```bash
+touch ~/.ssh/config
+```
+
+### Add the Public SSH key to your Github account and Test
+
+* Copy the content of your SSH public key and paste to your GitHub SSH and GPG Keys [page](https://github.com/settings/keys).
+
+```bash
+pbcopy < ~/.ssh/id_ed25519.pub
+```
+
+* Test GitHub connection
+
+```bash
+ssh -T git@github.com
+```
