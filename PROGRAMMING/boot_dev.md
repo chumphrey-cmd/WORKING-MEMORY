@@ -247,6 +247,46 @@ print(not False)
 # Prints: True
 ```
 
+### Logic Puzzles
+
+* This problem primarily focused on separation and structure of logical operators, specificially "precedence" when it comes to the grouping specific logical operators...
+
+```python
+def logic_gate(a, b, gate):
+
+    a_is_one = (a == 1) # True
+    a_is_zero = (a == 0) # False
+    
+    b_is_one = (b == 1) # True
+    b_is_zero = (b == 0) # False
+
+    '''
+    Example of situation where the underlying gate condition (LEFT) is compared against the logic (RIGHT).
+    Take note of the paraentheses that group each of the logic statments...
+    '''
+    
+    if (gate == "AND" or gate == "OR") and ((a_is_one and b_is_one) or (b_is_one and a_is_one)): 
+        return 1
+
+    elif gate == "OR" and ((a_is_one and b_is_zero) or (b_is_one and a_is_zero)):
+        return 1
+
+    elif gate == "XOR" and ((a_is_one and b_is_one) or (b_is_one and a_is_one)):
+        return 0
+
+    elif gate == "XOR" and ((a_is_one and b_is_zero) or (b_is_one and a_is_zero)):
+        return 1
+
+    elif (gate == "AND" or gate == "OR") and ((a_is_zero and b_is_zero) or (b_is_zero and a_is_zero)):
+        return 0
+
+    elif (gate == "NAND") and ((a_is_one and b_is_one) or (b_is_one and a_is_one)):
+        return 0
+
+    elif (gate == "NAND") and ((a_is_one and b_is_zero) or (b_is_one and a_is_zero)):
+        return 1
+```
+
 ### Binary 
 
 > Use the **`0b`** prefix to specify binary
@@ -1092,3 +1132,107 @@ def merge(dict1, dict2):
 * `merged_dict[key] = dict1[key]`: This was missing piece for how to iteratively move through the dictionary and create key-value pairs using a for-loop.
     * `merged_dict[key]`: Takes the key name (like "Frodo") from dict1.
     * `dict1[key]`: Retrieves the corresponding value (like 56) using `dict1[key]`
+
+## Sets
+
+* Essentially like Lists, but they are **unordered** and they **guarantee uniqueness**. Only ONE of each value can be in a set
+
+```python
+fruits = {"apple", "banana", "grape"}
+print(type(fruits))
+# Prints: <class 'set'>
+
+print(fruits)
+# Prints: {'banana', 'grape', 'apple'}
+```
+
+### Add Values
+
+* `.add()`: used to **add** items to the set.
+
+> [!NOTE]
+> No error will be raised if you add an item already in the set, and the set will remain unchanged.
+
+```python
+fruits = {"apple", "banana", "grape"}
+fruits.add("pear")
+print(fruits)
+# Prints: {'pear', 'banana', 'grape', 'apple'}
+```
+
+### An Empty Set
+
+* Because the empty bracket `{}` syntax creates an empty dictionary, to create an empty set, you need to use the `set()` function
+
+```python
+fruits = set() # This assigns the variable as a set.
+fruits.add("pear")
+print(fruits)
+# Prints: {'pear'}
+```
+
+#### Set Iteration
+
+```python
+fruits = {"apple", "banana", "grape"}
+for fruit in fruits:
+    print(fruit)
+    # Prints:
+    # banana
+    # grape
+    # apple
+
+# NOTE: Sets are unordered, so the order of iteration is not guaranteed
+```
+
+### Converting a List > Set > List
+
+```python
+
+'''
+A really neat and easy way to convert a list into a set and back into a list again using nested parentheses...
+
+list(): converts an chars into a list
+set(): converts chars into a set. 
+'''
+
+def remove_duplicates(spells):
+    return list(set(spells))
+```
+
+### Iterating Using Sets
+
+* Here we are iterating over each of the characters inside of `text` to identify list of vowels both upper and lower case. 
+
+```python
+    new_set = {"a", "A", "e", "E", "i", "I", "o", "O", "u", "U"} # Dictionary to store the unique values
+    counter = 0
+    vowels = set()
+    
+    for char in text:
+        if char in new_set:
+            counter += 1
+            vowels.add(char)
+
+    return counter, vowels
+```
+
+### Set Subtraction
+
+* You can subtract one set from another. It **removes all the values in the second set from the first set**.
+
+```python
+set1 = {"apple", "banana", "grape"}
+set2 = {"apple", "banana"}
+set3 = set1 - set2
+
+print(set3)
+# Prints: {'grape'}
+```
+
+```python
+# Quick way to subtract ids from one another...
+
+def find_missing_ids(first_ids, second_ids):
+    return (set(first_ids) - set(second_ids))
+```
