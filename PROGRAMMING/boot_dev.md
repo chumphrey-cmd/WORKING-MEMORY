@@ -1044,3 +1044,51 @@ outer_dictionary["outer_key"]["inner_key"]["inner_inner_key"]
 ```
 
 ### Merge Dictionaries
+
+* This took me quite some time to solve as I was getting hung up on the process of extracting the key-value pairs from a dictionary and then placing them into a new dictionary.
+
+```python
+
+# This is my initial and more verbose solution to iterating over two dictionaries and merging them...
+
+def merge(dict1, dict2):
+    merged_1 = {}
+    merged_2 = {}
+
+    for guild1, value in dict1.items():
+        #print(f"Debug: {guild1} {value}") 
+        merged_1.update({guild1: value})
+        #print(merged_1)
+
+    for guild2, value in dict2.items():
+        merged_2.update({guild2: value})
+        #print(merged_2)
+
+    merged_3 = merged_1 | merged_2
+    #print(merged_3)
+
+    return merged_3
+```
+
+#### Creating Dictionary via For-Loop
+
+* As you can see, it's verbose and duplicates the merging process...
+
+```python
+# This is the refactored solution that uses only a single empty list and merges...
+
+def merge(dict1, dict2):
+    merged_dict = {}
+
+    for key in dict1:
+        merged_dict[key] = dict1[key] # Pythonic way to create dictionaries via for-loops...
+
+    for key in dict2:
+        merged_dict[key] = dict2[key]
+
+    return merged_dict
+```
+
+* `merged_dict[key] = dict1[key]`: This was missing piece for how to iteratively move through the dictionary and create key-value pairs using a for-loop.
+    * `merged_dict[key]`: Takes the key name (like "Frodo") from dict1.
+    * `dict1[key]`: Retrieves the corresponding value (like 56) using `dict1[key]`
