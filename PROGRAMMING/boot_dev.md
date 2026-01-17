@@ -1279,7 +1279,7 @@ def fight_soldiers(soldier_one, soldier_two):
 ## Classes
 
 * A `class` is a new custom type similar to dictionaries, but more customizable.
-* `Classes` are used to define the properties and behavior of a category of things. E.g. A "Car" class might dictate that all cars be defined by their make, model, year, and mileage.
+* `classes` are used to define the properties and behavior of a category of things. E.g. A "Car" class might dictate that all cars be defined by their make, model, year, and mileage.
 
 ```python 
 # Defines a new class called "Soldier"
@@ -1295,3 +1295,115 @@ class Soldier:
 * An `object` is an **instance**, the "specifics of" OR "case of" that `class`.
 * But you can't provide specifics about a particular car (for example, that 1978 Chevy Impala with 205,000 miles on it that your uncle Mickey drives) until you create an `instance` of a Car. 
 * It's the `instance` that captures the detailed information about one particular `class`.
+
+### Attributes
+* An `attribute` (or instance variable) belongs to each object. They are not new objects or instances of the class; **they are data stored on the instances**.
+
+```python
+wall1 = Wall() # Class
+
+wall1.armor = 10 # Object/instance of Wall() + attribute of object (10)
+
+wall1.fortify() # Method
+```
+* `wall1 = Wall()`: Class
+* `wall1.armor`: Object/instance of `Wall()`
+* `.armor = 10`: Attribute of object
+* `wall1.fortify()`: Method
+
+## Methods 
+
+* A `method` is just a function that's tied directly to a `class` and has access to its properties.
+
+```python
+class Soldier:
+    health = 5
+
+    # This is a method that reduces the
+    # health of the soldier
+    def take_damage(self, damage):
+        self.health -= damage
+
+soldier_one = Soldier()
+soldier_one.take_damage(2)
+print(soldier_one.health)
+# prints "3"
+
+soldier_two = Soldier()
+soldier_two.take_damage(1)
+print(soldier_two.health)
+# prints "4"
+```
+
+### Self
+
+* `self` is a strong convention in Python—everyone expects to see it, and tools/docs assume it.
+
+```python
+my_object.my_method() # General way to use the method tied to the class...
+```
+
+```python
+class Wall:
+    armor = 10
+    height = 5
+
+    def fortify(self):
+        self.armor *= 2
+```
+
+```python
+class Soldier:
+    health = 100
+
+    def take_damage(self, damage, multiplier):
+        # "self" is dalinar in the first example
+        #
+        damage = damage * multiplier
+        self.health -= damage
+
+dalinar = Soldier()
+# "damage" and "multiplier" are passed explicitly as arguments
+# 20 and 2, respectively
+# "dalinar" is passed implicitly as the first argument, "self"
+dalinar.take_damage(20, 2)
+print(dalinar.health)
+# 60
+
+adolin = Soldier()
+# Again, "adolin" is passed implicitly as the first argument, "self"
+# "damage" and "multiplier" are passed explicitly as arguments
+adolin.take_damage(10, 3)
+print(adolin.health)
+# 70
+```
+
+## Constructors
+
+* Are a specific method on a class called `__init__` that is called automatically when you create a new instance of a class. 
+* `constructors` make the objects’ state (their attributes) configurable. The methods then use that state.
+
+```python
+class Soldier: # Class
+    def __init__(self, name, armor, num_weapons): # Constructor
+        self.name = name # Instance attributes (or properties)
+        self.armor = armor
+        self.num_weapons = num_weapons
+
+soldier_one = Soldier("Legolas", 2, 10) # instance of the class Soldier
+print(soldier_one.name)
+# prints "Legolas"
+print(soldier_one.armor)
+# prints "2"
+print(soldier_one.num_weapons)
+# prints "10"
+
+soldier_two = Soldier("Gimli", 5, 1) # another instance of the class Soldier
+print(soldier_two.name)
+# prints "Gimli"
+print(soldier_two.armor)
+# prints "5"
+print(soldier_two.num_weapons)
+# prints "1"
+```
+
