@@ -1,4 +1,4 @@
-# Python
+# Python Fundamentals
 
 ## Functions
 
@@ -1236,3 +1236,62 @@ print(set3)
 def find_missing_ids(first_ids, second_ids):
     return (set(first_ids) - set(second_ids))
 ```
+
+# Python - Object-Oriented Programming (OOP)
+
+* **[Object-Oriented Programming](https://en.wikipedia.org/wiki/Object-oriented_programming)**: Programming paradigm based on objects  (software entities that encapsulate data and function(s)). An OOP computer program consists of objects that interact with objects.
+
+## Clean Code
+
+* The sole purpose of OOP is to simply write human-readable code that is elegant and easy to maintain and understand for HUMANS. 
+
+> [!NOTE]
+> This also plays into the information security POV... Code that is lean and easy to understand is, easier to update, and easier to secure throughout the life of a project. New developers are less likely and potentially unable to secure and update code that is difficult to understand...
+
+### Don't Repeat Yourself (DRY)
+
+* "Rule of thumb" for writing maintainable code is **"Don't Repeat Yourself" (DRY)**. It means that, when possible, you should avoid writing the same code in multiple places because:
+  * A single update will need to be repeated in multiple places.
+  * If you forget it in one place, you'll have a bug
+  * It's more work to write it over and over again
+
+```python
+
+'''
+A simple example of cleaner code where we use a helper function `get_solider_dps` to calculate a soldier's dps that is used twice inside of the `fight_soldiers` function...
+'''
+
+def get_soldier_dps(soldier):
+    return soldier["damage"] * soldier["attacks_per_second"]
+
+def fight_soldiers(soldier_one, soldier_two):
+
+    soldier_one_dps = get_soldier_dps(soldier_one)
+    soldier_two_dps = get_soldier_dps(soldier_two)
+    
+    if soldier_one_dps > soldier_two_dps:
+        return "soldier 1 wins"
+    if soldier_two_dps > soldier_one_dps:
+        return "soldier 2 wins"
+    return "both soldiers die"
+```
+
+## Classes
+
+* A `class` is a new custom type similar to dictionaries, but more customizable.
+* `Classes` are used to define the properties and behavior of a category of things. E.g. A "Car" class might dictate that all cars be defined by their make, model, year, and mileage.
+
+```python 
+# Defines a new class called "Soldier"
+# with three properties: health, armor, damage
+class Soldier:
+    health = 5
+    armor = 3
+    damage = 2
+```
+
+## Object (Instance)
+
+* An `object` is an **instance**, the "specifics of" OR "case of" that `class`.
+* But you can't provide specifics about a particular car (for example, that 1978 Chevy Impala with 205,000 miles on it that your uncle Mickey drives) until you create an `instance` of a Car. 
+* It's the `instance` that captures the detailed information about one particular `class`.
