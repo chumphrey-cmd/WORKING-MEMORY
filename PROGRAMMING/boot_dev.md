@@ -1115,7 +1115,7 @@ def merge(dict1, dict2):
 * As you can see, it's verbose and duplicates the merging process...
 
 ```python
-# This is the refactored solution that uses only a single empty list and merges...
+# This is the refactored solution that uses only a single empty dictionary and merges...
 
 def merge(dict1, dict2):
     merged_dict = {}
@@ -1407,3 +1407,141 @@ print(soldier_two.num_weapons)
 # prints "1"
 ```
 
+### Constructor Practice
+
+* For me, the difficulty comes from getting the correct syntax when calling objects and methods within the `raise Exception` blocks.
+
+```python
+'''
+NOTE: be sure to remember that when using constructors, the instance attributes shared with all of the methods contained witin the class. 
+
+The arguments inside of each of the methods all have the associated ".name, .health., .num_arrows"
+'''
+class Archer:
+    def __init__(self, name, health, num_arrows):
+        self.name = name # Instance attributes
+        self.health = health
+        self.num_arrows = num_arrows
+
+    def take_hit(self):
+        self.health -= 1
+
+        if self.health <= 0: 
+            raise Exception(f"{self.name} is dead")
+            
+    def shoot(self, target):
+        if self.num_arrows == 0:
+            raise Exception(f"{self.name} can't shoot")
+            self.num_arrows -= 1
+
+        print(f"{self.name} shoots {target.name}")
+        self.num_arrows -= 1
+        target.take_hit() # Here we need to initiate the method by following the object-method syntax
+```
+
+### Class Variables vs. Instance Variables
+
+#### Instance Variables
+
+* Instance variables vary from object to object and are declared in the constructor, **more common**
+
+```python
+class Wall:
+    def __init__(self):
+        self.height = 10 # instance variable (per object)
+
+south_wall = Wall()
+south_wall.height = 20 # only updates this instance of a wall
+print(south_wall.height)
+# prints "20"
+
+north_wall = Wall()
+print(north_wall.height)
+# prints "10"
+```
+
+#### Class Variables
+
+* Class variables are shared between instances of the same class and are declared at the top level of a class definition, **less common**.
+* Like global variables and should be used with caution!
+
+```python
+class Wall:
+    height = 10 # class variable (shared across all instances)
+
+south_wall = Wall()
+print(south_wall.height)
+# prints "10"
+
+Wall.height = 20 # updates all instances of a Wall
+
+print(south_wall.height)
+# prints "20"
+```
+
+### Tying it All Together
+
+* Very conceptually difficult lesson, the fundamentals of lists, loops, and conditionals are all there, but OOP syntax to access the specific instances from within methods from within classes gets a bit confusing. 
+* See examples below for more clarity:
+
+```python
+class Book:
+    def __init__(self, title, author):
+        self.title = title
+        self.author = author
+
+class Library:
+    def __init__(self, name):
+        self.name = name
+        self.books = [] # .books member to empty list
+
+    def add_book(self, book):
+        self.books.append(book)
+        #debug = len(self.books)
+        #print(f"Debug: {debug}")
+
+    def remove_book(self, book):
+        new_books = []
+        for lib_book in self.books:
+            if lib_book.title != book.title or lib_book.author != book.author:
+                new_books.append(lib_book)
+
+            #debug = len(new_books)
+            #print(f"Debug: {debug}")
+
+        self.books = new_books
+
+    def search_books(self, search_string):
+        results = []
+        for book in self.books:
+            if search_string.lower() in book.title.lower() or search_string.lower() in book.author.lower():
+                results.append(book)
+        return results
+```
+
+#### Classes Practice
+
+##### Pattern 1: Caller creates Book
+
+```python
+class Book:
+    def __init__(self, title, author):
+        self.title = title
+        self.author = author
+
+
+class Library:
+    def __init__(self, name):
+        self.name = name
+        self.books = []
+
+    def add_book(self, book):  # get a Book instance
+        self.books.append(book)
+
+# Usage
+
+library = Library("Town Library")
+
+book1 = Book("Dune", "Frank Herbert")
+library.add_book(book1)  # pass the instance in
+```
