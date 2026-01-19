@@ -1237,6 +1237,60 @@ def find_missing_ids(first_ids, second_ids):
     return (set(first_ids) - set(second_ids))
 ```
 
+## Dictionary + Set Practice
+
+* I solved this puzzle in a bit of an unconventional and a bit inefficient way if I'm being honest. Below is my initial solve...
+* The goal was to return a list of dictionaries each with specific outputs (e.g., unique terms, no duplicates, etc.)
+
+```python
+def analyze_tags(tags_a, tags_b):
+    all = tags_a + tags_b # Combined List
+    set_a = set(tags_a)
+    set_b = set(tags_b)
+    
+    all_tags = {} # Initializing an empty dictionary
+    all_unique = set(all)
+    all_tags["all_tags"] = all_unique # Creating the dictionary following key-value naming conventions
+    
+    shared_tags = {}
+    shared = set(tags_a) & set(tags_b)
+    shared_tags["shared_tags"] = shared
+    
+    unique_to_a = {}
+    unique_set_a = set_a - set_b
+    unique_to_a["unique_to_a"] = unique_set_a
+    
+    unique_to_b = {}
+    unique_set_b = set_b - set_a
+    unique_to_b["unique_to_b"] = unique_set_b
+
+    merged = all_tags | shared_tags | unique_to_a | unique_to_b # Merging all of the dictionaries
+    
+    return merged # Returning the merged dictionary
+```
+
+* Below is the more concise and Pythonic way to return dictionaries...
+* Overall, it is much cleaner and utilizes the native `set` features like `interection`, `difference`, and `union`
+
+```python
+def analyze_tags(tags_a, tags_b):
+    set_a = set(tags_a)
+    set_b = set(tags_b)
+
+    all_tags = set_a.union(set_b)
+    shared_tags = set_a.intersection(set_b)
+    unique_to_a = set_a.difference(set_b)
+    unique_to_b = set_b.difference(set_a)
+
+    # Proper way to create and return dictionaries that is more intuitive...
+    return {
+        "all_tags": all_tags, # Key = "all_tags" and Value = set_a.union(set_b)
+        "shared_tags": shared_tags,
+        "unique_to_a": unique_to_a,
+        "unique_to_b": unique_to_b,
+    }
+```
+
 # Python - Object-Oriented Programming (OOP)
 
 * **[Object-Oriented Programming](https://en.wikipedia.org/wiki/Object-oriented_programming)**: Programming paradigm based on objects  (software entities that encapsulate data and function(s)). An OOP computer program consists of objects that interact with objects.
@@ -1670,3 +1724,57 @@ library = Library("City Library")
 b1 = library.make_book("Dune", "Frank Herbert") # return book
 b2 = library.make_book("The Hobbit", "J.R.R. Tolkien")
 ```
+
+## Encapsulation
+
+* Basically the practice of hiding complexity inside a "black box" so that it's easier to focus on the problem at hand.
+
+```python
+# who even knows how this function works???
+# I sure don't, I just call it and assume
+# it calculates the acceleration correctly
+acceleration = calc_acceleration(initial_speed, final_speed, time)
+```
+* Here we just need to know that the function `calc_acceleration` needs
+  * `initial_speed`, `final_speed`, and `time` to calculate and produce `acceleration`.
+
+### Public and Private
+
+* By default, all properties and methods in a class are **public**. That means that you can access them with the `.` operator
+
+```python
+# Accessing Pubic Property...
+
+wall.height = 10
+print(wall.height)
+# 10
+```
+
+* **Private** data members  are a way to encapsulate logic and data within a class definition. To make a property or method private just prefix it with two underscores (`__`):
+
+```python
+class Wall:
+    def __init__(self, armor, magic_resistance):
+        self.__armor = armor
+        self.__magic_resistance = magic_resistance
+
+    # Calculations for the public facing method performed here!
+
+    def get_defense(self):
+        return self.__armor + self.__magic_resistance
+
+front_wall = Wall(10, 20)
+
+# This results in an error
+print(front_wall.__armor)
+
+# This works
+print(front_wall.get_defense())
+# 30
+```
+
+> [!NOTE]
+> **PURPOPSE OF PRIVATE MEMBERS?**
+> * To abstract away any additional complexity [black box](https://en.wikipedia.org/wiki/Black_box) that is irrelevant to the function being called... 
+> * Simply call the public `get_defense()` method (which CAN access the private property) and know that the correct value will be returned.
+> * **Encapsulation is about organization, NOT security.**
