@@ -1521,7 +1521,48 @@ class Library:
 
 #### Classes Practice
 
+> [!NOTE]
+> The following examples are specific patterns that are commonly used for separate classes to call one another. The syntax and naming convention was a bit tricky so I wanted to provide some more examples for how a `class` can be referenced between a `method`. 
+
 ##### Pattern 1: Caller creates Book
+
+
+
+```python
+class Book:
+    def __init__(self, title, author):
+        self.title = title
+        self.author = author
+
+class Library:
+    def __init__(self, name):
+        self.name = name
+        self.books = []
+
+'''
+In OOP the "Pythonic way" to reference another class is to simply lower the class name (e.g., Book -> book) when initialized inside of a method...
+
+This allows you to manipulate the objects inside of the "Book" class using the "book" instance.
+'''
+    def add_book(self, book):  # get a Book instance from the class Book above
+        self.books.append(book)
+
+```
+
+**Pattern 1 Usage: Caller creates Book, passes it in**
+
+* You want the caller to control how Book objects are created.
+* Book might have extra setup, validations, or subclasses the caller cares about.
+* Library should just store books, not decide how to build them.
+
+```python
+library = Library("Town Library")
+
+book1 = Book("Dune", "Frank Herbert")
+library.add_book(book1)  # pass a Book instance
+```
+
+##### Pattern 2:  Library constructs Book itself
 
 ```python
 class Book:
@@ -1535,13 +1576,97 @@ class Library:
         self.name = name
         self.books = []
 
-    def add_book(self, book):  # get a Book instance
+'''
+The proper way to describe this is that book assigned as an instance of the Book class.
+'''
+    # Pattern 2 version
+    def add_book(self, title, author):
+        book = Book(title, author)   # Library calls the Book constructor, more explicit and not called within the add_book(self, title, author) method
         self.books.append(book)
+```
 
-# Usage
+**Pattern 2 Usage: Library creates Book from raw data**
 
+* You want a simple API for the caller (just give title/author).
+* Library is the main “owner” that knows how Book should be built.
+* You don’t need callers to ever touch the Book class directly.
+
+```python
 library = Library("Town Library")
+library.add_book("Dune", "Frank Herbert")
+library.add_book("1984", "George Orwell")
+```
 
-book1 = Book("Dune", "Frank Herbert")
-library.add_book(book1)  # pass the instance in
+##### Pattern 3: Mixed – allow both
+
+```python
+class Book:
+    def __init__(self, title, author):
+        self.title = title
+        self.author = author
+
+
+class Library:
+    def __init__(self, name):
+        self.name = name
+        self.books = []
+
+    def add_book(self, book_or_title, author=None):
+        # Case 1: caller passed a Book instance
+        if isinstance(book_or_title, Book):
+            book = book_or_title
+
+        # Case 2: caller passed raw data: title (and author)
+        else:
+            book = Book(book_or_title, author)
+
+        self.books.append(book)
+```
+
+**Pattern 3 Usage: Library accepts either a Book or raw data**
+
+* You want a flexible API for when:
+  * You already have a Book instance
+  * You only have title/author
+* Internally you always normalize to a Book instance before storing.
+
+```python
+lib = Library("City Library")
+
+# Pattern 1 style:
+b = Book("Dune", "Frank Herbert")
+lib.add_book(b)
+
+# Pattern 2 style:
+lib.add_book("The Hobbit", "J.R.R. Tolkien")
+```
+
+##### Pattern 4: Method that returns a Book
+
+```python
+class Book:
+    def __init__(self, title, author):
+        self.title = title
+        self.author = author
+
+
+class Library:
+    def __init__(self, name):
+        self.name = name
+
+    def make_book(self, title, author):
+        return Book(title, author)
+```
+
+**Pattern 4 Usage**
+
+* Library knows how to build Books, but shouldn’t automatically store them.
+* You want a factory/helper that creates books for other code to use.
+* The caller decides whether/where to store the created Book
+
+```python
+library = Library("City Library")
+
+b1 = library.make_book("Dune", "Frank Herbert") # return book
+b2 = library.make_book("The Hobbit", "J.R.R. Tolkien")
 ```
