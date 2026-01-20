@@ -1842,7 +1842,7 @@ class Wizard:
 > [!NOTE]
 > Normally, I like the use of nested `if`, `elif`, and `else` statments but in this example the code is "flatter" and cleaner due to the use of errors we have inserted.
 >
-> If a branch ends the function (`return`, `raise`, `break`, etc.), you usually don’t need else: after it.
+> If a branch ends the function (`return`, `raise`, `break`, etc.), you usually don’t need an `else` after it.
 >
 > Use `elif/else` when you’re truly choosing between **alternative paths** that all continue execution.
 
