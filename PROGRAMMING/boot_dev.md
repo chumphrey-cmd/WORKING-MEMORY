@@ -1775,6 +1775,102 @@ print(front_wall.get_defense())
 
 > [!NOTE]
 > **PURPOPSE OF PRIVATE MEMBERS?**
-> * To abstract away any additional complexity [black box](https://en.wikipedia.org/wiki/Black_box) that is irrelevant to the function being called... 
+> * To abstract away any additional complexity **[black box](https://en.wikipedia.org/wiki/Black_box)** that is irrelevant to the function being called... 
 > * Simply call the public `get_defense()` method (which CAN access the private property) and know that the correct value will be returned.
 > * **Encapsulation is about organization, NOT security.**
+
+#### Updating Attributes vs Calculations
+
+* This was an easier problem to solve BUT there was a bit of a hang up due to me forgetting up update the **attribute** vs just assigning a **variable**. See example solve below: 
+
+```python
+class Wizard:
+    def __init__(self, name, stamina, intelligence):
+        self.name = name
+        self.__stamina = stamina
+        self.__intelligence = intelligence
+        self.mana = self.__intelligence * 10
+        self.health = self.__stamina * 100
+
+    def get_fireballed(self, fireball_damage):
+        damage = fireball_damage - self.__stamina # alt.: fireball_damage -= self.__stamina
+        self.health = self.health - damage          # alt.: self.health -= fireball_damage
+
+    def drink_mana_potion(self, potion_mana):
+        potion = potion_mana + self.__intelligence  # alt.: potion_mana += self.__intelligence
+        self.mana = self.mana + potion              # alt.: self.mana += potion_mana
+```
+
+### Encapsulation Practice
+
+* Another puzzle that stumped me a bit...
+* Referencing a `method` within a `method` is straight forward you just have to use the variable within the method (e.g., `target.get_fireballed`)
+
+```python
+class Wizard:
+    def __init__(self, name, stamina, intelligence):
+        self.name = name
+        self.__stamina = stamina
+        self.__intelligence = intelligence
+        self.mana = self.__intelligence * 10
+        self.health = self.__stamina * 100
+
+    def cast_fireball(self, target, fireball_cost, fireball_damage):
+        if fireball_cost > self.mana:
+            raise Exception(f"{self.name} cannot cast fireball")
+
+        elif self.mana >= fireball_cost:
+            self.mana -= fireball_cost
+            target.get_fireballed(fireball_damage) # NOTE: this the correct way to use the variable "target" and set it to the method "get_fireballed".
+            
+    def is_alive(self):
+        return self.health > 0 # Nice way to include a True or False statement without having to specify it.
+
+    def get_fireballed(self, fireball_damage):
+        fireball_damage -= self.__stamina
+        self.health -= fireball_damage
+
+    def drink_mana_potion(self, potion_mana):
+        potion_mana += self.__intelligence
+        self.mana += potion_mana
+```
+
+### Encapsulation Practice II 
+
+* Another example use of encapsulation, this was a bit easier (probably due to the psuedo-code that we were provided). Overall, I feel like it was a nice solve.
+
+> [!NOTE]
+> Normally, I like the use of nested `if`, `elif`, and `else` statments but in this example the code is "flatter" and cleaner due to the use of errors we have inserted.
+>
+> If a branch ends the function (`return`, `raise`, `break`, etc.), you usually don’t need else: after it.
+>
+> Use `elif/else` when you’re truly choosing between **alternative paths** that all continue execution.
+
+```python
+class BankAccount:
+    def __init__(self, account_number, initial_balance):
+        self.__account_number = account_number
+        self.__balance = initial_balance
+
+    def get_account_number(self):
+        return self.__account_number
+
+    def get_balance(self):
+        return self.__balance
+
+    def deposit(self, amount):
+        if amount <= 0:
+            raise ValueError("cannot deposit zero or negative funds")
+        self.__balance += amount
+
+    def withdraw(self, amount):
+        if amount <= 0:
+            raise ValueError("cannot withdraw zero or negative funds")
+
+        if self.__balance < amount:
+            raise ValueError("insufficient funds")
+        self.__balance -= amount
+```
+
+## Abstraction
+
