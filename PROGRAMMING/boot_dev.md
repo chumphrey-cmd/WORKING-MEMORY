@@ -1872,5 +1872,74 @@ class BankAccount:
         self.__balance -= amount
 ```
 
-## Abstraction
+## Abstraction vs Encapsulation
 
+> `abstraction` = focuses on exposing essential features while hiding complexity (**THINK** importing libraries in Python like `numpy`, `pandas`, `scipy`, etc.) 
+> 
+> `encapsulation` = focuses on bundling data with methods and restricting direct access to implementation details (**THINK** specific methods and classes that you use when utilizing imported libraries.)
+>
+> Abstraction is more about reducing complexity, encapsulation is more about maintaining the integrity of system internals.
+
+**Encapsulation:** is about hiding internal state. It focuses on **tucking away the implementation details (private)**. It makes is easy to do important items by taking away the complexity under the hood (e.g., driving a car)
+
+```python
+# Encapsulation Example: Making a HTTP GET request
+request.get('https://api.github.com/foo-bar/user/auth')
+```
+* The underlying process of the TCP handshake with the GitHub server is removed and the content of the packets that are sent are packaged into `request.get` which **"encapsulates"** the complexity.
+
+**Abstraction:**  is about creating a *simple* interface for complex behavior. It focuses on what's exposed (public) with an emphasis on a **clean developer interface** when the call our `function`, `method`, or `class`
+
+```python
+# Abstraction Example: The specific syntax behind the request.get(...) tool
+
+# Option 1:
+request.get(url)
+
+# Option 2: 
+request.fetch(url, headers)
+```
+
+### Practice - Abstraction and Encapsulation
+
+* A nice example of abstraction adn encapsulation in a simple example
+
+```python
+class Human:
+    def sprint_right(self):
+        self.__raise_if_cannot_sprint()
+            
+        self.__use_sprint_stamina()
+        self.move_right()
+        self.move_right()
+
+    def sprint_left(self):
+        self.__raise_if_cannot_sprint()
+
+        self.__use_sprint_stamina()
+        self.move_left()
+        self.move_left()
+
+    def sprint_up(self):
+        self.__raise_if_cannot_sprint()
+
+        self.__use_sprint_stamina()
+        self.move_up()
+        self.move_up()
+
+    def sprint_down(self):
+        if self.__stamina <= 0:
+            self.__raise_if_cannot_sprint()
+
+        if self.__stamina > 0:
+            self.__use_sprint_stamina()
+            self.move_down()
+            self.move_down()
+
+    def __raise_if_cannot_sprint(self):
+        if self.__stamina <= 0:
+            raise Exception("not enough stamina to sprint")
+
+    def __use_sprint_stamina(self):
+        self.__stamina -= 1
+```
