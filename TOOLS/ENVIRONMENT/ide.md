@@ -70,17 +70,25 @@ Press Enter (adjust the path if you named your key differently).
 5. **Copy Your Public Key** 
 
 ```bash
-cat ~/.ssh/id_ed25519.pub
+cat ~/.ssh/YOUR_PUB_KEY.pub
 ```
-Select and copy the entire output.
+* Select and copy the entire output.
 
-6. **Add SSH Key to GitHub**  
-   * Go to your GitHub account settings: Settings > SSH and GPG keys.  
-   * Click "New SSH key"  
-   * Give your key a title and paste the copied public key.  
-   * Click "Add SSH key"  
+> [!NOTE]
+> The process of adding keys has been updated. You now need to add separate Authenticaion **AND** Signing Keys to push verified commits to GitHub.
 
-7.  **Test the Connection** 
+6. **Add Authentication SSH Key to GitHub**  
+    * Go to your GitHub account settings: Settings > SSH and GPG keys.  
+    * Click "New SSH key" 
+    * Press `Key type` and select `Authenticaion Key`
+    * Give your key a title and paste the copied public key.  
+    * Paste the contents copied from `cat ~/.ssh/YOUR_PUB_KEY.pub` into the `Key` field.
+    * Click "Add SSH key" 
+
+7. **Add Signing Key to GitHub**
+    * Same process as above, but when selecting `Key Types` select `Signing Key`. 
+
+8.  **Test the Connection** 
 
 ```bash 
 ssh -T git@github.com
@@ -125,13 +133,24 @@ touch ~/.ssh/config
 
 ### Add the Public SSH key to your Github account and Test
 
-* Copy the content of your SSH public key and paste to your GitHub SSH and GPG Keys [page](https://github.com/settings/keys).
+1. Copy the content of your SSH public key and paste to your GitHub SSH and GPG Keys [page](https://github.com/settings/keys).
 
 ```bash
 pbcopy < ~/.ssh/id_ed25519.pub
 ```
 
-* Test GitHub connection
+2. **Add Authentication SSH Key to GitHub**  
+* Go to your GitHub account settings: Settings > SSH and GPG keys.  
+* Click "New SSH key" 
+* Press `Key type` and select `Authenticaion Key`
+* Give your key a title and paste the copied public key.  
+* Paste the contents copied from `cat ~/.ssh/YOUR_PUB_KEY.pub` into the `Key` field.
+* Click "Add SSH key" 
+
+3. **Add Signing Key to GitHub**
+* Same process as above, but when selecting `Key Types` select `Signing Key`.
+
+4. Test GitHub connection
 
 ```bash
 ssh -T git@github.com
@@ -150,8 +169,6 @@ git config --global gpg.format ssh
 ```bash
 # Assign public SSH key as a global variable
 git config --global user.signingkey /PATH/TO/.SSH/KEY.PUB
-```
-
-
+``` 
 
 
