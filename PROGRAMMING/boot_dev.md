@@ -1943,3 +1943,56 @@ class Human:
     def __use_sprint_stamina(self):
         self.__stamina -= 1
 ```
+
+### Deck of Cards 
+
+* This was a diffcult puzzle to solve, I was able to get ~70% solved but got stuck at the `create_deck()` for-loop logic. 
+    * **Outer Loop:** Hits the first suit (e.g., Hearts) and initiates the inner loop.
+        * **Inner Loop:** Iterates through the entire list of ranks, once it finishes, exits and iterates through outer loop.
+
+```python
+import random
+
+class DeckOfCards:
+    SUITS = ["Hearts", "Diamonds", "Clubs", "Spades"]
+    RANKS = [
+        "Ace",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "Jack",
+        "Queen",
+        "King",
+    ]
+
+    def __init__(self):
+        self.__cards = []
+        self.create_deck()
+        #print(f"Debug: {self.__cards}")
+
+    def create_deck(self):
+        for suit in self.SUITS: # Iteration over each of the suits
+            #print(f"Debug SUIT: {suit}")
+            
+            for rank in self.RANKS: # Iteration over each of the ranks
+                #print(f"Debug RANK: {rank}")
+                self.__cards.append((rank, suit))
+
+    def shuffle_deck(self):
+        random.shuffle(self.__cards)
+
+    def deal_card(self):
+
+        if self.__cards: # Boolean statement to determine if the list filled (True) or empty (False)
+            return self.__cards.pop()
+        else:
+            return None
+```
+
+## Inheritance
