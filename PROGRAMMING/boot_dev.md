@@ -1996,3 +1996,138 @@ class DeckOfCards:
 ```
 
 ## Inheritance
+
+* As the name implies, it's the idea of **inheriting** the properties and methods that are nested within other classes to create a sort of hiearchy.
+* Inheritance allows a "child" class, to inherit properties and methods from a "parent" class. It's a way to share code between classes.
+* **ESSENTIALLY** it prevents the duplication of the same code which may lead to instability if one variable is updated within a parent class.
+
+> [!NOTE]
+> When creating child classes, ensure that that they are a superset of the functionality (have a related use) that aligns with the parent class!
+
+```python
+class Human: # Parent class
+    def __init__(self, name):
+        self.__name = name
+
+    def get_name(self):
+        return self.__name
+
+class Archer(Human): # Child class (Archer) inheriting properties from parent (Human).
+    def __init__(self, name, num_arrows):
+        super().__init__(name) # NOTE: essential to have the this line when creating child classes in Python
+        self.__num_arrows = num_arrows
+
+    def get_num_arrows(self):
+        return self.__num_arrows
+```
+
+* `super()`: returns a proxy of the parent class, meaning we can use it to call the parent class's constructor and other methods.
+
+### When to Use Inheritance
+
+> [!NOTE]
+> **Rule of Thumb:** `A` should only inherit from `B` if `A` is *always* a `B`.
+> 
+> When a child class inherits from a parent, it inherits *everything*. If you only want to share some functionality, inheritance should not be the tool you use. 
+>
+> A good child class is a **strict subset** of its parent class.
+
+```python
+class Parent:
+    def __init__(self, a, b):
+        ...
+
+class Child(Parent):
+    def __init__(self, a, b, c):
+        super().__init__(a, b)  # match Parent.__init__
+        self.c = c              # child-specific setup
+```
+
+### Inheritance Inception
+
+<img src="./images/inheritance_example.png">
+
+```python
+class Human:
+    def __init__(self, name):
+        self.__name = name
+
+    def get_name(self):
+        return self.__name
+
+class Archer(Human):
+    def __init__(self, name, num_arrows):
+        super().__init__(name)
+        self.__num_arrows = num_arrows
+
+    def get_num_arrows(self):
+        return self.__num_arrows
+
+    def use_arrows(self, num):
+        if self.__num_arrows >= num:
+            self.__num_arrows -= num
+        else:
+            raise Exception("not enough arrows")
+
+class Crossbowman(Archer):
+    def __init__(self, name, num_arrows):
+        super().__init__(name, num_arrows)
+
+    def triple_shot(self, target):
+        self.use_arrows(3) # Using the use_arrow method to use cross bows arrows (e.g., 3)
+        return f"{target.get_name()} was shot by 3 crossbow bolts" # Way to use the get_name method within the Human class to quickly get the name that you need...
+```
+
+### Multiple Children Example
+
+<img src="./images/multiple_children.png">
+
+* Representation of a situation where a parent (root) have a set a children each with a shared property.
+
+> [!NOTE]
+> While each of the children are different, they all hold the common trait of `get_name`, `get_health`, and `take_damage`.
+
+```python
+class Hero:
+    def __init__(self, name, health):
+        self.__name = name
+        self.__health = health
+
+    def get_name(self):
+        return self.__name
+
+    def get_health(self):
+        return self.__health
+
+    def take_damage(self, damage):
+        self.__health -= damage
+
+class Archer(Hero):
+    def __init__(self, name, health, num_arrows):
+        super().__init__(name, health)
+        self.__num_arrows = num_arrows
+
+    def shoot(self, target):
+        if self.__num_arrows <= 0:
+            raise Exception("not enough arrows")
+        self.__num_arrows -= 1
+        target.take_damage(10) # Example of a superset using its parents method.
+
+class Wizard(Hero):
+    def __init__(self, name, health, mana):
+        super().__init__(name, health)
+        self.__mana = mana
+
+    def cast(self, target):
+        if self.__mana < 25:
+            raise Exception("not enough mana")
+        self.__mana -= 25
+        target.take_damage(25)
+```
+
+### Wide Not Deep 
+
+* It's more common for an inheritance tree to be **wide** than **deep**. 
+* This means that there are properties found in the parent (root) class that all of the siblings (subsets) 
+
+<img src="./images/wide_inheritance_not_deep.png">
