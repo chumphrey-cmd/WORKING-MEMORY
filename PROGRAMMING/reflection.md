@@ -74,7 +74,7 @@ print(bard.arrows) # 10
 
 ### Methods
 
-* **`INCLUDE_METHODS_NOTES_HERE...`**
+* **`METHODS_NOTES_HERE...`**
 
 ## Databases
 

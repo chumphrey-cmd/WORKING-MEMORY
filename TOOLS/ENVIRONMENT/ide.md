@@ -70,17 +70,25 @@ Press Enter (adjust the path if you named your key differently).
 5. **Copy Your Public Key** 
 
 ```bash
-cat ~/.ssh/id_ed25519.pub
+cat ~/.ssh/YOUR_PUB_KEY.pub
 ```
-Select and copy the entire output.
+* Select and copy the entire output.
 
-6. **Add SSH Key to GitHub**  
-   * Go to your GitHub account settings: Settings > SSH and GPG keys.  
-   * Click "New SSH key"  
-   * Give your key a title and paste the copied public key.  
-   * Click "Add SSH key"  
+> [!NOTE]
+> The process of adding keys has been updated. You now need to add separate Authenticaion **AND** Signing Keys to push verified commits to GitHub.
 
-7.  **Test the Connection** 
+6. **Add Authentication SSH Key to GitHub**  
+    * Go to your GitHub account settings: Settings > SSH and GPG keys.  
+    * Click "New SSH key" 
+    * Press `Key type` and select `Authenticaion Key`
+    * Give your key a title and paste the copied public key.  
+    * Paste the contents copied from `cat ~/.ssh/YOUR_PUB_KEY.pub` into the `Key` field.
+    * Click "Add SSH key" 
+
+7. **Add Signing Key to GitHub**
+    * Same process as above, but when selecting `Key Types` select `Signing Key`. 
+
+8.  **Test the Connection** 
 
 ```bash 
 ssh -T git@github.com
@@ -125,13 +133,24 @@ touch ~/.ssh/config
 
 ### Add the Public SSH key to your Github account and Test
 
-* Copy the content of your SSH public key and paste to your GitHub SSH and GPG Keys [page](https://github.com/settings/keys).
+1. Copy the content of your SSH public key and paste to your GitHub SSH and GPG Keys [page](https://github.com/settings/keys).
 
 ```bash
 pbcopy < ~/.ssh/id_ed25519.pub
 ```
 
-* Test GitHub connection
+2. **Add Authentication SSH Key to GitHub**  
+* Go to your GitHub account settings: Settings > SSH and GPG keys.  
+* Click "New SSH key" 
+* Press `Key type` and select `Authenticaion Key`
+* Give your key a title and paste the copied public key.  
+* Paste the contents copied from `cat ~/.ssh/YOUR_PUB_KEY.pub` into the `Key` field.
+* Click "Add SSH key" 
+
+3. **Add Signing Key to GitHub**
+* Same process as above, but when selecting `Key Types` select `Signing Key`.
+
+4. Test GitHub connection
 
 ```bash
 ssh -T git@github.com
@@ -150,8 +169,73 @@ git config --global gpg.format ssh
 ```bash
 # Assign public SSH key as a global variable
 git config --global user.signingkey /PATH/TO/.SSH/KEY.PUB
+``` 
+
+# Troubleshooting IDE
+
+## Re-signing Unverified Commits via Interactive Rebase
+
+> This process amends existing commit history to add an SSH signature. This should only be done on branches **you** own exclusively.
+
+Prerequisites
+* Your public SSH key is added as a "Signing Key" in GitHub Settings.
+
+Your local Git config is set for SSH signing:
+
+```bash
+git config --global gpg.format ssh
+git config --global user.signingkey ~/.ssh/id_ed25519 # (Use your key path)
+git config --global commit.gpgsign true
 ```
 
+**Step 1: Start the Interactive Rebase**
+
+* Navigate to your repository and initiate an interactive rebase. Replace `N` with the number of unverified commits you need to fix.
+
+```bash
+git rebase -i HEAD~N
+```
+
+**Step 2: Mark Commits for Editing**
+
+A text editor will open. Change the command `pick` to `edit` for every commit you wish to re-sign. Commits are listed from **oldest (top) to newest (bottom)**.
+
+```bash
+edit 8a2b3c4 chore: update file A # Oldest
+edit 5d6e7f8 feat: add feature B
+pick f1a2b3c # (Already verified, leave as pick)
+# ...
+```
+
+Save and close the editor (`wq!`)
+
+**Step 3: Sign Each Commit Manually**
+
+* Git will pause at the first commit marked edit. You are now in an (interactive) rebase state. For each paused commit, run these two commands:
+
+```bash
+git commit --amend --no-edit -S
+```
+
+```bash
+git rebase --continue
+```
+* `--no-edit -S`: Amends the commit with a signature without changing the message.
+* `git rebase --continue`: Moves the process to the next edit commit or finishes the rebase.
+
+Repeat these two commands until the rebase is complete and your terminal prompt returns to normal.
+
+**Step 4: Force-Push to GitHub**
+
+Rewrite the commit history to overwrite the remote branch on GitHub:
+
+```bash
+git push --force-with-lease origin HEAD
+```
+
+**Step 5: Verify Contributions**
+
+Check your GitHub repository/profile page. Commits should now show as "**Verified**" and appear on your contribution graph.
 
 
 
