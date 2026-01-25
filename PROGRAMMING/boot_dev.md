@@ -2128,6 +2128,40 @@ class Wizard(Hero):
 ### Wide Not Deep 
 
 * It's more common for an inheritance tree to be **wide** than **deep**. 
-* This means that there are properties found in the parent (root) class that all of the siblings (subsets) 
+* This means that there are properties found in the parent (root) class that all of the siblings (subsets) share with one another. **THINK** most common ancestry between species.
 
 <img src="./images/wide_inheritance_not_deep.png">
+
+### Inheritance Practice
+
+* Another difficult and close solve before I used the assistant for help. 
+* The main hang up, for me, was the use of the correct Boolena logic in the helper `unit.in_area()` method. My intuition to use the helper method within the `Dragon` class was correct along with identifying the min and max values. I struggled on correctly wiring up the correct method.
+
+```python
+class Unit:
+    def __init__(self, name, pos_x, pos_y):
+        self.name = name
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+
+    def in_area(self, x_1, y_1, x_2, y_2):
+        if ((self.pos_x >= x_1 and self.pos_x <= x_2) and (self.pos_y >= y_1 and self.pos_y <= y_2)):
+            return True
+        return False
+
+class Dragon(Unit):
+    def __init__(self, name, pos_x, pos_y, fire_range):
+        super().__init__(name, pos_x, pos_y)
+        self.__fire_range = fire_range
+
+    def breathe_fire(self, x, y, units):
+        blast = []
+        min_x = x - self.__fire_range
+        max_x = x + self.__fire_range
+        min_y = y - self.__fire_range
+        max_y = y + self.__fire_range
+        for unit in units:
+            if unit.in_area(min_x, min_y, max_x, max_y):
+                blast.append(unit)
+        return blast
+```
