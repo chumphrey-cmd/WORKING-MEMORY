@@ -5,7 +5,7 @@
 3. **Consistent Studying Across the Week**: 3-4 hours **daily**.
 4. **Isolating During Studying**: study alone for the retention of information.
 5. **Learn from multiple sources**: YouTube, Lecture, Verbalizing with Reasoning Models
-6. **Make an Effort to Teach Others**: Watch one, do one, teach one
+6. **Make an Effort to Teach Others**: Watch one, do one, teach one (**rubber ducky**)
 7. **Orient the Studying with Higher Order Goals**: ground the reason for study and discipline across time. Belief that what your are doing is essential!
 
 ## Pre, During, Post Learning
