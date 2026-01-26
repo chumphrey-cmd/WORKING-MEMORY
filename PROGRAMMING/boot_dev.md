@@ -1291,6 +1291,32 @@ def analyze_tags(tags_a, tags_b):
     }
 ```
 
+## Errors
+
+### Errors and Exceptions
+
+```python
+try:
+  10 / 0
+except Exception:
+  print("can't divide by zero")
+```
+
+* `try-except`: 
+    * `try` block is executed until an exception is raised or it completes, whichever happens first.
+    * `exception` is raised because division by zero is impossible. The `except` block is only executed if an exception is raised in the try block.
+
+* If we want to access the data from the exception, we use the following syntax:
+
+```python
+try:
+  10 / 0
+except Exception as e:
+  print(e)
+
+# prints "division by zero"
+```
+
 # Python - Object-Oriented Programming (OOP)
 
 * **[Object-Oriented Programming](https://en.wikipedia.org/wiki/Object-oriented_programming)**: Programming paradigm based on objects  (software entities that encapsulate data and function(s)). An OOP computer program consists of objects that interact with objects.
