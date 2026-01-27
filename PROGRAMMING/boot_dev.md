@@ -2191,3 +2191,45 @@ class Dragon(Unit):
                 blast.append(unit)
         return blast
 ```
+
+### Inheritance Practice (List Comprehension)
+
+* [List Comprehension Guide](https://www.learndatasci.com/solutions/python-list-comprehension/#:~:text=multiple%20list%20comprehensions.-,How%20list%20comprehension%20works,and%20num%20is%20the%20yield.&text=In%20this%20case%2C%20Python%20has,stored%20in%20the%20new%20list.)
+
+* This kicked my ass... took me ~3 hours to sort out for myself along with some help from Boots...
+* Here's a basic run down and example on how the process works.
+
+```python
+def main():
+    dragons = [
+        Dragon("Green Dragon", 0, 0, 1),
+        Dragon("Red Dragon", 2, 2, 2),
+        Dragon("Blue Dragon", 4, 3, 3),
+        Dragon("Black Dragon", 5, -1, 4),
+    ]
+
+    for dragon in dragons:
+        describe(dragon)
+    
+    for dragon in dragons:
+        targets = [targets for targets in dragons if targets is not dragon] # List comprehension and assignment of new list to var
+        dragon.breathe_fire(3, 3, targets)
+
+# Rest of code ...
+
+```
+
+The initial for loop was pretty straight forward with a method call using `describe()`.
+
+**List comprehension**: it's a concise way to create new lists by transforming or filtering existing iterables (e.g., removing something if it meets a condition). 
+
+That new list, if you want to call it or use it again, needs to be assigned to a variable so that the updated list can be used witin other methods (e.g., `dragon.breath_fire(...)`).
+
+Breaking down the list comprehension is as follows:
+
+* `targets for targets in dragons`: we're creating the new list of the name targets, we then go into a simple for-loop where the original dragons list is being placed inside of targets.
+
+* `if targets is not dragon`: here we're setting a conditional where we are detemining that if the individual values of `targets`, which was assigned the original iterable list of `dragons` **IS NOT** found in `dragon` (which is assigned the iterable list of `dragons`); place those unique sets of dragon names and details into the new targets list which can be called by `dragon.breath_fire(...)`
+
+* Additionally, it's important to note that this is all happening inside of the second for-loop that that is iterating over each item inside of the dragons list. So the flow is as follows:
+    * For-loop initiates > "Green Dragon" is first > a new list is created that creates a new `targets` list that excludes "Green Dragon" > for-loop repeats
