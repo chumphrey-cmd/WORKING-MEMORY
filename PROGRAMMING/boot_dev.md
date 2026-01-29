@@ -1,4 +1,4 @@
-# Python Fundamentals
+# Python - Programming Fundamentals
 
 ## Functions
 
@@ -1370,10 +1370,10 @@ class Soldier:
     damage = 2
 ```
 
-## Object (Instance)
+## Objects
 
 * An `object` is an **instance**, the "specifics of" OR "case of" that `class`.
-* But you can't provide specifics about a particular car (for example, that 1978 Chevy Impala with 205,000 miles on it that your uncle Mickey drives) until you create an `instance` of a Car. 
+* But you can't provide specifics about a particular car (for example, that 1978 Chevy Impala with 205,000 miles on it that your uncle Mickey drives) until you create an `instance` of a Car.
 * It's the `instance` that captures the detailed information about one particular `class`.
 
 ### Attributes
@@ -2040,14 +2040,16 @@ class Human: # Parent class
 
 class Archer(Human): # Child class (Archer) inheriting properties from parent (Human).
     def __init__(self, name, num_arrows):
-        super().__init__(name) # NOTE: essential to have the this line when creating child classes in Python
+        super().__init__(name) # NOTE: essential to have this line when creating child classes in Python, representative of "superset"
         self.__num_arrows = num_arrows
 
     def get_num_arrows(self):
         return self.__num_arrows
 ```
 
-* `super()`: returns a proxy of the parent class, meaning we can use it to call the parent class's constructor and other methods.
+> [!NOTE]
+>
+> `super()`: returns a proxy of the parent class, meaning we can use it to call the parent class's constructor and other methods. Used as a **function you call each time you need the parent behavior**.
 
 ### When to Use Inheritance
 
@@ -2233,3 +2235,68 @@ Breaking down the list comprehension is as follows:
 
 * Additionally, it's important to note that this is all happening inside of the second for-loop that that is iterating over each item inside of the dragons list. So the flow is as follows:
     * For-loop initiates > "Green Dragon" is first > a new list is created that creates a new `targets` list that excludes "Green Dragon" > for-loop repeats
+
+### More Inheritance Practice 
+
+```python
+
+class Siege:
+    def __init__(self, max_speed, efficiency):
+        self.max_speed = max_speed
+        self.efficiency = efficiency
+
+    def get_trip_cost(self, distance, food_price):
+        return (distance / self.efficiency) * food_price
+
+    def get_cargo_volume(self):
+        pass
+
+class BatteringRam(Siege):
+    def __init__(
+        self,
+        max_speed,
+        efficiency,
+        load_weight,
+        bed_area,
+    ):
+        '''
+        NOTE: Don't need to declare `self.max_speed` or `self.efficiency` because we're declaring it from the parent class, calls the parent’s constructor; use it so the parent sets up its own attributes.
+        '''
+        super().__init__(max_speed, efficiency) # Ensure BatteringRam is initalized like Siege
+        self.load_weight = load_weight # Stores constructor parameters on the instance so other methods can use them.
+        self.bed_area = bed_area # Stores constructor parameters on the instance so other methods can use them.
+
+    def get_trip_cost(self, distance, food_price):
+        base_cost = super().get_trip_cost(distance, food_price) # Accessing parent (Siege) for cost cacluation
+        return base_cost + (self.load_weight * 0.01)
+        
+    def get_cargo_volume(self):
+        return self.bed_area * 2.0
+
+class Catapult(Siege):
+    def __init__(self, max_speed, efficiency, cargo_volume):
+
+        super().__init__(max_speed, efficiency)
+
+        self.cargo_volume = cargo_volume
+
+    def get_cargo_volume(self):
+        return self.cargo_volume
+```
+
+#### Explanation
+
+* `super().__init__(max_speed, efficiency)` in `__init__` ensures that BatteringRam is initialized like a Siege:
+    * It sets self.max_speed and self.efficiency by calling the parent constructor.
+    * This doesn’t directly affect `get_trip_cost`, but it **makes the object a proper Siege**.
+
+* Inside `get_trip_cost`, the line:
+
+```python
+base_cost = super().get_trip_cost(distance, food_price)
+```
+* Here we are calling the parent class’s (`Siege`) `get_trip_cost` method (`Siege.get_trip_cost`) using the same `distance` and `food_price`.
+* The `super()` **DOES NOT** use the `super().__init__(max_speed, efficiency)` in `__init__` it just means the we want to call the parent's version of that method.
+* **ESSENTIALLY**: the `super().some_method(...)` is used to make an independent call to the parent’s `something` and is **SEPARATE** from other `super()` calls!
+
+## Polymorphism
