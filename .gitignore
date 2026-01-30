@@ -6,6 +6,9 @@
 .AppleDouble
 .LSOverride
 
+# IntelliJ Junk
+.idea/*
+
 # Misc. Stuff
 practice/
 stage_persona.md

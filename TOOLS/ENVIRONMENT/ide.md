@@ -95,7 +95,7 @@ ssh -T git@github.com
 ```
 You should see a success message.
 
-## Add SSH Keys to GitHub (MacOS)
+## Add SSH Keys to GitHub (macOS)
 
 > [!NOTE]
 > This process is closely related to the Windows with a few differences... I've just extracted the essential commands we need for the process. Here's the [link](https://medium.com/codex/git-authentication-on-macos-setting-up-ssh-to-connect-to-your-github-account-d7f5df029320) for the full process...
@@ -157,7 +157,7 @@ ssh -T git@github.com
 ```
 
 > [!NOTE]
-> Additional troubleshooting may be needed if you recieve the following error:
+> Additional troubleshooting may be needed if you receive the following error:
 > * **`error: gpg failed to sign the data fatal: failed to write commit object`**
 > *  To resolve, follow these [steps](https://docs.github.com/en/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key#telling-git-about-your-ssh-key).
 
