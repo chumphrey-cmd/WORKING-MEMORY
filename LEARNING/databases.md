@@ -20,46 +20,56 @@
 * `Cells` - the specific block or set of information that is contained within the table. The individual cross-section within the column or row.
 * `Primary Key` - unique identifier that is used to identify the specific row (should always be **serial**); it's the left most identifier in the table (e.g., `customer_id`)
 * `Foreign Key` - identifier that points to another table using that tables `Primary Key`
+* Unique Key - a key agnostic to other keys (Primary and Foreign) that have been generated, used to verify than an operation has been completed...used to avoid redundancy within tables.
+* `views (temporary tables)` - essentially a temporary table that is generated to demo or prototype data creation. Can be used as a `function` to avoid repeating 
 
 <img src="./images/primary_foreign_key.png" width="500">
 
-* `Composite Key` - used to combine two different 
-* `Non-primary Key` - (unique key): ??
+* `Composite Key` - used to combine two different fields
+* `Non-primary Key` (unique key) - 
 * `Index` - catalog for faster searches on columns (like a book's index).
 
-### Terminology (SQL Data Types)
+### Terminology (PostgreSQL Data Types)
+
+1. https://www.postgresql.org/docs/current/datatype.html
 
 #### Character Types
-* `CHAR(n)`: Fixed-length character string with a specified length (n). Padded with spaces if shorter; useful for consistent storage like codes or abbreviations.
-* `VARCHAR(...)`: Variable-length character string with a maximum length (255). More efficient for varying text lengths, like names or emails (very efficient in databases)
-* `TEXT`: Variable-length string for large amounts of text (up to 65,535 characters in some systems); no fixed max like VARCHAR, ideal for descriptions or articles.
+* `CHARACTER(n)`: Fixed-length character string of length (n).
+* `CHARACTER VARYING(n)` (`VARCHAR(n)`): Variable-length character string with a maximum length of (n).
+* `TEXT`: Variable-length character string with no specified upper limit.
 
 #### Numeric Types
-* `INT`: Integer data type (equivalent to INTEGER). Stores whole numbers, typically from -2^31 to 2^31-1 (signed); common for IDs or counts.
-* `DECIMAL(p,s)`: Exact numeric data type with precision (p) and scale (s). Precision is total digits, scale is after decimal; e.g., DECIMAL(5,2) for money like 123.45.
-* `FLOAT`: Single-precision floating-point number (equivalent to REAL). Approximate values for scientific or imprecise decimals; less accurate than DECIMAL.
-* `BIGINT`: Large integer, supporting bigger ranges (e.g., -2^63 to 2^63-1); for very large counts or IDs.
-* `SMALLINT`: Smaller integer, typically -32,768 to 32,767; space-efficient for limited ranges.
-* `DOUBLE`: Double-precision floating-point number; higher precision than FLOAT for more accurate approximations.
+* `SMALLINT` (`int2`): Signed two-byte integer.
+* `INTEGER` (`int`, `int4`): Signed four-byte integer.
+* `BIGINT` (`int8`): Signed eight-byte integer.
+* `NUMERIC(p,s)` (`DECIMAL(p,s)`): Exact numeric of selectable precision (p) and scale (s).
+* `REAL` (`float4`): Single-precision floating-point number (4 bytes).
+* `DOUBLE PRECISION` (`FLOAT`, `FLOAT8`): Double-precision floating-point number (8 bytes).
+* `SERIAL` (`SERIAL4`): Autoincrementing four-byte integer (alias for `INTEGER` with a sequence).
+* `BIGSERIAL` (`SERIAL8`): Autoincrementing eight-byte integer (alias for `BIGINT` with a sequence).
 
 #### Date and Time Types
-* `DATE`: Stores calendar dates (year, month, day) without time; format like 'YYYY-MM-DD', e.g., '2026-01-28'.
-* `TIME`: Stores time of day (hours, minutes, seconds) without date; format like 'HH:MM:SS'.
-* `DATETIME`: Combines date and time; stores values like 'YYYY-MM-DD HH:MM:SS'; useful for events or logs.
-* `TIMESTAMP`: Similar to DATETIME but often includes timezone info and auto-updates (e.g., for record creation/modification times).
-* `YEAR`: Stores a year value, typically as 4 digits (e.g., 2026) or 2 digits in some systems.
+* `DATE`: Calendar date (year, month, day).
+* `TIME[(p)] [WITHOUT TIME ZONE]`: Time of day (no time zone).
+* `TIME[(p)] WITH TIME ZONE` (`TIMETZ`): Time of day, including time zone.
+* `TIMESTAMP[(p)] [WITHOUT TIME ZONE]`: Date and time (no time zone).
+* `TIMESTAMP[(p)] WITH TIME ZONE` (`TIMESTAMPTZ`): Date and time, including time zone.
+* `INTERVAL [fields] [(p)]`: Time span.
 
 #### Boolean Types
-* `BOOLEAN`: Stores true/false values (often 1/0 internally); equivalent to BOOL in some databases; for flags like 'is_active'.
+* `BOOLEAN` (`BOOL`): Logical Boolean value (true/false).
 
 #### Binary Types
-* `BINARY(n)`: Fixed-length binary string (bytes) with length (n); for raw binary data like hashes.
-* `VARBINARY(n)`: Variable-length binary string with max length (n); similar to VARCHAR but for bytes.
-* `BLOB`: Binary Large Object for large binary data like images or files; variants include TINYBLOB, MEDIUMBLOB, LONGBLOB based on size.
+* `BYTEA`: Binary data (“byte array”).
 
 #### Other Types
-* `ENUM`: A string object with a value chosen from a predefined list (e.g., ENUM('small', 'medium', 'large')); restricts input to valid options.
-* `SET`: Similar to ENUM but allows multiple values from a list (e.g., SET('red', 'blue', 'green')); for flags or tags.
+* `BIT(n)`: Fixed-length bit string of length (n).
+* `BIT VARYING(n)` (`VARBIT(n)`): Variable-length bit string with a maximum length of (n).
+* `MONEY`: Currency amount.
+* `UUID`: Universally unique identifier.
+* `XML`: XML data.
+* `JSON`: Textual JSON data.
+* `JSONB`: Binary JSON data, decomposed.
 
 ### Terminology (Table Relationships)
 
@@ -70,6 +80,7 @@
 * One to Many - one DB to many DBs
 * One-to-One - one DB to one DB
 * Many-to-Many - many DBs to many DBs
+    * e.g., intermediate "views (temporary table)" the interface, "switch", or "core-router" within networks.  
 
 <img src="./images/erd_basics.png" width="500">
 
@@ -77,10 +88,14 @@
 * A visual, structural **blueprint for a database**, illustrating how "entities" (people, objects, concepts) connect within a system
 * **ESSENTIALLY** using the desired objective that you want the application to do and arranging and structuring the database in such a way that will allow the application to work...
 
-### Liquor Store Table Example 
+### Liquor Store Table Conceptual Framework
 
 >[!NOTE]
 > Never give a user direct access to the database, only provide **views** to the DB...
+>
+> When working thinking through ERD mapping use the following:
+> * "one `table_a` has "multiple", "single", or "multiple" connection(s) to `table_b`
+> * If this logically makes sense, then your ERD should be in good standing...
 
 Customers Table Example
 * `Primary Key(s):` **customer_id**; unique identifier that is, used to reference somethgin else, use to identify the row of data unique to that user. **ONLY USE ONE UNIQUE PER ROW**.
@@ -104,10 +119,42 @@ Location Table (Customer Shipping)
 * `Columns`: address, city, state, zip_code, customer_id
 
 
-* Client accesses the database on a server using these terms:
-    * Application software
-    * Data access API
-    * Database management system
-    * SQL query and query results
+> [!WARNING]
+> `DROP` is an irreversible command, BE VERY CAREFUL!
+
+
+## SQL Basics
+
+### Constraints
+
+* `NOT NULL` – ensures that the values in a column cannot be NULL.
+* `UNIQUE` – ensures the values in a column are unique across the rows within the same table.
+* `PRIMARY KEY` – a primary key column uniquely identifies rows in a table. A table can have one and only one primary key. The primary key constraint allows you to define the primary key of a table.
+* `CHECK` – ensures the data must satisfy a boolean expression. For example, the value in the price column must be zero or positive.
+* `FOREIGN KEY` – ensures that the values in a column or a group of columns from a table exist in a column or group of columns in another table. Unlike the primary key, a table can have many foreign keys.
+
+### SQL Command Structure
+
+* Data Definition Language (DDL)
+* Data Manipulation Language (DML)
+* Data Control Language (or DCL)
+* Transaction Control Language (TCL)
+
+#### Data Manipulation Language (DML)
+* `UPDATE`: Updates data in a database.
+* `DELETE`: Deletes data from a database.
+* `INSERT INTO`: Inserts new data into a database.
+* `SELECT`: Extracts data from a database.
+
+#### Data Definition Language (DDL)
+* `CREATE DATABASE`: Creates a new database.
+* `ALTER DATABASE`: Modifies a database.
+* `CREATE TABLE`: Creates a new table.
+* `ALTER TABLE`: Modifies a table.
+* `DROP TABLE`: Deletes a table.
+* `CREATE INDEX`: Creates an index (search key).
+* `DROP INDEX`: Deletes an index.
+* `COMMENT`: Commenting. 
+* `TRUNCATE`: Reduce the field length.
 
 ### Summary (Databases - 28JAN)

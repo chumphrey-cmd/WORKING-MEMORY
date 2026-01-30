@@ -1,4 +1,4 @@
-# Fundamental Concepts
+# Java Specific Fundamental Concepts
 
 ## Terminology
 
@@ -6,6 +6,16 @@
 * Compiler: you have to write the entire programming that you would like to run and it compiles after the programming is completed.
 * Procedural (Functional) Programming - Procedure focused (Verb)
 * Object-Oriented (OOP) Programming - Object focused (Noun)
+
+## Background About Java and IntelliJ
+
+> A pure OOP language, EVERYTHING must live inside of a class...
+>
+> Java data types: be sure to understand the data types that you are working with. Choosing the wrong data type can lead to large memory usage in large systems.
+
+* `JVM` - Utilizes the JVM which is hardware agnostic and utilizes the Java Virtual Machine (JVM) making it cross compatiable.
+* Primitive Types: "simple" data types like (`int`, `bool`, `float`, etc.)
+* Reference Types: the data types that are not primitive type
 
 ## Sequence (Sequential; **DO NEXT**)
 * The step-wise and iterative process where the computer executes based on a series of instructions provided. [1]

@@ -1461,7 +1461,7 @@ print(adolin.health)
 ## Constructors
 
 * Are a specific method on a class called `__init__` that is called automatically when you create a new instance of a class. 
-* `constructors` make the objects’ state (their attributes) configurable. The methods then use that state.
+* `constructors` make the objects’ state (their attributes) configurable and other methods then use that state. **ESSENTIALLY**: the set of local variables that other methods within the class-object access.
 
 ```python
 class Soldier: # Class
@@ -1470,7 +1470,7 @@ class Soldier: # Class
         self.armor = armor
         self.num_weapons = num_weapons
 
-soldier_one = Soldier("Legolas", 2, 10) # instance of the class Soldier
+soldier_one = Soldier("Legolas", 2, 10) # object-instance of the class Soldier
 print(soldier_one.name)
 # prints "Legolas"
 print(soldier_one.armor)
@@ -1478,7 +1478,7 @@ print(soldier_one.armor)
 print(soldier_one.num_weapons)
 # prints "10"
 
-soldier_two = Soldier("Gimli", 5, 1) # another instance of the class Soldier
+soldier_two = Soldier("Gimli", 5, 1) # another object-instance of the class Soldier
 print(soldier_two.name)
 # prints "Gimli"
 print(soldier_two.armor)
@@ -1499,7 +1499,7 @@ The arguments inside of each of the methods all have the associated ".name, .hea
 '''
 class Archer:
     def __init__(self, name, health, num_arrows):
-        self.name = name # Instance attributes
+        self.name = name # Attributes
         self.health = health
         self.num_arrows = num_arrows
 
@@ -1606,8 +1606,6 @@ class Library:
 
 ##### Pattern 1: Caller creates Book
 
-
-
 ```python
 class Book:
     def __init__(self, title, author):
@@ -1684,7 +1682,6 @@ class Book:
     def __init__(self, title, author):
         self.title = title
         self.author = author
-
 
 class Library:
     def __init__(self, name):
@@ -2300,3 +2297,6 @@ base_cost = super().get_trip_cost(distance, food_price)
 * **ESSENTIALLY**: the `super().some_method(...)` is used to make an independent call to the parent’s `something` and is **SEPARATE** from other `super()` calls!
 
 ## Polymorphism
+
+# SQL 
+
