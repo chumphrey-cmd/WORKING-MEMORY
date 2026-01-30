@@ -1,2 +1,15 @@
-Archive/
+# Old Chat Bot Stuff
 .qodo
+
+# MacOS Junk
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Misc. Stuff
+practice/
+stage_persona.md
+Archive/
+openwebui/
+ollama/
+airgap-deployment.tar.gz
