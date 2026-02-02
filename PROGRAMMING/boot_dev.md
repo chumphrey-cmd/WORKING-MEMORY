@@ -2298,5 +2298,160 @@ base_cost = super().get_trip_cost(distance, food_price)
 
 ## Polymorphism
 
-# SQL 
+# SQL Basics
+
+## NoSQL vs. SQL Databases
+
+* **NoSQL** database is a database that does not use SQL (Structured Query Language). 
+* Each [NoSQL](https://en.wikipedia.org/wiki/NoSQL) typically has its own way of writing and executing queries. For example, MongoDB uses MQL (MongoDB Query Language) and ElasticSearch has a JSON API and uses its own ESQL (Elastic Query Language). 
+* NoSQL databases are typically used for more niche purposes, popular NoSQL databases included:
+  * [MongoDB](https://en.wikipedia.org/wiki/MongoDB)
+  * [Cassandra](https://en.wikipedia.org/wiki/Apache_Cassandra)
+  * [CouchDB](https://en.wikipedia.org/wiki/Apache_CouchDB)
+  * [DynamoDB](https://en.wikipedia.org/wiki/Amazon_DynamoDB)
+  * [ElasticSearch](https://www.elastic.co/)
+
+**Differences:**
+* NoSQL databases are usually non-relational, SQL databases are usually relational
+* SQL databases usually have a defined schema, NoSQL databases usually have dynamic schema.
+* SQL databases are table-based (more general purpose), NoSQL databases have a variety of different storage methods, such as document, key-value, graph, wide-column, and more.
+
+> [!NOTE]
+>
+> The choice of the database you choose for you web-application is very important. For most simple web-applications `PostgreSQL` is sufficient and can scale with the application.
+>
+> **HOWEVER**, if your data changes overtime, a more flexible and customizable databases or add-ons (e.g., `Redis` for caching) wil be needed.
+
+## SQLite vs PostgreSQL
+
+* [DB-Engines](https://db-engines.com/en/ranking): popular DB ranking site that compares popular databases for full comparisons.
+* `SQLite`: a serverless database management system (DBMS) that has the ability to run within applications (e.g., quiz applications, geo-location/bluetooth software, etc.). 
+  * It also uses a "loose type system" where data types that are set are flexible.
+* `PostgreSQL`: uses a Client-Server model and requires a server to be installed and listening on a network, similar to an HTTP server.
+
+### Creating a Table
+
+```sql
+-- One-liner to create a simple table
+CREATE TABLE employees (id INTEGER, name TEXT, age INTEGER, is_manager BOOLEAN, salary INTEGER);
+```
+
+```sql
+-- Human-readable way to create a simple table
+CREATE TABLE employees(
+    id INTEGER,
+    name TEXT,
+    age INTEGER,
+    is_manager BOOLEAN,
+    salary INTEGER
+);
+```
+
+### Altering Tables (`SQLite`)
+
+#### Rename Table or Column 
+
+```sql
+ALTER TABLE employees
+RENAME TO contractors;
+
+ALTER TABLE contractors
+RENAME COLUMN salary TO invoice;
+```
+
+#### Add or DROP a Column
+
+* Modifying columns within SQL is pretty intuitive, that being said **BE VERY  CAUTIOUS WHEN USING THE `DROP` SYNTAX**.
+* Once the `DROP` command is used, there is no ability to retrieve that dropped column or row.
+
+```sql
+ALTER TABLE contractors
+ADD COLUMN job_title TEXT;
+
+ALTER TABLE contractors
+DROP COLUMN is_manager;
+```
+
+### Database Migrations
+
+* A change to the structure of a relational database (e.g., like a commit in Git, but for your database schema). 
+* Good migrations take into consideration the following:
+  * The **old** currently runnning version of the code.
+  * The **new** version of the code that will run after the migration is complete.
+
+> [!WARNING]
+>
+> You **SHOULD NOT** update an existing column that is being actively used in production. It will lead to a broken database. Instead  use the following database migration techniques: 
+
+**Multi-Phase Rollouts**
+
+1. Run a migration that adds the `NEW_COLUMN` to the current database
+2. Deploy the new code that uses the `NEW_COLUMN` but not the `OLD_COLUMN`.
+3. Run a clean up migration that removes the `OLD_COLUMN`.
+
+**Updating an Existing Column**
+
+> [!NOTE]
+>
+> Generally you **SHOULD NOT** update an exisiting and actively used column that is active in production, it will break your application!
+>
+> Alternatively, you can simply just schedule downtime IF you believe that your users would be okay with this.
+
+1. Run a migration to create a `NEW_COLUMN`.
+2. Copy over the `OLD_COLUMN` data to the `NEW_COLUMN`.
+3. Deploy the code that uses the `NEW_COLUMN`, NOT the `OLD_COLUMN`.
+4. Recopy the data from the `OLD_COLUMN` to the `NEW_COLUMN` to catch anything that was missed during the column creation.
+5. Run a last migration to finally remove the `OLD_COLUMN` from the updated table.
+
+### Up and Down Migrations
+
+* `up.sql` Migrations:  
+  * Applies changes to move your schema forward.
+* `down.sql` Migrations:
+  * Rolls those changes back to the previous state and should always be the inverse of the up migration. 
+  * It should only be used during the case of **failure**.
+  * Undo changes introduced by an up migration
+  * Quickly recover from bugs or compatibility issues in production
+  * Keep our schema consistent across environments (local, staging, production)
+
+> [!NOTE]
+> Down migrations can re-add specific columns or feature to the database, **BUT** they cannot recover the lost data that was removed!
+
+#### Example Up and Down Migration
+
+* Example of raw SQL commands showing migrations, typically migrations are managed using tools to track which migrations have been applied, organizing migrations files, and applying roll backs safely.
+
+| Tool | Language | Notes |
+| :--- | :--- | :--- |
+| Goose | Go | Native Go tool |
+| Flyway | Java, etc. | Simple file-based |
+| Liquibase | Java | More config-heavy |
+| Alembic | Python | For SQLAlchemy |
+| Prisma Migrate | Node.js | Works with Prisma ORM |
+
+```sql
+-- Up Migration
+ALTER TABLE projects RENAME TO initiatives;
+
+ALTER TABLE initiatives
+ADD COLUMN launched_at TIMESTAMP;
+```
+
+```sql
+-- Down Migration
+ALTER TABLE initiatives DROP COLUMN launched_at;
+
+ALTER TABLE initiatives RENAME TO projects;
+```
+
+## SQLite Data Types
+
+| Data Type | Description |
+| :--- | :--- |
+| NULL | Null value. |
+| INTEGER | A signed integer stored in 0, 1, 2, 3, 4, 6, or 8 bytes. |
+| REAL | Floating point value stored as an 64-bit IEEE floating point number. |
+| TEXT | Text string stored using database encoding such as UTF-8. |
+| BLOB | Short for Binary large object and typically used for images, audio or other multimedia. |
+| BOOLEAN | Boolean values are written in SQLite queries as `true` or `false`, but are recorded as `1` or `0`. |
 

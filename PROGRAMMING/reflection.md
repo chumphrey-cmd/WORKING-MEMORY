@@ -6,12 +6,12 @@
 * They tend to think about programming as a modeling problem...
     * E.g. "How can I write a Human class that holds the data and simulates the behavior of a real human?"
 
-> [!NOTE]
+> [!Tip]
 >
-> It's objects all the way down...
+> The meta way to think about this is "objects all the way down".
 > Each new ***instance*** of a `class` is an `object`!
 
-* **[Function Programming](https://www.geeksforgeeks.org/blogs/functional-programming-paradigm/):** they tend to think of their code as inputs and outputs, and how those inputs and outputs transition the world from one state to the next.
+* **[Functional Programming](https://www.geeksforgeeks.org/blogs/functional-programming-paradigm/):** view code as inputs and outputs, and how those inputs and outputs transition the world from one state to the next.
     * "My game has 7 humans in it. When one takes a step, what's the next state of the game?"
 
 ## Object-Oriented Programming (OOP)
@@ -24,7 +24,7 @@
 # 1. CLASS (The Top Level Container)
 class Car:
 
-    # 2. METHODS (The Actions inside the Class)
+    # 2. METHODS (The functions inside the Class)
     
     #   2a. The Constructor
     def __init__(self, color):
@@ -151,24 +151,20 @@ print(soldier_one.num_weapons)
 # prints "10"
 ```
 
-### Encapsulation 
+### Encapsulation and Abstraction
 
 1. https://www.geeksforgeeks.org/java/difference-between-abstraction-and-encapsulation-in-java-with-examples/
 
-> [!NOTE]
->
-> **Encapsulation is about organization, NOT security**
+#### Encapsulation
 
-* Basically the practice of hiding complexity inside a "black box" so that it's easier to focus on the problem at hand.
-* It's the concept of binding data and methods and preventing it (other classes) from unauthorized access and wraps up data and functions under a single unit.
-* Further Explained:
-    * The variables or data of that class can only be accessed and modified through other `methods` and **authorized users**, hence "hidden" or "encapsulated".
-
-* Encapsulation can be achieved by declaring all the variables in the class as private and writing public methods in the class to set and get the values of variables. 
+* **Binds data and methods together** to preventing it (other classes) from unauthorized access and wraps up data and functions under a single unit.
+* Variables or data of that class can only be accessed and modified through other **methods** and **authorized users**, hence "hidden" or "encapsulated".
+* **Basic Example - Bank:**
+  * A bank can be thought of as a fully encapsulated class that provides access to the customers through various methods (getters and setters). 
+  * The rest of the data inside bank is hidden to protect from outside world.
 
 > [!NOTE]
-> **PURPOPSE OF PRIVATE MEMBERS?**
-> * To abstract away any additional complexity that reside within a **[black box](https://en.wikipedia.org/wiki/Black_box)** that is irrelevant to the function being called... 
+> Encapsulation can be achieved by **declaring all the variables in the class as private and writing public methods** in the class to `set` and `get` the values of variables. 
 
 ```java
 // Java program to demonstrate encapsulation [1]
@@ -176,9 +172,9 @@ print(soldier_one.num_weapons)
 class Encapsulate {
 
     // private variables declared which can only be accessed by public methods of class
+    private int geekAge;
     private String geekName;
     private int geekRoll;
-    private int geekAge;
 
     // get method for age to access private variable geekAge
     public int getAge() { return geekAge; }
@@ -193,10 +189,7 @@ class Encapsulate {
     public void setAge(int newAge) { geekAge = newAge; }
 
     // set method for name to access private variable geekName
-    public void setName(String newName)
-    {
-        geekName = newName;
-    }
+    public void setName(String newName) { geekName = newName; }
 
     // set method for roll to access private variable geekRoll
     public void setRoll(int newRoll) { geekRoll = newRoll; }
@@ -222,19 +215,121 @@ public class TestEncapsulation {
 ```
 
 **KEY IDEA**:     
-* Direct access of geekRoll is not possible due to encapsulation, for example:
-    
+* Direct access of `private int geekRoll()` is not possible due to encapsulation, for example:
+
     ```java
+    // Unable to access the private object of geekRoll this way!
     System.out.println("Geek's roll: " + obj.geekRoll); 
     ```
-* Here if `geekName` was declared public then it would have been displayed.
+* Here if `geekRoll` was declared public then it would have been displayed.
 * Since it has been declared private it cannot be accessed without getter and setter methods.
+* Instead, we set the public method with "getters" and "setters" to access it:
 
-### Abstraction
+    ```java
 
-> `abstraction` = focuses on exposing essential features while hiding complexity (e.g., importing libraries, a car, a PC, etc.) 
-> 
-> Only the essential details are displayed to the user. The trivial or the non-essential units are not displayed to the user.
+    // 1. get method for roll to access private variable geekRoll
+    public int getRoll() { return geekRoll; }
+
+    // 2. set method for roll to access private variable geekRoll
+    public void setRoll(int newRoll) { geekRoll = newRoll; }
+
+    // 3. accessing set method from public class TestEncapsulation()
+    obj.setRoll(51);
+
+    // 4. Displaying values of the variables via "get"
+    System.out.println("Geek's roll: " + obj.getRoll());
+    ```
+
+#### Abstraction
+
+* Abstraction focuses on exposing **essential features while hiding complexity** (e.g., importing libraries, a car, a PC, etc.) 
+* Only the essential details are displayed to the user. The trivial or the non-essential units are not displayed to the user.
+* **Basic Example - Car:**
+  * The driver of the car only needs to know how to drive it. Not how its engine and the gear box and other internal components work.
+
+> [!NOTE]
+> We can implement abstraction using the **`abstract class`** and **interfaces**.
+
+```java
+// Java program to illustrate the concept of Abstraction [1]
+
+abstract class Shape {
+    String color;
+
+    // these are abstract methods
+    abstract double area();
+    public abstract String toString();
+
+    // abstract class can have a constructor
+    public Shape(String color)
+    {
+        System.out.println("Shape constructor called");
+        this.color = color;
+    }
+
+    // this is a concrete method
+    public String getColor() { return color; }
+}
+class Circle extends Shape {
+    double radius;
+
+    public Circle(String color, double radius)
+    {
+
+        // calling Shape constructor
+        super(color);
+        System.out.println("Circle constructor called");
+        this.radius = radius;
+    }
+
+    @Override double area()
+    {
+        return Math.PI * Math.pow(radius, 2);
+    }
+
+    @Override public String toString()
+    {
+        return "Circle color is " + super.color
+            + " and area is : " + area();
+    }
+}
+
+class Rectangle extends Shape {
+
+    double length;
+    double width;
+
+    public Rectangle(String color, double length,
+                     double width)
+    {
+
+        // calling Shape constructor
+        super(color);
+        System.out.println("Rectangle constructor called");
+        this.length = length;
+        this.width = width;
+    }
+
+    @Override double area() { return length * width; }
+
+    @Override public String toString()
+    {
+        return "Rectangle color is " + super.color
+            + " and area is : " + area();
+    }
+}
+
+public class Test {
+    public static void main(String[] args)
+    {
+        Shape s1 = new Circle("Red", 2.2);
+        Shape s2 = new Rectangle("Yellow", 2, 4);
+
+        System.out.println(s1.toString());
+        System.out.println(s2.toString());
+    }
+}
+```
 
 ### Inheritance
 ### Polymorphism
