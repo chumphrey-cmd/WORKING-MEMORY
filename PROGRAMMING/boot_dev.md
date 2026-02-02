@@ -1326,7 +1326,7 @@ except Exception as e:
 * The sole purpose of OOP is to simply write human-readable code that is elegant and easy to maintain and understand for HUMANS. 
 
 > [!NOTE]
-> This also plays into the information security POV... Code that is lean and easy to understand is, easier to update, and easier to secure throughout the life of a project. New developers are less likely and potentially unable to secure and update code that is difficult to understand...
+> This also plays into the information security POV... Code that is lean and easy to understand is easier to update and easier to secure throughout the life of a project. New developers are less likely and potentially unable to secure and update code that is challenging to understand...
 
 ### Don't Repeat Yourself (DRY)
 
@@ -2025,7 +2025,7 @@ class DeckOfCards:
 * **ESSENTIALLY** it prevents the duplication of the same code which may lead to instability if one variable is updated within a parent class.
 
 > [!NOTE]
-> When creating child classes, ensure that that they are a superset of the functionality (have a related use) that aligns with the parent class!
+> When creating child classes, ensure that they are a superset of the functionality (have a related use) that aligns with the parent class!
 
 ```python
 class Human: # Parent class

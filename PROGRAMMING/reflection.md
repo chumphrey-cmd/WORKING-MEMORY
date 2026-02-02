@@ -1,6 +1,6 @@
 # Essential Concepts
 
-## OOP vs Functional Programming
+## OOP vs. Functional Programming
 
 * **[OOP](https://www.geeksforgeeks.org/dsa/introduction-of-object-oriented-programming/):** Is about grouping data and behavior together in one place: an `object`.
 * They tend to think about programming as a modeling problem...
@@ -8,7 +8,7 @@
 
 > [!Tip]
 >
-> The meta way to think about this is "objects all the way down".
+> The meta-way to think about this is "objects all the way down."
 > Each new ***instance*** of a `class` is an `object`!
 
 * **[Functional Programming](https://www.geeksforgeeks.org/blogs/functional-programming-paradigm/):** view code as inputs and outputs, and how those inputs and outputs transition the world from one state to the next.
@@ -97,8 +97,6 @@ print(legolas.health) # 40
 print(bard.arrows) # 10
 ```
 
-
-
 ### Methods
 
 * A `method` is just a function that's tied directly to a `class` and has access to its properties.
@@ -157,7 +155,7 @@ print(soldier_one.num_weapons)
 
 #### Encapsulation
 
-* **Binds data and methods together** to preventing it (other classes) from unauthorized access and wraps up data and functions under a single unit.
+* **Binds data and methods together** to prevent it (other classes) from unauthorized access and wraps up data and functions under a single unit.
 * Variables or data of that class can only be accessed and modified through other **methods** and **authorized users**, hence "hidden" or "encapsulated".
 * **Basic Example - Bank:**
   * A bank can be thought of as a fully encapsulated class that provides access to the customers through various methods (getters and setters). 
@@ -171,7 +169,7 @@ print(soldier_one.num_weapons)
 
 class Encapsulate {
 
-    // private variables declared which can only be accessed by public methods of class
+    // private variables declared, which can only be accessed by public methods of class
     private int geekAge;
     private String geekName;
     private int geekRoll;
@@ -185,7 +183,7 @@ class Encapsulate {
     // get method for roll to access private variable geekRoll
     public int getRoll() { return geekRoll; }
 
-    // set method for age to access private variable geekage
+    // set method for age to access private variable geekAge
     public void setAge(int newAge) { geekAge = newAge; }
 
     // set method for name to access private variable geekName
@@ -197,13 +195,12 @@ class Encapsulate {
 
 // Class to access variables of the class Encapsulate
 public class TestEncapsulation {
-    public static void main(String[] args)
-    {
+    public static void main(String[] args){
         Encapsulate obj = new Encapsulate();
 
         // setting values of the variables
-        obj.setName("Harsh");
         obj.setAge(19);
+        obj.setName("Harsh");
         obj.setRoll(51);
 
         // Displaying values of the variables
@@ -214,31 +211,70 @@ public class TestEncapsulation {
 }
 ```
 
-**KEY IDEA**:     
-* Direct access of `private int geekRoll()` is not possible due to encapsulation, for example:
+##### Encapsulation Summarized
 
-    ```java
-    // Unable to access the private object of geekRoll this way!
-    System.out.println("Geek's roll: " + obj.geekRoll); 
-    ```
-* Here if `geekRoll` was declared public then it would have been displayed.
-* Since it has been declared private it cannot be accessed without getter and setter methods.
-* Instead, we set the public method with "getters" and "setters" to access it:
+> [!NOTE] 
+> Encapsulation is achieved by declaring variables as `private` and writing `public` methods to `set` and `get` the values.
 
-    ```java
+**Private Variables**
+```java
+private int geekAge;
+private String geekName;
+private int geekRoll;
+```
 
-    // 1. get method for roll to access private variable geekRoll
-    public int getRoll() { return geekRoll; }
+* They are only accessible **inside** the `Encapsulate()` other classes cannot see or touch them directly.
 
-    // 2. set method for roll to access private variable geekRoll
-    public void setRoll(int newRoll) { geekRoll = newRoll; }
+**Public Methods**
 
-    // 3. accessing set method from public class TestEncapsulation()
-    obj.setRoll(51);
+**Get Methods**
 
-    // 4. Displaying values of the variables via "get"
-    System.out.println("Geek's roll: " + obj.getRoll());
-    ```
+* Used to get a "read-only" window to view the data and return a copy of the value (e.g., `getAge()`, the class gives you the number "19")
+  * `public [data_type] getXXX() { return private_variable; }`
+  * `public int getAge() { return geekAge; }`
+
+**Set Methods**
+
+* Allow modification of the data, often with validation rules.
+  * `public void setXXX([data_type] newName) { variable = newName; }`
+  * `public void setAge(int newAge) { geekAge = newAge; }`
+    * `void`: This is the **Return Type**. It tells Java: *"I am going to perform this action, but I will not return any data back to you when I'm done."*
+    * CamelCase is standard naming convention (e.g., `geekAge` becomes `setAge`).
+
+**`TestEncapsulation()`**
+
+```java
+public class TestEncapsulation {
+    public static void main(String[] args) {
+        Encapsulate obj = new Encapsulate();
+        // ... usage
+    }
+}
+```
+
+* **`public static void main`:** entry point where the program starts execution.
+* **`Encapsulate obj = new Encapsulate();`**: this creates an **Instance** (Object) of the class.
+* `obj`: is now a specific object with its own state (name, age, roll).
+
+**Direct Access vs. Encapsulation**
+
+**Direct Access**
+
+```java
+// This will error because geekRoll is private!
+System.out.println("Geek's roll: " + obj.geekRoll);
+```
+
+* This code will not compile. `geekRoll` is marked `private` and cannot be accessed directly.
+
+**Public Accessors**
+
+```java
+// Correct usage via Public Method
+System.out.println("Geek's roll: " + obj.getRoll());
+```
+
+* We use the **Public Interface** (`getRoll()`) to request the data from `public int getRoll() { return geekRoll; }` earlier on.
 
 #### Abstraction
 
@@ -270,7 +306,7 @@ abstract class Shape {
     // this is a concrete method
     public String getColor() { return color; }
 }
-class Circle extends Shape {
+class Circle extends Shape { // `extends`: key word for inheritance
     double radius;
 
     public Circle(String color, double radius)
@@ -282,7 +318,7 @@ class Circle extends Shape {
         this.radius = radius;
     }
 
-    @Override double area()
+    @Override double area() // Means the intentionally replacing the parent's version of this method to prevent typos
     {
         return Math.PI * Math.pow(radius, 2);
     }
@@ -322,7 +358,7 @@ class Rectangle extends Shape {
 public class Test {
     public static void main(String[] args)
     {
-        Shape s1 = new Circle("Red", 2.2);
+        Shape s1 = new Circle("Red", 2.2); // creating an instance of the Circle class that MUST have a color (string) and value (double); if not, thde code will not compile.
         Shape s2 = new Rectangle("Yellow", 2, 4);
 
         System.out.println(s1.toString());
@@ -331,8 +367,49 @@ public class Test {
 }
 ```
 
+##### Abstraction Summarized
+
+**The Abstract Class (`Shape`)**
+```java
+abstract class Shape {
+    String color; 
+    abstract double area(); 
+    // ...
+}
+```
+
+* Here is the `abstract class` defines a template but is incomplete.
+
+> [!NOTE] 
+> You **cannot** create an object directly from an abstract class (`new Shape()` is illegal).
+
+* **Abstract Methods:** Methods with no code act as a **contract**. The parent tells the children: *"I don't know how to do this, so you MUST define it, later on via inheritance."*
+
+**The Concrete Class (`Circle extends Shape`)**
+
+```java
+class Circle extends Shape {
+    // ...
+    @Override 
+    double area() {
+        return Math.PI * Math.pow(radius, 2);
+    }
+}
+```
+
+* **`extends`:** Here we are using **inheritance**. `Circle` inherits the `color` attribute from `Shape`.
+* **Abstraction Being Used:** Since `Shape` left `area()` undefined, `Circle` **must** provide the actual math (logic) for it.
+* **`@Override`:** tells the compiler: *"I am intentionally defining my own version of this method that I inherited from my parent."* It ensures we are correctly matching the parent's requirements.
+
+**Execution using `Test` Class**
+
+```java
+Shape s1 = new Circle("Red", 2.2);
+```
+
+* Here we are defining the variable as the parent type (`Shape`), but we create the specific object (`Circle`) (this is also an example of **Polymorphism**, but I'll touch on this later on...)
+* The user interacts with `s1` as just a "Shape," not needing to worry about the math happening inside the `Circle` class.
+* We are declaring `s1` as a **reference** of type `Shape`, but we are assigning it a **concrete instance** of Circle.
+
 ### Inheritance
 ### Polymorphism
-
-## Summary (26-30JAN)
-
