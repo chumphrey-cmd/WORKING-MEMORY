@@ -16,7 +16,7 @@
 
 ## Object-Oriented Programming (OOP)
 
-* **[Object-Oriented Programming](https://en.wikipedia.org/wiki/Object-oriented_programming)**: Programming paradigm based on objects  (software entities that encapsulate data and function(s)). An OOP computer program consists of objects that interact with objects.
+* **[Object-Oriented Programming](https://en.wikipedia.org/wiki/Object-oriented_programming)**: Programming paradigm based on objects (software entities that encapsulate data and function(s)). An OOP computer program consists of objects that interact with objects.
 
 ```python
 # Basics Explained:
@@ -49,7 +49,7 @@ my_chevy = Car("Red")
 
 > Defines the structure of the home and give the features that all houses built from this plan will have a door color, a number of windows, and a garage.
 
-A `class` defines the **structure** and **capabilities** for what we are building. It guarantees what attributes every version will have, but doesn't store specific data yet.
+A `class` defines the **structure** and **capabilities** for what we are building. It guarantees what attributes every version will have but doesn't store specific data yet.
 
 * **THINK** architectural blueprints for a home. It states that *every* home built from this plan must have a door, wood panels, a roof, and a garage. 
 * `class` = like a blueprint or a template, describes objects with common properties, definition or rules.
@@ -57,7 +57,7 @@ A `class` defines the **structure** and **capabilities** for what we are buildin
 
 #### Classes vs. Dictionaries
 
-> An light-weight heuristic is to think of `classes` like dictionaries (e.g., key-value pairs), but different and more flexibile as addition behavior can be assigned to it (by other `objects`)
+> A light-weight heuristic is to think of `classes` like dictionaries (e.g., key-value pairs), but different and more flexibile as addition behavior can be assigned to it (by other `objects`)
 
 ```python
 # Defines a new class called "Soldier"
@@ -124,7 +124,7 @@ print(soldier_two.health)
 #### Constructors 
 
 * Are a specific method on a class called `__init__` that is called automatically when you create a new instance of a class. 
-* `constructors` make the objects' state (their attributes) configurable and other methods then use that state. **ESSENTIALLY**: the set of local variables that other methods within the class-object access.
+* `constructors` make the objects' state (their attributes) configurable and other methods then use that state. **ESSENTIALLY**: the set of local variables that other methods within the class can access.
 
 ```python
 
@@ -409,7 +409,86 @@ Shape s1 = new Circle("Red", 2.2);
 
 * Here we are defining the variable as the parent type (`Shape`), but we create the specific object (`Circle`) (this is also an example of **Polymorphism**, but I'll touch on this later on...)
 * The user interacts with `s1` as just a "Shape," not needing to worry about the math happening inside the `Circle` class.
-* We are declaring `s1` as a **reference** of type `Shape`, but we are assigning it a **concrete instance** of Circle.
+* We are declaring `s1` as a **Reference Type** `Shape`, but we are assigning it as an **Object Type** of Circle (which creates an instance of the abstract class `Shape`).
 
 ### Inheritance
+
+* Inheritance allows a child class to inherit properties and methods from a "parent" class. It's a way to share similar functionality between related classes.
+* It also prevents the duplication of the same code, and greater maintainability of large projects (e.g., updating one method in the parent class will be reflected in all child classes).
+
+> [!NOTE]
+> 
+> **Rule of Thumb:** `A` should only inherit from `B` if `A` is *always* a `B`.
+>
+> When a child class inherits from a parent, it inherits *everything*. If you only want to share some functionality, inheritance should not be the tool you use.
+> 
+> Another mental model is that an inheritance tree should be **wide** rather than **deep**. 
+> * Meaning that if there are properties found in the parent class that all the siblings (child classes) share with one another, inheritance should be used (e.g., the most common ancestry between species.)
+
+<img src="./images/inheritance_example.png">
+
+* Here's a neat example of the inheritance hierarchy that I thought was really informative.
+
+<img src="./images/wide_inheritance_not_deep.png">
+
+* Here's an example of the "wide, not deep" concept to drive home the point.
+
+#### Inheritance Example in Python
+
+> I'll update this to a Java example later on, but here's a quick example from a course that I'm currently taking outside ACC.
+
+```python
+class Human:
+    def __init__(self, name): # Constructor
+        # Double underscore = private attribute
+        self.__name = name 
+
+    def get_name(self):
+        return self.__name 
+
+class Archer(Human):
+    def __init__(self, name, num_arrows):
+        # Call the parent (Human) constructor
+        super().__init__(name) # Superset of the parent class
+        self.__num_arrows = num_arrows
+
+    def get_num_arrows(self):
+        return self.__num_arrows
+
+    def use_arrows(self, num):
+        if self.__num_arrows >= num:
+            self.__num_arrows -= num 
+        else:
+            raise Exception("not enough arrows")
+
+class Crossbowman(Archer):
+    def __init__(self, name, num_arrows):
+        # Pass the data up to the Archer constructor
+        super().__init__(name, num_arrows) 
+
+    def triple_shot(self, target):
+        # Reuse logic from the parent class
+        self.use_arrows(3) 
+        return f"{target.get_name()} was shot by 3 crossbow bolts"
+
+```
+
+**1. The Parent Class (`Human`)**
+
+* **`self.__name`:** The double underscore `__` indicates a **Private Attribute**. It cannot be accessed directly (e.g., `human.__name` will fail). You must use the getter method `get_name()`.
+
+**2. Child Class (`Archer`)**
+
+* **`class Archer(Human)`**: This syntax defines Inheritance. Archer **IS A** Human.
+* **`super().__init__(name)`**: is "superset" in Python and allows the child to access methods from the parent. 
+  * Here, it sends the `name` up to the `Human` class so the `Human` constructor can handle creating the name variable.
+
+* **`use_arrows`**: A custom method specific to Archers. It includes logic to check if there is enough ammo before subtracting.
+
+**3. Child Class (`Crossbowman`)**
+
+* **`class Crossbowman(Archer)`**: Inheritance can go multiple levels deep. This class inherits everything from `Archer` (which inherited from `Human`).
+* **`self.use_arrows(3)`**: Here we don't need to rewrite the math for subtracting arrows inside of `use_arrows`. It just reuses the method meant for Archers.
+* **`target.get_name()`**: Since `target` is another object that is also a `Human`, the Crossbowman can use the public method `get_name()` to identify the victim.
+
 ### Polymorphism
