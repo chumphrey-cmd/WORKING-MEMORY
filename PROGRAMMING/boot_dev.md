@@ -124,7 +124,7 @@ def some_function(foo, bar):
 
 ## Computing Basics
 
-### **Floor Division**
+### Floor Division
 
 > Like normal division except the result is **[floored](https://en.wikipedia.org/wiki/Floor_and_ceiling_functions)**, meaning the result is rounded down to the nearest integer using the **`//`** operator.
 
@@ -336,7 +336,7 @@ print(num)
 
 > [!NOTE]
 >
-> Within if statements, the **`return`** block is used as a sort of stop-gap/check within the function. IF the function sucessfully completes the comparison, DON'T continue any further and repeat the comparison until the end.
+> Within if statements, the **`return`** block is used as a sort of stop-gap/check within the function. IF the function successfully completes the comparison, DON'T continue any further and repeat the comparison until the end.
 
 ```python
 def show_status(boss_health):
@@ -2107,10 +2107,10 @@ class Crossbowman(Archer):
 
 <img src="./images/multiple_children.png">
 
-* Representation of a situation where a parent (root) have a set a children each with a shared property.
+* Representation of a situation where a parent (root) has a set a children each with a shared property.
 
 > [!NOTE]
-> While each of the children are different, they all hold the common trait of `get_name`, `get_health`, and `take_damage`.
+> While each of the children is different, they all hold the common trait of `get_name`, `get_health`, and `take_damage`.
 
 ```python
 class Hero:
@@ -2160,7 +2160,7 @@ class Wizard(Hero):
 ### Inheritance Practice
 
 * Another difficult and close solve before I used the assistant for help. 
-* The main hang up, for me, was the use of the correct Boolena logic in the helper `unit.in_area()` method. My intuition to use the helper method within the `Dragon` class was correct along with identifying the min and max values. I struggled on correctly wiring up the correct method.
+* The main hang-up, for me, was the use of the correct Boolena logic in the helper `unit.in_area()` method. My intuition to use the helper method within the `Dragon` class was correct along with identifying the min and max values. I struggled on correctly wiring up the correct method.
 
 ```python
 class Unit:
@@ -2196,7 +2196,7 @@ class Dragon(Unit):
 * [List Comprehension Guide](https://www.learndatasci.com/solutions/python-list-comprehension/#:~:text=multiple%20list%20comprehensions.-,How%20list%20comprehension%20works,and%20num%20is%20the%20yield.&text=In%20this%20case%2C%20Python%20has,stored%20in%20the%20new%20list.)
 
 * This kicked my ass... took me ~3 hours to sort out for myself along with some help from Boots...
-* Here's a basic run down and example on how the process works.
+* Here's a basic run-down and example on how the process works.
 
 ```python
 def main():
@@ -2222,7 +2222,7 @@ The initial for loop was pretty straight forward with a method call using `descr
 
 **List comprehension**: it's a concise way to create new lists by transforming or filtering existing iterables (e.g., removing something if it meets a condition). 
 
-That new list, if you want to call it or use it again, needs to be assigned to a variable so that the updated list can be used witin other methods (e.g., `dragon.breath_fire(...)`).
+That new list, if you want to call it or use it again, needs to be assigned to a variable so that the updated list can be used within other methods (e.g., `dragon.breath_fire(...)`).
 
 Breaking down the list comprehension is as follows:
 
@@ -2444,7 +2444,7 @@ ALTER TABLE initiatives DROP COLUMN launched_at;
 ALTER TABLE initiatives RENAME TO projects;
 ```
 
-## SQLite Data Types
+### SQLite Data Types
 
 | Data Type | Description |
 | :--- | :--- |
@@ -2455,3 +2455,26 @@ ALTER TABLE initiatives RENAME TO projects;
 | BLOB | Short for Binary large object and typically used for images, audio or other multimedia. |
 | BOOLEAN | Boolean values are written in SQLite queries as `true` or `false`, but are recorded as `1` or `0`. |
 
+## Constraints
+
+* A `constraint` is a rule we create on a database that enforces some specific behavior (e.g., `NOT NULL` constraint on a column ensures that the column will not accept `NULL` values.)
+
+```sql
+CREATE TABLE employees(
+    id INTEGER PRIMARY KEY,
+-- The PRIMARY KEY constraint uniquely identifies each row in the table
+    name TEXT UNIQUE,
+    -- The UNIQUE constraint ensures that no two rows can have the same value in the 'name' column
+    title TEXT NOT NULL
+    -- The NOT NULL constraint ensures that the 'title' column cannot have NULL values
+);
+```
+
+## Primary Keys
+
+* a `primary key` is a special column that uniquely identifies records within a table. Each table can only have **one primary key**.
+
+> [!NOTE]
+> It's very common to have a column named `id` on each table in a database which serves as the `PRIMARY KEY` for that table. **No two rows in that table can share an id.**
+
+**SEE SQL NOTES FROM TODAY TO FILL IN!**
