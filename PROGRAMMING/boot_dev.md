@@ -2329,49 +2329,6 @@ base_cost = super().get_trip_cost(distance, food_price)
   * It also uses a "loose type system" where data types that are set are flexible.
 * `PostgreSQL`: uses a Client-Server model and requires a server to be installed and listening on a network, similar to an HTTP server.
 
-### Creating a Table
-
-```sql
--- One-liner to create a simple table
-CREATE TABLE employees (id INTEGER, name TEXT, age INTEGER, is_manager BOOLEAN, salary INTEGER);
-```
-
-```sql
--- Human-readable way to create a simple table
-CREATE TABLE employees(
-    id INTEGER,
-    name TEXT,
-    age INTEGER,
-    is_manager BOOLEAN,
-    salary INTEGER
-);
-```
-
-### Altering Tables (`SQLite`)
-
-#### Rename Table or Column 
-
-```sql
-ALTER TABLE employees
-RENAME TO contractors;
-
-ALTER TABLE contractors
-RENAME COLUMN salary TO invoice;
-```
-
-#### Add or DROP a Column
-
-* Modifying columns within SQL is pretty intuitive, that being said **BE VERY  CAUTIOUS WHEN USING THE `DROP` SYNTAX**.
-* Once the `DROP` command is used, there is no ability to retrieve that dropped column or row.
-
-```sql
-ALTER TABLE contractors
-ADD COLUMN job_title TEXT;
-
-ALTER TABLE contractors
-DROP COLUMN is_manager;
-```
-
 ### Database Migrations
 
 * A change to the structure of a relational database (e.g., like a commit in Git, but for your database schema). 
@@ -2457,6 +2414,8 @@ ALTER TABLE initiatives RENAME TO projects;
 
 ## Constraints
 
+**See Database [Notes](LEARNING/databases.md) for more inforamtion.**
+
 * A `constraint` is a rule we create on a database that enforces some specific behavior (e.g., `NOT NULL` constraint on a column ensures that the column will not accept `NULL` values.)
 
 ```sql
@@ -2470,11 +2429,115 @@ CREATE TABLE employees(
 );
 ```
 
-## Primary Keys
+## CRUD (Create, Read, Update, Delete)
 
-* a `primary key` is a special column that uniquely identifies records within a table. Each table can only have **one primary key**.
+* `HTTP POST` - `CREATE` 
+* `HTTP GET` - `READ` 
+* `HTTP PUT` - `UPDATE` 
+* `HTTP DELETE` - `DELETE`
 
-> [!NOTE]
-> It's very common to have a column named `id` on each table in a database which serves as the `PRIMARY KEY` for that table. **No two rows in that table can share an id.**
+### HTTP CRUD Database Lifecycle
 
-**SEE SQL NOTES FROM TODAY TO FILL IN!**
+<img src="./images/http_crud_lifecycle.png">
+
+* First, the front-end webpage loads. 
+* The front-end sends an HTTP `GET` request to a `/users` endpoint on the back-end server. 
+* The server receives the request. 
+* The server uses a `SELECT` statement to retrieve the user's record from the `users` table in the database.
+* The server converts the row of SQL data into a `JSON` object and sends it back to the front-end.
+
+### Object Relational Mapping (ORM)
+
+* [Object-Relational Mapping (ORM)](https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping): a tool that allows you to perform CRUD operations on a database using a traditional programming language.
+
+
+## Basic SQL Queries
+
+**Creating a Table**
+
+```sql
+-- One-liner to create a simple table
+CREATE TABLE employees (id INTEGER, name TEXT, age INTEGER, is_manager BOOLEAN, salary INTEGER);
+```
+
+```sql
+-- Human-readable way to create a simple table
+CREATE TABLE employees(
+    id INTEGER,
+    name TEXT,
+    age INTEGER,
+    is_manager BOOLEAN,
+    salary INTEGER
+);
+```
+
+**Rename Table or Column (`SQLite`)**
+
+```sql
+ALTER TABLE employees
+RENAME TO contractors;
+
+ALTER TABLE contractors
+RENAME COLUMN salary TO invoice;
+```
+
+**Add or DROP a Column**
+
+* Modifying columns within SQL is pretty intuitive, that being said **BE VERY  CAUTIOUS WHEN USING THE `DROP` SYNTAX**.
+* Once the `DROP` command is used, there is no ability to retrieve that dropped column or row.
+
+```sql
+ALTER TABLE contractors
+ADD COLUMN job_title TEXT;
+
+ALTER TABLE contractors
+DROP COLUMN is_manager;
+```
+
+**Update Value**
+
+```sql
+
+-- Update Employee Records
+
+UPDATE employees
+SET job_title = 'Backend Engineer', salary = 150000
+WHERE id = 251;
+```
+
+**As Clause**
+```sql
+-- AS Clause
+
+SELECT amount, note AS birthday_message
+FROM transactions
+WHERE sender_id = 10;
+```
+
+**SQLite Functions**
+
+```sql
+-- SQL Functions (in SQLite) 
+SELECT *,
+       IIF (was_successful = TRUE, 'No action required', 'Perform an audit') AS audit
+FROM transactions;
+```
+* `IIF`: SQLite function start stating
+  * IF the function is `TRUE`, input "No action required", ELSE, input "Perform an audit"
+  * Place those values into a new `audit` table. 
+  * Complete all of these actions on the `transactions` table.
+
+**Between Clause**
+```sql
+-- Between Clause
+SELECT name, age 
+FROM users
+WHERE age BETWEEN 18 AND 30;
+```
+
+**Distinct Clause**
+```sql
+-- DISTINCT Clause identifying unique values
+SELECT DISTINCT previous_company
+    FROM employees;
+```
