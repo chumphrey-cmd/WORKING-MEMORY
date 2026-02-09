@@ -2497,9 +2497,7 @@ DROP COLUMN is_manager;
 **Update Value**
 
 ```sql
-
 -- Update Employee Records
-
 UPDATE employees
 SET job_title = 'Backend Engineer', salary = 150000
 WHERE id = 251;
@@ -2508,7 +2506,6 @@ WHERE id = 251;
 **As Clause**
 ```sql
 -- AS Clause
-
 SELECT amount, note AS birthday_message
 FROM transactions
 WHERE sender_id = 10;
@@ -2540,4 +2537,71 @@ WHERE age BETWEEN 18 AND 30;
 -- DISTINCT Clause identifying unique values
 SELECT DISTINCT previous_company
     FROM employees;
+```
+
+**OR Operator**
+```sql
+-- Getting total count with OR operator
+SELECT COUNT(*) AS junior_count
+FROM users
+WHERE (country_code = 'US' OR country_code = 'CA')
+  AND age < 18;
+```
+
+**IN Operator**
+
+* Serves as a useful shorthand for multiple `OR` conditions.
+
+```sql
+SELECT product_name, shipment_status
+    FROM products
+    WHERE shipment_status IN ('shipped', 'preparing', 'out of stock');
+```
+
+**LIKE (`%`)**
+
+* The **LIKE** keyword allows for the use of the `%` and `_` wildcard operators
+  * The `%` operator will match **zero or more** characters. 
+
+```sql
+-- Starts with "keyword"
+SELECT * FROM products
+WHERE product_name LIKE 'keyword%';
+
+-- Ends with "keyword"
+SELECT * FROM products
+WHERE product_name LIKE '%keyword';
+
+-- Contains "keyword"
+SELECT * FROM products
+WHERE product_name LIKE '%keyword%';
+```
+
+**LIKE (`_`)**
+
+* `_` wildcard operator **only matches a single character**.
+
+```sql
+-- Matches things like "b"oot, "r"oot, "f"oot
+SELECT * FROM products
+    WHERE product_name LIKE '_oot';
+```
+
+```sql
+-- Matches things like "sh"oot, "gr"oot
+SELECT * FROM products
+    WHERE product_name LIKE '__oot';
+```
+
+**ORDER BY**
+
+* Used to sort records by the given field by **ascending** `ASC` or **descedning** `DESC` order.
+```sql
+-- ASC Order
+SELECT name, price, quantity FROM products
+    ORDER BY price;
+
+-- DESC Order
+SELECT name, price, quantity FROM products
+    ORDER BY quantity DESC;
 ```
