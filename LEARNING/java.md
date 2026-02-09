@@ -155,6 +155,65 @@ class CalcTest {
 * Don't write any more production code than is enough to pass ONE failing unit test. Test in isolation, do not change, and test more than one variable at a time.
   * The idea of laboratory research where you ONLY modify single variables, annotate those changes, verify the results, and then conduct additional experiments...
 
+### Scanner Usage
+
+* Prompting the user to input multiple sections of information via `Scanner` and output the content via `System.out.println()`
+* Later I want to look into using [joptionpane](https://www.geeksforgeeks.org/java/java-joptionpane/) for a GUI pop-up...
+
+```java
+public class Demo {
+
+    public static void main(String[] args) {
+
+        // Instance 1 Defaults Only
+
+        Automobile auto1 = new Automobile() ;
+
+        // Instance 2 Passing via Parameters
+
+        Automobile auto2 = new Automobile(4250.00, "VW", new Tire("Costco Brand", 10000, 500.00)) ;
+
+        // Instance 3 User Input with Prints In-between
+
+        Automobile auto3 = new Automobile() ;
+        Scanner scanner = new Scanner(System.in) ;
+        double price ;
+        String make ;
+
+        // Breaking up the input process using Scanner()
+
+        System.out.println("Enter automobile price (int): ") ;
+        price = scanner.nextDouble() ; scanner.nextLine() ;
+
+        System.out.println("Enter automobile make (String): ") ;
+        make = scanner.nextLine() ;
+
+        System.out.println("Enter tire make (String): ") ;
+        String tireMake = scanner.nextLine() ;
+
+        System.out.println("Tire mileage (int): ") ;
+        int tireMileage = scanner.nextInt() ; scanner.nextLine() ;
+
+        System.out.println("Tire price (double): ") ;
+        double tirePrice = scanner.nextDouble() ; scanner.nextLine() ;
+
+        auto3.setPrice(price) ;
+        auto3.setMake(make) ;
+
+        // Creating a Tire object and setting it to the Tire class that requires double, String, int from the Tire Class!
+        auto3.setTire(new Tire(tireMake, tireMileage, tirePrice)) ;
+
+        // Final Output
+        System.out.println("1:" + " " + auto1.getPrice() + " " + auto1.getMake() + " " + auto1.getTire()) ;
+        System.out.println("2:" + " " + auto2.getPrice() + " " + auto2.getMake() + " " + auto2.getTire()) ;
+        System.out.println("3:" + " " + auto3.getPrice() + " " + auto3.getMake() + " " + auto3.getTire()) ;
+
+        // Counter to Determine Objects Created
+        System.out.println("Current Object Creation Total:" + " " + Automobile.getNumberOfObjects()) ;
+    }
+
+}
+```
 
 # References
 1. https://www.geeksforgeeks.org/dsa/control-structures-in-programming-languages/
