@@ -2532,7 +2532,7 @@ FROM users
 WHERE age BETWEEN 18 AND 30;
 ```
 
-**Distinct Clause**
+**Distinct Clause´´´**
 ```sql
 -- DISTINCT Clause identifying unique values
 SELECT DISTINCT previous_company
@@ -2604,4 +2604,73 @@ SELECT name, price, quantity FROM products
 -- DESC Order
 SELECT name, price, quantity FROM products
     ORDER BY quantity DESC;
+```
+
+**AGGREGATIONS**
+
+* A single value that's derived by combining several other values (e.g., `COUNT`). 
+
+```sql
+SELECT COUNT(*) 
+FROM transactions
+WHERE user_id = 6 AND was_successful = true;
+```
+**SUM**
+
+* Returns the sum of a set of values.
+
+```sql
+SELECT SUM(amount)
+FROM transactions
+WHERE user_id = 9 AND was_successful = true;
+```
+
+**MAX/MIN**
+```sql
+-- MAX
+SELECT MAX(age) AS age
+FROM users
+WHERE is_admin = TRUE;
+
+-- MIN
+SELECT product_name, MIN(price)
+FROM products;
+```
+
+**GROUP BY**
+
+```sql
+SELECT user_id, SUM(amount) AS balance
+FROM transactions
+WHERE was_successful = TRUE
+GROUP BY user_id;
+```
+
+**AVERAGE**
+
+```sql
+SELECT AVG(age)
+FROM users
+WHERE country_code = 'US';
+```
+
+**HAVING vs. WHERE**
+
+> [!NOTE]
+> A good rule of thumb when using `HAVING` and `WHERE`:
+> `WHERE` filters **BEFORE** Grouping
+> `HAVING` filters **AFTER** Grouping
+
+* A `WHERE` condition is applied to all the data in a query **before** it's grouped by a `GROUP BY` clause.
+* A `HAVING` condition is only applied to the grouped rows that are returned **after** a `GROUP BY` is applied.
+  * If you want to filter based on the result of an aggregation, you need to use `HAVING`. 
+  * If you want to filter on a value that's present in the raw data, you should use a simple `WHERE` clause.
+
+```sql
+SELECT sender_id, SUM(amount) AS balance
+FROM transactions
+WHERE sender_id NOT NULL AND was_successful = True AND note LIKE '%lunch%'
+GROUP BY sender_id
+HAVING balance > 20
+ORDER BY balance ASC;
 ```
