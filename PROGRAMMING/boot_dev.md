@@ -1971,7 +1971,7 @@ class Human:
 
 * This was a diffcult puzzle to solve, I was able to get ~70% solved but got stuck at the `create_deck()` for-loop logic. 
     * **Outer Loop:** Hits the first suit (e.g., Hearts) and initiates the inner loop.
-        * **Inner Loop:** Iterates through the entire list of ranks, once it finishes, exits and iterates through outer loop.
+        * **Inner Loop:** Iterates through the entire list of ranks, once it finishes, exits, and iterates through outer loop.
 
 ```python
 import random
@@ -2520,7 +2520,7 @@ SELECT *,
 FROM transactions;
 ```
 * `IIF`: SQLite function start stating
-  * IF the function is `TRUE`, input "No action required", ELSE, input "Perform an audit"
+  * IF the function is `TRUE`, input "No action required," ELSE, input "Perform an audit"
   * Place those values into a new `audit` table. 
   * Complete all of these actions on the `transactions` table.
 
@@ -2673,4 +2673,83 @@ WHERE sender_id NOT NULL AND was_successful = True AND note LIKE '%lunch%'
 GROUP BY sender_id
 HAVING balance > 20
 ORDER BY balance ASC;
+```
+
+**ROUND**
+
+* `ROUND()` function allows you to specify both the value you wish to round and the precision you want to round to.
+
+```sql
+ROUND(value, precision)
+
+-- Round to the nearest whole number + one's place
+SELECT ROUND(AVG(song_length), 0)
+FROM songs
+
+-- Rounded Average + Group By
+SELECT country_code, ROUND(AVG(age)) AS average_age
+FROM users
+GROUP BY country_code;
+```
+
+### Subqueries
+
+* Useful when trying to retrieve specific data that wouldn't be accessible by simply querying a single table.
+
+```sql
+SELECT id, song_name, artist_id
+FROM songs
+WHERE artist_id IN (
+    SELECT id
+    FROM artists
+    WHERE artist_name LIKE 'Rick%'
+);
+```
+
+```sql
+SELECT *
+  
+FROM transactions
+  
+WHERE user_id IN (
+  SELECT id
+  FROM users
+  WHERE name = 'David'
+);
+```
+> [!NOTE]
+> With **subqueries**, the "inner" query is executed first. It looks into the `users` table, finds the `id` where the name is `David`, and then replaces subquery with the result.
+> 
+> It's also very important to read the query from the inner loop to the outer loop similar to for-loops.
+
+```sql
+-- Output if id for David is 1:
+SELECT * FROM transactions WHERE user_id = 1;
+```
+
+```sql
+SELECT *
+FROM users
+WHERE id IN (
+  SELECT sender_id
+  FROM transactions
+  WHERE (note LIKE '%invoice%' OR note LIKE '%tax%') 
+  AND is_admin = false
+);
+```
+
+> [!NOTE]
+> 
+>`IN`: matches any of these values
+> 
+> `=`: matches exactly a single value that meets the specific criteria
+
+* The information above means...keep a users row if its id is found in the set/list of sender_id values produced by the subquery.
+
+```sql
+-- What's taking place inside of the WHERE clause...
+WHERE id = sender_id_1
+   OR id = sender_id_2
+   OR id = sender_id_3
+   ...
 ```
