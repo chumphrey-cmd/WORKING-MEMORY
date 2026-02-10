@@ -131,7 +131,7 @@ ssh-add --apple-use-keychain ~/.ssh/id_ed25519
 touch ~/.ssh/config
 ```
 
-### Add the Public SSH key to your Github account and Test
+### Add the Public SSH key to your GitHub account and Test
 
 1. Copy the content of your SSH public key and paste to your GitHub SSH and GPG Keys [page](https://github.com/settings/keys).
 
@@ -144,7 +144,7 @@ pbcopy < ~/.ssh/id_ed25519.pub
 * Click "New SSH key" 
 * Press `Key type` and select `Authenticaion Key`
 * Give your key a title and paste the copied public key.  
-* Paste the contents copied from `cat ~/.ssh/YOUR_PUB_KEY.pub` into the `Key` field.
+* Paste the contents copied from `pbcopy` into the `Key` field.
 * Click "Add SSH key" 
 
 3. **Add Signing Key to GitHub**
@@ -175,7 +175,7 @@ git config --global user.signingkey /PATH/TO/.SSH/KEY.PUB
 
 ## Re-signing Unverified Commits via Interactive Rebase
 
-> This process amends existing commit history to add an SSH signature. This should only be done on branches **you** own exclusively.
+> This process amends the existing commit history to add an SSH signature. This should only be done on branches **you** own exclusively.
 
 Prerequisites
 * Your public SSH key is added as a "Signing Key" in GitHub Settings.
