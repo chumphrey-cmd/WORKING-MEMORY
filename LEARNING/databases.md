@@ -6,6 +6,9 @@
 > * `R`ead
 > * `U`pdate
 > * `D`elete
+> 
+> Postgresql also reads SQL statments as follows:
+> * `WHERE` → `GROUP BY` → `HAVING` → `SELECT` → `ORDER BY`
 
 ## Relational Databases
 * Relational (SQL-based, e.g., MySQL, PostgreSQL): Organized in tables with rows (records) and columns (fields). Data links via keys for efficiency and integrity.
@@ -14,9 +17,9 @@
 
 ### Terminology (Database Tables)
 
-* `Tables` - the specific objects inside of a database that can be infinitely complex depending on the structure of the data you want organize.
-* `Row` - the unique set of information within the table that are comprised of unique cells
-* `Columns` - the titles of header of the table the describe what is included inside of the table
+* `Tables` - the specific objects inside of a database that can be infinitely complex depending on the structure of the data you want to organize.
+* `Row` - the unique set of information within the table that consist of unique cells
+* `Columns` - the titles or header of the table they describe what is included inside the table
 * `Cells` - the specific block or set of information that is contained within the table. The individual cross-section within the column or row.
 * `Primary Key` - unique identifier that is used to identify the specific row (should always be **serial**); it's the left most identifier in the table (e.g., `customer_id`)
 * `Foreign Key` - identifier that points to another table using that tables `Primary Key`
@@ -26,7 +29,6 @@
 <img src="./images/primary_foreign_key.png" width="500">
 
 * `Composite Key` - used to combine two different fields
-* `Non-primary Key` (unique key) - 
 * `Index` - catalog for faster searches on columns (like a book's index).
 
 ### Terminology (PostgreSQL Data Types)
@@ -126,7 +128,7 @@
 
 #### Database Normalization
 
-* 1NF (First Normal Form): Each table has a primary key, each column contains unique values, each column contains values of a single type, column contains non-divisible units (atomic values), no repeating groups or arrays.
+* 1NF (First Normal Form): Each table has a primary key, each column contains unique values, each column contains values of a single type, column contains non-divisible units (atomic values), no repeating groups, or arrays.
 * 2NF (Second Normal Form): Must be 1NF, each non-key column is dependent on the primary key, no partial dependencies.
   * For example, using a value inside a table that would change if 
 * 3NF (Third Normal Form): Must be 2NF and no transitive dependencies.
@@ -327,4 +329,127 @@ SELECT customer.first_name, customer.last_name, location.address, location.city,
 FROM customer
 
     RIGHT JOIN location ON customer.customer_id=location.customer_id;
+```
+
+## Stored Procedures, Database Functions, and Triggers
+
+### Primary Key Fix
+
+* When you manually insert data with a specific ID (like `id=100`), the database's internal auto-increment counter (sequence) does not automatically skip to 101. 
+* It might still try to use `1`, causing a "duplicate key value violates unique constraint" error. This script forces the counter to sync with the highest existing ID.
+
+```sql
+-- Reset the serial sequence to the max value in the table to prevent PK errors
+SELECT setval(
+    pg_get_serial_sequence('product', 'product_id'), 
+    (SELECT MAX(product_id) FROM product)
+);
+
+```
+
+### 1. Stored Procedures
+
+A **Stored Procedure** is a set of SQL statements grouped together to perform a specific task.
+
+* **Invocation:** Called using the `CALL` command.
+* **Key Feature:** unlike Functions, Procedures **can manage transactions** (i.e., you can run `COMMIT` or `ROLLBACK` inside them).
+* Typically used for complex business logic, batch updates, or administrative tasks (like adding a new product).
+
+#### Procedure to Add a Product
+
+```sql
+CREATE OR REPLACE PROCEDURE add_new_product(
+    p_upc VARCHAR(16),
+    p_brand VARCHAR(255),
+    p_mfg VARCHAR(255),
+    p_distributor VARCHAR(255),
+    p_quantity INTEGER,
+    p_cost DOUBLE PRECISION
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert the data passed as parameters into the table
+    INSERT INTO product (
+        upc,
+        brand,
+        manufact,
+        distributor,
+        prod_qty,
+        prod_cost
+    )
+    VALUES (
+        p_upc,
+        p_brand,
+        p_mfg,
+        p_distributor,
+        p_quantity,
+        p_cost
+    );
+
+    -- Optional: Notify the user/log that it worked
+    RAISE NOTICE 'Product % successfully added.', p_brand;
+END;
+$$;
+
+```
+
+#### Usage
+
+```sql
+-- Execute the procedure
+CALL add_new_product(
+    '1234567890125',
+    'Gentleman Jack',
+    'Jack Daniels Distillery',
+    'ABC Beverage Distributor',
+    50,
+    29.99
+);
+
+```
+
+### 2. Database Functions (for Triggers)
+
+**Concept:** A **Function** is a reusable block of code that returns a value.
+
+* **Trigger Function:** A special type of function declared to return a `TRIGGER`. It does not accept arguments directly; instead, it accesses the row being modified via the special variable `NEW`.
+* Used for calculations, data transformation, or validation logic used by a trigger.
+
+#### Logic to Enforce Minimum Price
+
+```sql
+CREATE OR REPLACE FUNCTION ensure_min_price()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Check if the incoming cost is less than 10.00
+    IF NEW.prod_cost < 10.00 THEN
+        -- Override the value to the minimum allowed
+        NEW.prod_cost := 10.00;
+    END IF;
+
+    -- Return the modified row so the INSERT/UPDATE proceeds
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+```
+
+### 3. Triggers
+
+Basically an event listener that waits for a specific action (INSERT, UPDATE, DELETE) on a specific table and automatically fires a function.
+
+* **`BEFORE` vs `AFTER`:**
+* **BEFORE:** Best for validation or modifying data *before* it hits the disk.
+* **AFTER:** Best for logging or updating *other* tables (e.g., "After a sale, update inventory").
+
+#### Trigger Execution
+
+* This binds the function above to the `product` table.
+
+```sql
+CREATE TRIGGER prevent_low_price
+BEFORE INSERT OR UPDATE ON product
+FOR EACH ROW
+EXECUTE FUNCTION ensure_min_price();
 ```

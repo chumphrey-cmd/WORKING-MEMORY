@@ -2550,7 +2550,7 @@ WHERE (country_code = 'US' OR country_code = 'CA')
 
 **IN Operator**
 
-* Serves as a useful shorthand for multiple `OR` conditions.
+* Serves as useful shorthand for multiple `OR` conditions (like iterating through a list of values)!
 
 ```sql
 SELECT product_name, shipment_status
@@ -2606,7 +2606,7 @@ SELECT name, price, quantity FROM products
     ORDER BY quantity DESC;
 ```
 
-**AGGREGATIONS**
+### Aggregations
 
 * A single value that's derived by combining several other values (e.g., `COUNT`). 
 
@@ -2744,7 +2744,7 @@ WHERE id IN (
 > 
 > `=`: matches exactly a single value that meets the specific criteria
 
-* The information above means...keep a users row if its id is found in the set/list of sender_id values produced by the subquery.
+* The information above means...keep a `users` row if its `id` is found in the set/list of `sender_id` values produced by the subquery.
 
 ```sql
 -- What's taking place inside of the WHERE clause...
@@ -2752,4 +2752,15 @@ WHERE id = sender_id_1
    OR id = sender_id_2
    OR id = sender_id_3
    ...
+```
+
+### No Tables (Calculations)
+
+* Using a `WHERE` subquery with the `>` operator to compare calculated values against those within a specific column.
+```sql
+SELECT *
+FROM users
+WHERE age_in_days > (
+  SELECT 40 * 365 
+);
 ```
