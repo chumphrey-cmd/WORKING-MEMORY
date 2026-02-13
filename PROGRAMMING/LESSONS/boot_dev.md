@@ -2764,3 +2764,186 @@ WHERE age_in_days > (
   SELECT 40 * 365 
 );
 ```
+
+### Normalization
+
+> [!TIP]
+> **Rule of Thumb for Database Design**
+> * Every table should always have a unique identifier (primary key)
+> * 90% of the time, that unique identifier will be a single column named id
+> * Avoid duplicate data
+> * Avoid storing data that is completely dependent on other data. Instead, compute it on the fly when you need it.
+> * Keep your schema as simple as you can. **Optimize for a normalized database first. Only denormalize for speed's sake when you start to run into performance problems.**
+
+#### One-to-Many
+
+```sql
+-- One User...
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  age INTEGER NOT NULL,
+  username TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  is_admin BOOLEAN
+);
+
+-- Many Countries...
+CREATE TABLE countries (
+  id INTEGER PRIMARY KEY,
+  country_code TEXT,
+  name TEXT,
+  user_id INTEGER,
+  FOREIGN KEY (user_id) 
+  REFERENCES users(id)
+);
+```
+
+#### Many-to-Many
+
+```sql
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  age INTEGER NOT NULL,
+  username TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  is_admin BOOLEAN
+);
+
+CREATE TABLE countries (
+  id INTEGER PRIMARY KEY,
+  country_code TEXT,
+  name TEXT
+);
+
+-- Joining MANY users to MANY countries
+CREATE TABLE  users_countries (
+  country_id INTEGER,
+  user_id INTEGER,
+  UNIQUE(country_id, user_id),
+  FOREIGN KEY (country_id) REFERENCES countries (id),
+  FOREIGN KEY (user_id) REFERENCES users (id)
+);
+```
+
+#### 1NF
+
+* It must have a unique primary key.
+* A cell can't have a nested table as its value (depending on the database you're using, this may not even be possible)
+
+```sql
+CREATE TABLE companies (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  num_employees INTEGER NOT NULL
+);
+```
+
+#### 2NF
+* All the rules of 1NF, and one additional rule which only applies to composite primary keys:
+  * All columns that are not part of the primary key are dependent on the entire primary key, and not just one of the columns in the primary key.
+
+> [!NOTE]
+> Default to keeping tables in 2NF, HOWEVER, there are good reasons to deviate from it for performance reasons. When you have to query a second table to get additional data it can take a bit longer.
+
+```sql
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  age INTEGER NOT NULL
+);
+
+CREATE TABLE companies (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  num_employees INTEGER NOT NULL,
+  revenue INTEGER
+);
+
+-- Creation of a unique primary key that combines user_id and comapany_id together!
+
+CREATE TABLE users_companies (
+  user_id INTEGER,
+  company_id INTEGER,
+  UNIQUE(user_id, company_id) 
+);
+```
+
+#### 3NF
+
+* Follows all the rules of 2nd normal form, and one additional rule:
+  * All columns that aren't part of the primary key are dependent solely on the primary key.
+
+```sql
+CREATE TABLE companies (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  num_employees INTEGER NOT NULL
+);
+
+INSERT INTO companies(name, num_employees)
+  VALUES ('Pfizer', 10000);
+INSERT INTO companies(name, num_employees)
+  VALUES ('WorldBanc', 80);
+INSERT INTO companies(name, num_employees)
+  VALUES ('Fantasy Quest', 30);
+INSERT INTO companies(name, num_employees)
+  VALUES ('Walmart', 1000);
+
+SELECT *,
+    IIF (num_employees > 100, 'large', 'small') AS size
+  FROM companies;
+```
+
+* Here we are using the raw value of `num_employees` to calculate and determine the specific size of each company rather than storing a key word.
+
+#### Boyce-Codd Normal Form (BCNF)
+
+* Follows all the rules of 3rd normal form, plus one additional rule:
+  * A column that's part of a primary key can not be entirely dependent on a column that's not part of that primary key.
+
+### Joins
+
+#### Inner Join
+
+<img src="./images/inner_join.png">
+
+```sql
+SELECT *
+FROM users
+INNER JOIN countries
+ON users.country_code = countries.country_code;
+```
+* `FROM users`: the "**left side**" of the Venn Diagram. 
+* `INNER JOIN countries`: the "**right side**" of the Venn Diagram. Here, we are combining rows from users with rows from countries.
+* `ON users.country_code = countries.country_code`: this is the matching condition and tells the database how to pair the rows together.
+
+#### Left Join
+
+<img src="./images/left_join.png">
+
+```sql
+-- Left-join example
+SELECT users.name, 
+  SUM(transactions.amount) AS sum,
+  COUNT(was_successful) AS count
+FROM users
+LEFT JOIN transactions
+ON users.id = transactions.user_id
+GROUP BY users.id
+ORDER BY sum DESC;
+``` 
+
+#### Right Join
+
+<img src="./images/right_join.png">
+
+> [!NOTE]
+> A `RIGHT JOIN` is just a `LEFT JOIN` with the order of the tables switched, so in most cases `LEFT JOIN` is preferred for readability.
+
+#### Full Join
+
+<img src="./images/full_join.png">
+
+* A `FULL JOIN` combines the result set of the `LEFT JOIN` and `RIGHT JOIN` commands. It returns all records from both `table_a` and `table_b` regardless of whether or not they have matches.

@@ -1,12 +1,17 @@
-# Purpose
+# Table of Contents (so far...)
 
-> To provide a workspace for programming concepts, fundamentals, and general reflection on what I learn each day. I also believe that it will be an indespensible source of notes and other information that I can reference during my learning journey.
+- [`agile.md`](./CONCEPTS/agile_concepts.md)
+  - Serves a central repository for agile methodologies and best practice for software development, the content here will evolve to also include Lean Six Sigma ideas for business creation.
 
-## Table of Contents (so far...)
+- [`boot_dev.md`](./LESSONS/boot_dev.md)
+  - A mono-markdown file of all boot.dev topics for the "backend developer" path segmented by topic. 
+  - Eventually, I will have to break apart each of the topics if file size becomes an issue (but that's a problem for future me).
 
-`boot_dev.md`
-* A mono-markdown file of all boot.dev topics for the "backend developer" path segmented by topic. Eventually, I'll have to break apart each of the topics if file size becomes an issue (but that's a problem for future me).
+- [`databases.md`](./LESSONS/databases.md)
+  - Include database basics and best practice for scalability and efficiency. As I encounter more database specifics and nuances, I will include that information here for easy reference. 
 
-`reflection.md`
-* I'm hoping to use this space as a way to synthesize all of the information that I'm learning from building/breaking. Hopefully, I can distill the most essential lessons, patterns, and concepts that I come across.
+- [`java.md`](./PROGRAMMING/java.md)
+  - Includes the Java basics and best practices for building. Small snippets and coding examples will also be used he to properly illustrate my evolving understanding.
 
+- [`reflection.md`](./PROGRAMMING/reflection.md)
+  - Space to synthesize all the information that I am learning from building/breaking. Hopefully, I can distill the most essential lessons, patterns, and concepts that I come across.
