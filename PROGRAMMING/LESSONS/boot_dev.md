@@ -2947,3 +2947,23 @@ ORDER BY sum DESC;
 <img src="./images/full_join.png">
 
 * A `FULL JOIN` combines the result set of the `LEFT JOIN` and `RIGHT JOIN` commands. It returns all records from both `table_a` and `table_b` regardless of whether or not they have matches.
+
+#### Multiple Joins
+
+* Used to incorporate data from two or more tables (e.g., using a dedicated key to link multiple table together as a "hook"/"pointer" between different tables).
+
+```sql
+SELECT users.id, 
+  users.name, 
+  users.age, 
+  users.username, 
+  countries.name as country_name,
+  SUM(transactions.amount) as balance
+FROM users
+INNER JOIN countries
+ON users.country_code = countries.country_code
+INNER JOIN transactions
+ON users.id = transactions.user_id
+WHERE transactions.was_successful = True AND users.id = 6
+GROUP BY users.id;
+```

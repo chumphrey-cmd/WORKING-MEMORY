@@ -5,13 +5,13 @@
 
 - [`boot_dev.md`](./LESSONS/boot_dev.md)
   - A mono-markdown file of all boot.dev topics for the "backend developer" path segmented by topic. 
-  - Eventually, I will have to break apart each of the topics if file size becomes an issue (but that's a problem for future me).
+  - Eventually, I will have to break apart each of the topics when file size becomes too cumberson (but that's a problem for future me).
 
 - [`databases.md`](./LESSONS/databases.md)
   - Include database basics and best practice for scalability and efficiency. As I encounter more database specifics and nuances, I will include that information here for easy reference. 
 
 - [`java.md`](./PROGRAMMING/java.md)
-  - Includes the Java basics and best practices for building. Small snippets and coding examples will also be used he to properly illustrate my evolving understanding.
+  - Includes Java basics and best practices. Eventually, the examples and solutions to problem sets that I come across will become large enough for me create a dedicated folder/repo for this language.
 
 - [`reflection.md`](./PROGRAMMING/reflection.md)
   - Space to synthesize all the information that I am learning from building/breaking. Hopefully, I can distill the most essential lessons, patterns, and concepts that I come across.

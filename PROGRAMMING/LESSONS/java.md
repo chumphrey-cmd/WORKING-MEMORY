@@ -169,6 +169,9 @@ class CalcTest {
 * Don't write any more production code than is enough to pass ONE failing unit test. Test in isolation, do not change, and test more than one variable at a time.
   * The idea of laboratory research where you ONLY modify single variables, annotate those changes, verify the results, and then conduct additional experiments...
 
+
+## Basic Java Examples
+
 ### Scanner Usage, Setters, Getters, ToString (Automobile)
 
 * Prompting the user to input multiple sections of information via `Scanner` and output the content via `System.out.println()`
@@ -368,9 +371,7 @@ public class SavingsGoal {
 }
 ```
 
-#### Menu Options Example
-
-##### MenuOptions.java
+#### MenuOptions.java
 
 ```java
 package feb_9_13.feb_12_more_while;
@@ -428,7 +429,7 @@ public class MenuOptions {
 }
 ```
 
-##### Main.java
+#### Main.java (for MenuOptions.java)
 ```java
 package feb_9_13.feb_12_more_while;
 
