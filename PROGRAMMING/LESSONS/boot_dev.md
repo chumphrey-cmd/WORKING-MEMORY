@@ -2313,12 +2313,12 @@ base_cost = super().get_trip_cost(distance, food_price)
 
 **Differences:**
 * NoSQL databases are usually non-relational, SQL databases are usually relational
-* SQL databases usually have a defined schema, NoSQL databases usually have dynamic schema.
+* SQL databases usually have a defined schema, NoSQL databases usually have a dynamic schema.
 * SQL databases are table-based (more general purpose), NoSQL databases have a variety of different storage methods, such as document, key-value, graph, wide-column, and more.
 
 > [!NOTE]
 >
-> The choice of the database you choose for you web-application is very important. For most simple web-applications `PostgreSQL` is sufficient and can scale with the application.
+> The choice of the database you choose for your web-application is very important. For most simple web-applications `PostgreSQL` is sufficient and can scale with the application.
 >
 > **HOWEVER**, if your data changes overtime, a more flexible and customizable databases or add-ons (e.g., `Redis` for caching) wil be needed.
 
@@ -2338,7 +2338,7 @@ base_cost = super().get_trip_cost(distance, food_price)
 
 > [!WARNING]
 >
-> You **SHOULD NOT** update an existing column that is being actively used in production. It will lead to a broken database. Instead  use the following database migration techniques: 
+> You **SHOULD NOT** update an existing column that is being actively used in production. It will lead to a broken database. Instead, use the following database migration techniques: 
 
 **Multi-Phase Rollouts**
 
@@ -2350,7 +2350,7 @@ base_cost = super().get_trip_cost(distance, food_price)
 
 > [!NOTE]
 >
-> Generally you **SHOULD NOT** update an exisiting and actively used column that is active in production, it will break your application!
+> Generally you **SHOULD NOT** update an existing and actively used column that is active in production, it will break your application!
 >
 > Alternatively, you can simply just schedule downtime IF you believe that your users would be okay with this.
 
@@ -2950,7 +2950,7 @@ ORDER BY sum DESC;
 
 #### Multiple Joins
 
-* Used to incorporate data from two or more tables (e.g., using a dedicated key to link multiple table together as a "hook"/"pointer" between different tables).
+* Used to incorporate data from two or more tables (e.g., using a dedicated key to link multiple tables together as a "hook"/"pointer" between different tables).
 
 ```sql
 SELECT users.id, 
@@ -2966,4 +2966,46 @@ INNER JOIN transactions
 ON users.id = transactions.user_id
 WHERE transactions.was_successful = True AND users.id = 6
 GROUP BY users.id;
+```
+
+* Another example of stringing together multiple joins to retrieve data from multiple tables.
+
+```sql
+SELECT users.name, 
+  users.username, 
+  COUNT(support_tickets.user_id) AS support_ticket_count
+FROM users
+INNER JOIN support_tickets
+ON users.id = support_tickets.user_id
+WHERE support_tickets.issue_type != 'Account Access'
+GROUP BY users.id
+HAVING support_ticket_count > 1
+ORDER BY support_ticket_count DESC;
+```
+
+## Performance of Databases
+
+### SQL Indexes
+
+* An index is an in-memory structure that ensures that queries we run on a database are performant (fast and efficient - [O(log(n))](https://en.wikipedia.org/wiki/Big_O_notation)). Most database indexes are just [binary trees](https://en.wikipedia.org/wiki/Binary_tree) or [B-trees](https://en.wikipedia.org/wiki/B-tree).
+
+```sql
+-- Simple Way to Create an Index
+CREATE INDEX index_name ON table_name (column_name);
+```
+
+>[!NOTE]
+> 
+> **Rule of Thumb**: Name an index after the column it's created on with a suffix of `_idx` (e.g., `users_id_idx`)
+> 
+> Add an index to columns you know you'll be doing frequent lookups on. Leave everything else un-indexed. You can always add indexes later.
+
+### Multi-Column Indexes
+
+* Used to speed up lookups that depend on multiple columns. 
+* In general, unless you have specific reasons to do something special, **only add multi-column indexes if you're doing frequent lookups on a specific combination of columns**.
+
+```sql
+CREATE INDEX first_name_last_name_age_idx
+ON users (first_name, last_name, age);
 ```

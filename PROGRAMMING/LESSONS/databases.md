@@ -453,3 +453,263 @@ BEFORE INSERT OR UPDATE ON product
 FOR EACH ROW
 EXECUTE FUNCTION ensure_min_price();
 ```
+
+## CTE and Subquery Practice
+* [Common Table Expression (CTE)](https://www.geeksforgeeks.org/postgresql/postgresql-cte/)
+  * A powerful feature that allows us to define temporary result sets that can be referenced within other SQL statements. This includes statements like `SELECT`, `INSERT`, `UPDATE`, or `DELETE`. CTEs make complex queries more readable and maintainable by breaking them into modular, reusable subqueries.
+
+### 1. Total Spending Per Customer
+```sql
+-- 1. Find the total spending per customer and return only customers who have spent more than the average customer spending.
+-- Inner Join customer + orders + order_items + product
+
+WITH customer_spending AS (
+    SELECT
+        t1.customer_id,
+        t1.first_name,
+        t1.last_name,
+        SUM(t3.quantity * t4.prod_cost) AS total_spent
+
+    FROM
+        customer AS t1
+-- Customer to Orders
+        INNER JOIN orders AS t2 ON t1.customer_id=t2.customer_id
+
+-- Orders to Order Items
+
+        INNER JOIN order_items AS t3 ON t2.order_id=t3.order_id
+
+-- Product to Order Items to Product
+        INNER JOIN product AS t4 ON t3.product_id=t4.product_id
+
+    GROUP BY
+        t1.customer_id,
+        t1.first_name,
+        t1.last_name
+)
+
+-- PostgresSQL sub-query (identified by the use of "WHERE total_spent > (SELECT...)"
+SELECT *
+FROM customer_spending
+WHERE total_spent > (SELECT AVG(total_spent) FROM customer_spending)
+ORDER BY total_spent DESC;
+```
+
+### 2. All Products Sold
+
+```sql
+-- 2. Retrieve all products that have been sold in orders with total quantities greater than 2 (need to modify to 10) items.
+
+SELECT
+    t1.product_id,
+    t1.brand,
+    t1.manufact,
+    SUM(t2.quantity) AS total_quantity
+
+-- Inner join to give access to product and order_items tables
+
+FROM
+    product AS t1
+    INNER JOIN order_items AS t2 ON t1.product_id=t2.product_id
+
+GROUP BY
+    t1.product_id,
+    t1.brand,
+    t1.manufact
+
+-- Using HAVING instead of `WHERE IN`, `HAVING` is much cleaner.
+
+HAVING
+    SUM(t2.quantity) > 3;
+```
+
+### 3. Total Age > Average Age
+```sql
+-- 3. Find customers whose total age is greater than the average of all customers and who purchased Anheuser-Busch.
+
+WITH task3 AS (
+    SELECT t2.order_id,
+       t1.first_name,
+       t1.last_name,
+       AGE(t1.dob) as age,
+       t3.product_id,
+       t4.brand,
+       t4.manufact,
+       t4.distributor
+
+
+-- t1 = customer
+-- t2 = orders
+-- t3 = order_items
+-- t4 = product
+
+
+FROM customer as t1
+         INNER JOIN orders AS t2 ON t1.customer_id = t2.customer_id
+
+         INNER JOIN order_items AS t3 ON t2.order_id = t3.order_id
+
+         INNER JOIN product AS t4 ON t3.product_id = t4.product_id
+
+GROUP BY t2.order_id,
+         t1.first_name,
+         t1.last_name,
+         age,
+         t3.product_id,
+         t4.brand,
+         t4.manufact,
+         t4.distributor)
+
+SELECT *
+FROM task3
+WHERE age > (SELECT AVG(age) FROM task3) AND
+      manufact = 'Anheuser-Busch';
+```
+
+### 4. Highest Quantity and Cost Combo
+
+```sql
+-- 4. Retrieve orders that match the highest quantity and highest cost combination sold in the system.
+
+SELECT
+    t1.customer_id,
+    t1.first_name,
+    t1.last_name,
+    t3.quantity AS max_quantity,
+    t4.prod_cost AS max_cost,
+    t4.brand
+
+FROM
+    customer AS t1
+-- Customer to Orders
+        INNER JOIN orders AS t2 ON t1.customer_id=t2.customer_id
+
+-- Orders to Order Items
+
+        INNER JOIN order_items AS t3 ON t2.order_id=t3.order_id
+
+-- Order Items to Product
+        INNER JOIN product AS t4 ON t3.product_id=t4.product_id
+
+    WHERE
+        t3.quantity = (SELECT MAX(t3.quantity)
+    FROM
+        product AS t4
+            INNER JOIN order_items AS t3 ON t3.product_id=t4.product_id
+    )
+
+    OR
+
+    t4.prod_cost = (SELECT MAX(t4.prod_cost)
+    FROM
+        product AS t4
+            INNER JOIN order_items AS t3 ON t3.product_id=t4.product_id);
+```
+
+### 5. Frequent Shoppers
+```sql
+-- 5. I need a list of everyone who has shopped with us more than 3 times and spent over $100.
+
+
+WITH power_users AS (SELECT t1.customer_id,
+                            t1.first_name,
+                            t1.last_name,
+                            t1.email,
+                            COUNT(t3.quantity) AS visit,
+                            SUM(t3.quantity * t4.prod_cost) AS total_spent
+
+                     -- t1 = customer
+                     -- t2 = orders
+                     -- t3 = order_items
+                     -- t4 = product
+
+                     FROM customer AS t1
+-- Customer to Orders
+                              INNER JOIN orders AS t2 ON t1.customer_id = t2.customer_id
+
+-- Orders to Order Items
+
+                              INNER JOIN order_items AS t3 ON t2.order_id = t3.order_id
+
+-- Product to Order Items to Product
+                              INNER JOIN product AS t4 ON t3.product_id = t4.product_id
+
+                     GROUP BY t1.customer_id,
+                              t1.first_name,
+                              t1.last_name,
+                              t1.email)
+SELECT *
+FROM power_users
+WHERE (total_spent >= 100 AND visit > 2);
+```
+
+### 6. All Orders > Average Order Cost
+```sql
+-- 6. List all ORDERS whose total order cost is greater than the overall average order cost.
+
+WITH cte_avg_order AS (SELECT t2.order_id,
+                                   t1.first_name,
+                                   t1.last_name,
+                                   SUM(t3.quantity * t4.prod_cost) AS sum_of_orders
+                            -- t1 = customer
+                            -- t2 = orders
+                            -- t3 = order_items
+                            -- t4 = product
+
+                            FROM customer as t1
+                                     INNER JOIN orders AS t2 ON t1.customer_id = t2.customer_id
+
+                                     INNER JOIN order_items AS t3 ON t2.order_id = t3.order_id
+
+                                     INNER JOIN product AS t4 ON t3.product_id = t4.product_id
+
+                            GROUP BY t2.order_id,
+                                     t1.first_name,
+                                     t1.last_name)
+
+SELECT *
+FROM cte_avg_order
+WHERE sum_of_orders > (SELECT AVG(sum_of_orders) FROM cte_avg_order);
+```
+
+### 7. Most Frequently Used Distributor
+```sql 
+-- 7. Find customers who have purchased products supplied by the most frequently used distributor.
+-- Highest quantity from order_items, tied to order_id (Basically #6)
+
+WITH cte_freq_distributor AS (SELECT t2.order_id,
+                                     t1.first_name,
+                                     t1.last_name,
+                                     t3.product_id,
+                                     t4.distributor,
+                                     t4.brand,
+                                     SUM(t3.quantity) as total_quantity
+
+
+                              -- t1 = customer
+                              -- t2 = orders
+                              -- t3 = order_items
+                              -- t4 = product
+
+
+                              FROM customer as t1
+                                       INNER JOIN orders AS t2 ON t1.customer_id = t2.customer_id
+
+                                       INNER JOIN order_items AS t3 ON t2.order_id = t3.order_id
+
+                                       INNER JOIN product AS t4 ON t3.product_id = t4.product_id
+
+                              GROUP BY t2.order_id,
+                                       t1.first_name,
+                                       t1.last_name,
+                                       t3.quantity,
+                                       t3.product_id,
+                                       t4.distributor,
+                                       t4.brand
+                              ORDER BY total_quantity DESC
+
+)
+
+SELECT *
+FROM cte_freq_distributor;
+```
