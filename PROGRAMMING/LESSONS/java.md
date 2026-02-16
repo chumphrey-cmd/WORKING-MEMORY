@@ -484,7 +484,71 @@ public class Main {
 }
 ```
 
+#### Binary Search Example
 
+```java
+import java.util.Scanner;
+
+public class BinarySearch {
+    public static void main(String[] args){
+        Scanner obj = new Scanner(System.in);
+
+        int upper;
+        int lower;
+        boolean found = false;
+        int attempts = 0;
+
+        System.out.println("Enter Upper Limit: ");
+        upper = obj.nextInt(); obj.nextLine();
+
+        System.out.println("Enter Lower Limit: ");
+        lower = obj.nextInt(); obj.nextLine();
+
+        System.out.println("Enter the Correct Guess: ");
+
+        System.out.println("As the program proceeds, enter high, low, or correct: ");
+
+        // Implementation of the Binary Search Algorithm
+        int machineGuess = lower + (upper - lower) / 2;
+
+        while (!found){
+
+            System.out.println("My guess is " + machineGuess);
+
+            String myResponse = obj.nextLine();
+
+            System.out.println("Current Upper Value: " + upper);
+            System.out.println("Current Lower Value: " + lower);
+
+            if (lower > upper) {
+                System.out.println("You're either cheating OR you forgot your number, try again!");
+                break;
+            }
+
+            else if (myResponse.equals("high")) {
+
+                upper = machineGuess - 1;
+                machineGuess = lower + (upper - lower) / 2;
+                attempts++;
+            }
+
+            else if (myResponse.equals("low")) {
+
+                lower = machineGuess + 1;
+                machineGuess = lower + (upper - lower) / 2;
+                attempts++;
+            }
+
+            else if (myResponse.equals("correct")) {
+                found = true;
+            }
+
+        }
+
+        System.out.println("Total Attempts Taken: " + attempts);
+    }
+}
+```
 
 
 

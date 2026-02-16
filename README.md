@@ -23,7 +23,7 @@
 - [HARDWARE](./BLUE-TEAM-WM/HARDWARE/)
   - Contains scripts and other useful information for troubleshooting.
 
-- [RESOUCES AND CONCEPTS](./BLUE-TEAM-WM/RESOURCES_CONCEPTS/)
+- [RESOURCES AND CONCEPTS](./BLUE-TEAM-WM/RESOURCES_CONCEPTS/)
   - Contains books, quotes, articles, papers, and other information that may not fit inside of the other categories.
 
 - [SIEMs](./BLUE-TEAM-WM/SIEMs/)

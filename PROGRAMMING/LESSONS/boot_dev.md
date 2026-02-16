@@ -1317,6 +1317,34 @@ except Exception as e:
 # prints "division by zero"
 ```
 
+> [!NOTE]
+> 
+> You **DO NOT** want to catch exceptions you raise within the same function block!
+
+```python
+# DON'T DO THIS!
+
+def craft_sword(metal_bar):
+    try:
+        if metal_bar == "bronze":
+            return "bronze sword"
+        if metal_bar == "iron":
+            return "iron sword"
+        if metal_bar == "steel":
+            return "steel sword"
+        raise Exception("invalid metal bar")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+```
+
+```python
+# DO THIS
+try:
+    craft_sword("gold bar")
+except Exception as e:
+    print(e)
+```
+
 # Python - Object-Oriented Programming (OOP)
 
 * **[Object-Oriented Programming](https://en.wikipedia.org/wiki/Object-oriented_programming)**: Programming paradigm based on objects  (software entities that encapsulate data and function(s)). An OOP computer program consists of objects that interact with objects.

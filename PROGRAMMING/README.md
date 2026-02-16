@@ -10,8 +10,8 @@
 - [`databases.md`](./LESSONS/databases.md)
   - Include database basics and best practice for scalability and efficiency. As I encounter more database specifics and nuances, I will include that information here for easy reference. 
 
-- [`java.md`](./PROGRAMMING/java.md)
+- [`java.md`](./LESSONS/java.md)
   - Includes Java basics and best practices. Eventually, the examples and solutions to problem sets that I come across will become large enough for me to create a dedicated folder/repo for this language.
 
-- [`reflection.md`](./PROGRAMMING/reflection.md)
+- [`reflection.md`](./LESSONS/reflection.md)
   - Space to synthesize all the information that I am learning from building/breaking. Hopefully, I can distill the most essential lessons, patterns, and concepts that I come across.
