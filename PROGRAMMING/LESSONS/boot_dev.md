@@ -1345,6 +1345,23 @@ except Exception as e:
     print(e)
 ```
 
+### Different Types of Python Errors
+
+> [!NOTE]
+> When handling exceptions, it’s important to **catch the most specific errors first**, because Python stops checking once it finds a matching exception handler.
+
+```python
+try:
+    nums = [0, 1]
+    print(nums[2])
+except Exception:
+    print("An error occurred")
+except IndexError:
+    print("Index error")
+```
+
+* Here the more general `Exception` error will be thrown, not acknowledging the more specific root cause of an `IndexError` first.
+
 # Python - Object-Oriented Programming (OOP)
 
 * **[Object-Oriented Programming](https://en.wikipedia.org/wiki/Object-oriented_programming)**: Programming paradigm based on objects  (software entities that encapsulate data and function(s)). An OOP computer program consists of objects that interact with objects.
