@@ -713,3 +713,44 @@ WITH cte_freq_distributor AS (SELECT t2.order_id,
 SELECT *
 FROM cte_freq_distributor;
 ```
+
+## `CASE` Statements and `CHECK` Constraints
+
+* https://neon.com/postgresql/postgresql-tutorial/postgresql-case
+* Used to define different outputs based on conditions, categorize data on the fly, and useful for creating reports or segmenting data.
+
+### Simple `CASE` Statment Example
+```sql
+SELECT title,
+       rating,
+       CASE rating
+           WHEN 'G' THEN 'General Audiences'
+           WHEN 'PG' THEN 'Parental Guidance Suggested'
+           WHEN 'PG-13' THEN 'Parents Strongly Cautioned'
+           WHEN 'R' THEN 'Restricted'
+           WHEN 'NC-17' THEN 'Adults Only'
+       END rating_description
+FROM film
+ORDER BY title;
+```
+
+### Simple `CHECK` Constraints
+
+* https://neon.com/postgresql/postgresql-tutorial/postgresql-check-constraint
+* Basically user input validation, BUT for the database where you ensure specific values like negative numbers, special characters, etc. aren't entered into the database (e.g., when updating or inserting value into a table).
+
+> [!NOTE]
+> 
+> `CASE` matches on what a field **SHOULD BE** (e.g., 'G', 'PG', 'PG-13', 'R', 'NC-17', etc.)
+> `CHECK` matches on what specific values **ARE** (e.g., non-negative, > 0, etc.)
+
+```sql
+CREATE TABLE employees (
+  id SERIAL PRIMARY KEY,
+  first_name VARCHAR (50) NOT NULL,
+  last_name VARCHAR (50) NOT NULL,
+  birth_date DATE NOT NULL,
+  joined_date DATE NOT NULL,
+  salary numeric CHECK(salary > 0) -- Check constraint here!
+);
+```

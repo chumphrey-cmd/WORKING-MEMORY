@@ -113,7 +113,7 @@ Person p2 = new Person("Bob");
   * Essentially the code the use should be "Plug and Play", if you change the code in `MenuOptions`, it should not break the code in `Main`. Low coupling allows for easier maintenance and reusability.
 
 * **Cohesion**
-  * This is the degree to which the elements inside a single class or method belong together.
+  * This is the degree to which the elements inside a single class or method belong together (we want cohesion to be **HIGH**).
   * The thing that came to mind is a concept in Graph Theory and Network Architecture of "Eigenvector Centrality" (e.g., how reliant one node is to the entire network). Basically, lines of code within a method should be tightly dependent on one another. They should focus on solving one specific problem without "noise" or unrelated tasks.
 
 **Method Naming**
@@ -550,6 +550,118 @@ public class BinarySearch {
 }
 ```
 
+### Arrays + Menu Selection
+
+#### Main.java
+
+```java
+public class Main {
+
+    public static void main(String[] args) {
+        System.out.println("Welcome to the Calculate Average Tool!\n");
+
+        Scanner obj = new Scanner(System.in);
+        int userInput;
+
+        System.out.println("Please Select an Option: ");
+        displayMenu();
+        userInput = obj.nextInt(); obj.nextLine();
+
+        do{
+            switch(userInput){
+                case 1: calculateAverage(); break;
+                case 2: calculateMinimum(); break;
+                case 3: exit(); break;
+                default: System.out.println("Invalid Option Selected");
+            }
+
+            displayMenu();
+            System.out.println("Please Select an Option:");
+            userInput = obj.nextInt(); obj.nextLine();
+
+        }while(userInput != 3);
+    }
+}
+```
+
+#### AverageCalc.java
+
+```java
+import java.util.Scanner;
+
+public class Average {
+
+    public static void displayMenu() {
+        System.out.println("1. Calculate Average\n2. Calculate Minimum\n3. Exit");
+    }
+
+    public static void calculateMinimum() {
+
+        Scanner obj = new Scanner(System.in);
+        System.out.println("Enter the number of values to find minimum of: ");
+        int numberLimit = obj.nextInt();
+        obj.nextLine();
+        int minimum = Integer.MAX_VALUE;
+
+        for (int i = 0; i < numberLimit; i++) {
+            System.out.println("Enter a Number for Comparison: ");
+            int userInput = obj.nextInt(); obj.nextLine();
+
+            if (userInput == -99){
+                System.out.println("User Entered -99, Exiting...");
+                exit();
+            }
+
+            else if (minimum > userInput){
+                minimum = userInput;
+            }
+
+        }
+        System.out.println("The minimum value is: " + minimum);
+
+    }
+
+    public static void calculateAverage() {
+        Scanner obj = new Scanner(System.in);
+
+        System.out.println("Enter the number of values you want to find the average for: ");
+        int numberLimit = obj.nextInt();
+
+        while (numberLimit <= 0){
+            System.out.println("Invalid number of values, please enter a positive number");
+            numberLimit = obj.nextInt();
+        }
+
+        // Placing the list of user input numbers into an ARRAY (dictionary), this was much easier for the calculation.
+        double[] array = new double[numberLimit];
+        double totalCost = 0.0;
+
+        for (int i = 0; i < array.length; i++) {
+            System.out.println("Enter a Number for Average Calculation: ");
+            array[i] = obj.nextDouble();
+
+            while (array[i] <= 0){
+                System.out.println("Negative number's aren't allowed, please enter another number to average");
+                array[i] = obj.nextDouble();
+            }
+        }
+
+        for (int i = 0; i < array.length; i++) {
+            totalCost = totalCost + array[i];
+        }
+
+        double average = totalCost / array.length;
+        System.out.println("Average: " + average);
+
+    }
+
+    public static void exit() {
+        System.out.println("Thank you for using the Calc, Goobye!");
+        System.exit(0);
+    }
+
+}
+```
 
 
 # References

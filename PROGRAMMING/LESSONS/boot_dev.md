@@ -2348,7 +2348,7 @@ base_cost = super().get_trip_cost(distance, food_price)
 ## NoSQL vs. SQL Databases
 
 * **NoSQL** database is a database that does not use SQL (Structured Query Language). 
-* Each [NoSQL](https://en.wikipedia.org/wiki/NoSQL) typically has its own way of writing and executing queries. For example, MongoDB uses MQL (MongoDB Query Language) and ElasticSearch has a JSON API and uses its own ESQL (Elastic Query Language). 
+* Each [NoSQL](https://en.wikipedia.org/wiki/NoSQL) typically has its own way of writing and executing queries. For example, MongoDB uses MQL (MongoDB Query Language), and ElasticSearch has a JSON API and uses its own ESQL (Elastic Query Language). 
 * NoSQL databases are typically used for more niche purposes, popular NoSQL databases included:
   * [MongoDB](https://en.wikipedia.org/wiki/MongoDB)
   * [Cassandra](https://en.wikipedia.org/wiki/Apache_Cassandra)
