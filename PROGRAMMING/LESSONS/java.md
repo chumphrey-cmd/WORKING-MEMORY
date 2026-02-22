@@ -5,9 +5,9 @@
 > A pure OOP language, EVERYTHING must live inside a class...
 >
 > Java data types: be sure to understand the data types that you are working with. Choosing the wrong data type can lead to large memory usage in large systems.
-* `JVM` - Utilizes the JVM which is hardware-agnostic and uses the Java Virtual Machine (JVM) making it cross compatiable.
+* `JVM` - Utilizes the JVM which is hardware-agnostic and uses the Java Virtual Machine (JVM) making it cross compatible.
 
-## Java Programming Concepts and OOP Terminology
+## Java Programming Concepts and Terminology
 
 ### Terminology
 
@@ -131,46 +131,7 @@ class Person { private Address address; public Person(Address addr) { address = 
 > 
 > If "**X has-a** Y" sounds logical and multiple classes can use it (e.g., Person has-an Address), use composition instead.
 
-### Test Driven Development (TDD)
-
-#### TTD Steps
-* **Arrange** – Instantiate the test
-* **Act** – Trigger the action
-* **Assert** - Expected results
-
-```java
-class CalcTest {
-
-    static Calc calc ;
-
-    // Arrange
-
-    @BeforeAll // BeforeAll allows you to automatically create a new instance (i.e., a distributed Arrange)
-    static void beforeAll() {
-
-        calc = new Calc() ;
-    }
-
-    @Test
-
-    void shouldAddTwoIntegers() {
-
-        // Act
-        int actual = calc.add(1, 2) ;
-
-        // Assert
-        assertEquals(3, actual) ;
-    }
-```
-
-#### Laws of TDD
-* You are not allowed to write any production code unless it passes failing unit tests.
-* You are not allowed to write any more of a unit test than is sufficient to fail; and compilation failures are failures.
-* Don't write any more production code than is enough to pass ONE failing unit test. Test in isolation, do not change, and test more than one variable at a time.
-  * The idea of laboratory research where you ONLY modify single variables, annotate those changes, verify the results, and then conduct additional experiments...
-
-
-## Basic Java Examples
+## Java Coding Examples
 
 ### Scanner Usage, Setters, Getters, ToString (Automobile)
 
@@ -325,6 +286,71 @@ public class Demo {
         System.out.println("Current Object Creation Total:" + " " + Automobile.getNumberOfObjects()) ;
     }
 
+}
+```
+
+### For-Loop Practice
+
+#### Retirement Calculator
+
+```java
+import java.text.DecimalFormat;
+import java.util.Scanner;
+
+public class InvestmentCalculator {
+
+    // Creating a tool to calculate the future value of an investment.
+
+    public static void main(String[] args) {
+
+        Scanner obj = new Scanner(System.in);
+        System.out.println("Welcome to the Investment Calculator!\n");
+
+        System.out.print("How Much Do You Have Saved? ");
+        double currentBalance = obj.nextDouble(); obj.nextLine();
+
+        while (currentBalance < 0) {
+            System.out.println("You cannot enter a negative number, try again!");
+            currentBalance = obj.nextDouble(); obj.nextLine();
+        }
+
+        System.out.print("Enter the Current Interest Rate: ");
+        double interestRate = obj.nextDouble(); obj.nextLine();
+
+        while (interestRate < 0) {
+            System.out.println("Please enter a valid interest rate:");
+            interestRate = obj.nextDouble(); obj.nextLine();
+        }
+
+        System.out.print("Enter your age: ");
+        int userAge = obj.nextInt();
+        obj.nextLine();
+
+        while (userAge < 0) {
+            System.out.println("Please enter a valid age:");
+            userAge = obj.nextInt(); obj.nextLine();
+        }
+
+        System.out.print("Enter your desired retirement age: ");
+        int retirementAge = obj.nextInt();
+        obj.nextLine();
+
+        while (retirementAge < userAge || retirementAge == 0) {
+            System.out.println("Please enter a retirement age greater than your current age:");
+            retirementAge = obj.nextInt(); obj.nextLine();
+        }
+
+        int yearsToRetirement = retirementAge - userAge;
+        for (int i = 0; i < yearsToRetirement; i++) {
+            double newBalance;
+            newBalance = currentBalance + (currentBalance *(interestRate/100));
+            currentBalance = newBalance;
+
+            // Formatted output (https://www.geeksforgeeks.org/java/formatted-output-in-java/)
+            DecimalFormat account = new DecimalFormat("$###,###,###,###,###.##");
+            System.out.println("Year " + (i + 1) + ": " + account.format(currentBalance));
+        }
+    }
 }
 ```
 
@@ -550,6 +576,13 @@ public class BinarySearch {
 }
 ```
 
+
+### Do-While Loop Practice
+
+```java
+
+```
+
 ### Arrays + Menu Selection
 
 #### Main.java
@@ -663,6 +696,168 @@ public class Average {
 }
 ```
 
+## Test Driven Development (TDD)
+
+### Laws of TDD
+* You are not allowed to write any production code unless it passes failing unit tests.
+* You are not allowed to write any more of a unit test than is sufficient to fail; and compilation failures are failures.
+* Don't write any more production code than is enough to pass ONE failing unit test. Test in isolation, do not change, and test more than one variable at a time.
+
+> [!NOTE]
+> Think about the idea of [laboratory research](https://medium.com/checkout-com-techblog/scientific-methodology-test-driven-development-2570250dc1ae) where you **ONLY** modify single variables, annotate those changes, verify the results, and then conduct additional experiments...
+
+### TDD Steps and Pyramid
+* **Arrange** – Instantiate the test
+* **Act** – Trigger the action
+* **Assert** - Expected results
+
+#### Testing Pyramid
+
+<img src="./images/testing_pyramid.png">
+
+* **Unit Tests**: run very fast, there should be lots of these. This covers at the unit (methods and class) level.
+* **Integration Testing (Service Tests)**: Test the compatibility with other methods, classes, or objects within your code base.
+* **End-to-End Tests (UI Tests)**: Slower, simulate the user actually interacting with the application.
+
+### TDD and JUnit
+* JUnit is just a modern Unit Testing framework that can be used across different IDEs that comes with a variety of assertions dependent on the modules that you import (e.g., `org.junit.jupiter.api.Assertions`).
+
+#### Equality and Comparison Assertions
+
+These check if values match or meet conditions useful for validating method outputs in web apps, like comparing expected JSON data or entity fields.
+
+* **assertEquals(expected, actual)**: Checks if two values are equal (handles primitives, objects with equals()).
+
+```java
+assertEquals(200, response.getStatusCode()); // Verifies HTTP OK status.
+```
+
+* **assertNotEquals(unexpected, actual)**: Opposite of above; ensures they're not equal.
+
+```java
+assertNotEquals(0, userList.size()); // List shouldn't be empty after query.
+```
+
+* **assertSame(expected, actual)**: Checks if two references point to the same object (identity equality).
+* **assertNotSame(unexpected, actual)**: Ensures they're not the same object.
+
+#### Boolean Assertions
+Great for flag checks or condition validations, like verifying authentication states.
+* **assertTrue(condition)**: Checks if a boolean is true.
+
+```java
+assertTrue(user.isActive()); // User account should be active.
+```
+
+* **assertFalse(condition)**: Checks if a boolean is false.
+
+```java
+assertFalse(service.hasErrors()); // No errors after processing.
+```
+
+#### Nullness Assertions
+Essential for handling optional returns or ensuring no nulls where forbidden, common in data access layers.
+* **assertNull(actual)**: Checks if value is null.
+
+```java
+assertNull(repository.findById(invalidId)); // No entity for bad ID.
+```
+
+* **assertNotNull(actual)**: Checks if value is not null.
+
+```java
+assertNotNull(controller.getResponse()); // Response should exist.
+```
+
+#### Exception Assertions
+Critical for testing error handling in web apps, like validating that invalid input throws an exception.
+* **assertThrows(expectedType, executable)**: Expects the code block to throw a specific exception.
+
+```java
+assertThrows(IllegalArgumentException.class, () -> service.process(null)); // Null input should fail.
+```
+
+* **assertDoesNotThrow(executable)**: Ensures no exception is thrown.
+
+```java
+assertDoesNotThrow(() -> validator.validate(validObject));
+```
+
+#### Collection and Array Assertions
+Handy for testing lists or arrays, like API response payloads.
+* **assertArrayEquals(expectedArray, actualArray)**: Checks if arrays are equal.
+* **assertIterableEquals(expectedIterable, actualIterable)**: For lists/sets; checks equality in order.
+* **assertAll(executables...)**: Groups multiple assertions; all must pass (useful for batch checks without early failure).
+
+> [!NOTE]
+> In modern Java web dev (e.g., Spring Boot), these cover 80-90% of unit test needs.
+
+
+#### TDD Example(s)
+```java
+class CalcTest {
+
+    static Calc calc ;
+
+    // Arrange
+
+    @BeforeAll // BeforeAll allows you to automatically create a new instance (i.e., a distributed Arrange)
+    static void beforeAll() {
+
+        calc = new Calc() ;
+    }
+
+    @Test
+
+    void shouldAddTwoIntegers() {
+
+        // Act
+        int actual = calc.add(1, 2) ;
+
+        // Assert
+        assertEquals(3, actual) ;
+    }
+```
+
+## Spring Boot Application Framework
+
+
+* Spring Boot is a modern Java Web Development Framework that standardizes and streamlines the Web Application process when working with Java. It builds directly on the core Spring Framework (which handles dependency injection and the container) but adds "batteries-included" features like autoconfiguration, embedded servers (e.g., Tomcat), and starter dependencies. 
+* This solves the problem of boilerplate code in plain Spring, making it faster to get a production-ready app up (e.g., no need to manually set up XML configs for everything).
+
+* Spring Boot basically takes the bespoke business logic of your enterprise environment (e.g., the unique ways that you want to interact and display your company's proprietary data via dashboards, internal applications, public-facing applications, etc.), moves that `.java` file into the "Spring Container," and then securely configures your application. 
+
+### Spring Overview
+
+<img src="./images/spring_overview.png">
+
+* Your .java files (POJOs [Plain Old Java Objects]) get "injected" into the Spring Container (also called the IoC—Inversion of Control—container), where Spring handles wiring them up securely based on metadata (annotations like `@Controller`, `@Service`, `@Repository`). 
+
+
+### Spring Container (`Controller`, `Service`, `Repository`)
+* Digging a bit deeper into the Spring Container itself, there's the `Controller`, `Service`, and `Repository` sections that form its layered architecture of modern Java Web Apps.
+
+<img src="./images/spring_boot_container_simple.png">
+
+* Overall request flow (`Client` → `Controller` → `Service` → `Repository` → `Database`, with `Entity.java` as the data model).
+
+* At a 10,000 ft view, the `Controller` interacts with the end-user's web browser via HTTP request/response methods.
+* It's the entry point for user interactions, handling HTTP requests/responses from the browser or client (e.g., via `@RestController` for REST APIs).
+
+<img src="./images/controller_http_methods.png">
+
+> [!NOTE]
+> General overview of what's happening the controller at a high-level.
+> Shows the Controller handling HTTP methods (e.g., `GET`, `POST`, `PUT/PATCH`, `DELETE`).
+
+* `Service` acts as the conduit and intermediary/business logic that is needed to interact with the request/response method that the controller sends. 
+* It processes the request (e.g., validations, calculations), calls the `Repository` as needed, and keeps things decoupled 
+* I view the `Service` portion of the container as the "**Orchestrator**" for the application (this is basically where your bespoke enterprise rules live).
+
+* `Service` then forwards the `Controller` requests to `Repository`, which is what directly interacts with the database (e.g., PostgreSQL) to perform CRUD operations. 
+
+> [!NOTE]
+> HTTP methods like `GET`, `PUT`, `DELETE`, `PATCH` are used at the `Controller` level, `Repository` uses JPA methods like `findAll()`, `save()`, `deleteById()` to map to SQL queries.
 
 # References
 1. https://www.geeksforgeeks.org/dsa/control-structures-in-programming-languages/
