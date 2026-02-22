@@ -73,7 +73,9 @@
 * `JSON`: Textual JSON data.
 * `JSONB`: Binary JSON data, decomposed.
 
-### Terminology (Table Relationships)
+## Entity-Relationship Diagram (ERD)
+
+### Terminology
 
 1. https://www.red-gate.com/blog/crow-s-foot-notation
 
@@ -84,11 +86,33 @@
 * Many-to-Many - many DBs to many DBs
     * e.g., intermediate "views (temporary table)" the interface, "switch", or "core-router" within networks.  
 
+### Visual
+
 <img src="./images/erd_basics.png" width="500">
 
-## Entity-Relationship Diagram (ERD)
 * A visual, structural **blueprint for a database**, illustrating how "entities" (people, objects, concepts) connect within a system
 * **ESSENTIALLY** using the desired objective that you want the application to do and arranging and structuring the database in such a way that will allow the application to work...
+
+## Normalization Format (NF)
+
+### Mental Models for NF
+
+* **1NF:** Are there any lists hidden in a single cell? 
+  * *(Make each of them new rows).*
+* **2NF:** Does this column depend on the *whole* (composite) primary key (e.g., `student_id`, `class_id`? 
+  * *(Move it to its own table).*
+* **3NF:** Does this column depend on a non-key column (e.g., `city`, `state`)?
+  * *(Move it to its own table).*
+
+---
+
+* **1NF (Single Values & A Primary Key):** 
+  * Data is organized into a table format, every row has a unique identifier (a Primary Key), and **every cell holds only one single value** (e.g. Excel dump).
+
+* **2NF (No Partial Dependencies):** 
+  * 1NF + you have a primary key made of **multiple columns** (a composite key); all the other columns must depend on that *entire* key, not just half of it.
+
+* **3NF (No Transitive Dependencies):** No non-key column can depend on another non-key column. Breaking it out into its own table (e.g., a designated `address` or `location` table that can be referenced via `address_id` or `location_id`).
 
 ## SQL Basics
 
