@@ -529,6 +529,18 @@ for n in range(42):
 # 13 * 13 = 169
 ```
 
+### Factorial For Loop
+
+* Elegant way, beyond the use of the `math` import to handle factorials using a for-loop.
+
+```python
+def factorial(num):
+    total = 1
+    for i in range(1, num + 1):
+        total *= i
+    return total
+```
+
 ## Lists `[]`
 
 ### List Updates
@@ -1056,7 +1068,7 @@ def count_enemies(enemy_names):
 
 ```python
 
-def get_most_comm​on_enemy(enemies_dict):
+def get_most_common_enemy(enemies_dict):
     max_so_far = float("-inf")
     max_name = None
 
@@ -1073,13 +1085,26 @@ def get_most_comm​on_enemy(enemies_dict):
             max_name = name
     return max_name
 ```
+
+### Dictionary Area Iteration
+
+```python
+def area_sum(rectangles):
+    total = 0
+    for i in rectangles:
+        area = i["height"] * i["width"]
+        total += area
+    return total
+```
+
 ### Chaining Dictionaries
 
 * Used to access nested dictionaries
 
 ```python
 
-# Similar location and identification as using `jq` in when trying to parse JSON files
+# Similar location and identification as using `jq` in when trying to parse JSON files:
+
 outer_dictionary["outer_key"]["inner_key"]["inner_inner_key"]
 ```
 
@@ -2338,7 +2363,7 @@ class Catapult(Siege):
 base_cost = super().get_trip_cost(distance, food_price)
 ```
 * Here we are calling the parent class’s (`Siege`) `get_trip_cost` method (`Siege.get_trip_cost`) using the same `distance` and `food_price`.
-* The `super()` **DOES NOT** use the `super().__init__(max_speed, efficiency)` in `__init__` it just means the we want to call the parent's version of that method.
+* The `super()` **DOES NOT** use the `super().__init__(max_speed, efficiency)` in `__init__` it just means the want to call the parent's version of that method.
 * **ESSENTIALLY**: the `super().some_method(...)` is used to make an independent call to the parent’s `something` and is **SEPARATE** from other `super()` calls!
 
 ## Polymorphism
@@ -2378,7 +2403,7 @@ base_cost = super().get_trip_cost(distance, food_price)
 
 * A change to the structure of a relational database (e.g., like a commit in Git, but for your database schema). 
 * Good migrations take into consideration the following:
-  * The **old** currently runnning version of the code.
+  * The **old** currently running version of the code.
   * The **new** version of the code that will run after the migration is complete.
 
 > [!WARNING]
