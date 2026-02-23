@@ -757,13 +757,13 @@ assertFalse(service.hasErrors()); // No errors after processing.
 
 #### Nullness Assertions
 Essential for handling optional returns or ensuring no nulls where forbidden, common in data access layers.
-* **assertNull(actual)**: Checks if value is null.
+* **assertNull(actual)**: Checks if the value is null.
 
 ```java
 assertNull(repository.findById(invalidId)); // No entity for bad ID.
 ```
 
-* **assertNotNull(actual)**: Checks if value is not null.
+* **assertNotNull(actual)**: Checks if the value is not null.
 
 ```java
 assertNotNull(controller.getResponse()); // Response should exist.
@@ -821,9 +821,11 @@ class CalcTest {
 
 ## Spring Boot Application Framework
 
-
 * Spring Boot is a modern Java Web Development Framework that standardizes and streamlines the Web Application process when working with Java. It builds directly on the core Spring Framework (which handles dependency injection and the container) but adds "batteries-included" features like autoconfiguration, embedded servers (e.g., Tomcat), and starter dependencies. 
-* This solves the problem of boilerplate code in plain Spring, making it faster to get a production-ready app up (e.g., no need to manually set up XML configs for everything).
+
+> [!NOTE]
+> Essentially, it's an all-in-one backend framework with front-end(ish) capabilities (it's not a dedicated front-end framework like React or Vue). It provides all the built-in tools for database interactions (via Spring Data JPA for CRUD).
+> This solves the problem of boilerplate code in plain Spring, making it faster to get a production-ready app up (e.g., no need to manually set up XML configs for everything).
 
 * Spring Boot basically takes the bespoke business logic of your enterprise environment (e.g., the unique ways that you want to interact and display your company's proprietary data via dashboards, internal applications, public-facing applications, etc.), moves that `.java` file into the "Spring Container," and then securely configures your application. 
 
@@ -834,7 +836,7 @@ class CalcTest {
 * Your .java files (POJOs [Plain Old Java Objects]) get "injected" into the Spring Container (also called the IoC—Inversion of Control—container), where Spring handles wiring them up securely based on metadata (annotations like `@Controller`, `@Service`, `@Repository`). 
 
 
-### Spring Container (`Controller`, `Service`, `Repository`)
+### Spring Container - Simplified (`Controller`, `Service`, `Repository`)
 * Digging a bit deeper into the Spring Container itself, there's the `Controller`, `Service`, and `Repository` sections that form its layered architecture of modern Java Web Apps.
 
 <img src="./images/spring_boot_container_simple.png">
@@ -859,5 +861,37 @@ class CalcTest {
 > [!NOTE]
 > HTTP methods like `GET`, `PUT`, `DELETE`, `PATCH` are used at the `Controller` level, `Repository` uses JPA methods like `findAll()`, `save()`, `deleteById()` to map to SQL queries.
 
+## Model View Controller (MVC)
+
+* Model-View-Controller (MVC) is an architectural/design pattern that separates an application into three main logical parts: `Model`, `View`, and `Controller`. 
+* It ensures that code is more modular, testable, and maintainable-solving issues. It exists to decouple data management (Model), user interface (View), and input handling/orchestration (Controller), allowing independent development and scaling [2].
+
+> [!TIP]
+> The MVC setup includes `Entities` (data objects), `Services` (business logic), and `Repositories` (DB access). This is why annotations like `@Entity`, `@Service`, and `@Repository` are used with backend developement because they mark classes to fit into Spring's MVC flow.
+
+<img src="./images/Spring-MVC-Architecture.png">
+
+> Here, the `Browser` sends requests to `Controller`, which manipulates the `Model` (including Repositories ↔ Database, Entities, Services, Components), then renders the `View`, which displays data from the `Model` back to the `Browser`.
+
+### Controller
+* Is the central "connector" or "intermediary" between the client browser, rendering incoming requests, and orchestration. It coordinates the flow, processes some business logic, manipulates data using the `Model`, and interacts with the `View` to display the specific outputs.
+* The controller also receives user input and interprets it.
+* Updating the `Model` based on user actions.
+* Selecting and displaying the appropriate View.
+
+### View
+* Generates a UI for the user.
+* Views are created by the data collected by the Model component, but it's often passive and relies on the `Controller` to pass that data.
+* It **ONLY** interacts with the `Controller`.
+* The primary purpose is to take the rendered view of that data and display that information for the end user.
+
+### Model
+* This section seems to be the meat-and-potatoes and backend work that is required to actually interact with the database.
+* Thinking out the lecture in class today, we used annotations (e.g., `@Repository` and `@Service`) to mark specific sections inside our Java application.
+* Managing data: CRUD (Create, Read, Update, Delete) operations.
+* Enforcing business rules.
+* Notifying the `View` and `Controller` of state changes (via observer patterns in classic MVC; in web frameworks like Spring, the Controller often fetches updates from the Model and pushes them to the View).
+
 # References
 1. https://www.geeksforgeeks.org/dsa/control-structures-in-programming-languages/
+2. https://www.geeksforgeeks.org/software-engineering/mvc-framework-introduction/
