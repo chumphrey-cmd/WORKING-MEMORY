@@ -701,6 +701,20 @@ def get_odd_numbers(num):
 my_list[ start : stop : step ]
 ```
 
+* Tricky example where we want to iterate through a dictionary, append a ",", and ensure that the last item in the dictionary doesn't have a comma. 
+* Normally we could just use the `.join()` built-in, but this is the manual solve for it. 
+
+```python
+def join_strings(strings):
+    if strings == []:
+        return ""
+    else:
+        delimiter = ''
+        for i in strings:
+            delimiter += i + ","
+        return delimiter[:-1]
+```
+
 ```python
 def get_champion_slices(champions):
 
@@ -2367,6 +2381,10 @@ base_cost = super().get_trip_cost(distance, food_price)
 * **ESSENTIALLY**: the `super().some_method(...)` is used to make an independent call to the parent’s `something` and is **SEPARATE** from other `super()` calls!
 
 ## Polymorphism
+
+* Polymorphism is typically handeled at **run time** (meaning that the output can have many forms based on specific runtime criteria...)
+  * E.g., When a user logs in, what specific features or permissions are they allowed to have.
+* Polymorphism is **ONLY** applicable to Children contained underneath Parent classes. In order for the output to transform AT runtime, the children must all derive from the parent...
 
 # SQL Basics
 
