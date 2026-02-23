@@ -703,13 +703,63 @@ public class Average {
 * You are not allowed to write any more of a unit test than is sufficient to fail; and compilation failures are failures.
 * Don't write any more production code than is enough to pass ONE failing unit test. Test in isolation, do not change, and test more than one variable at a time.
 
-> [!NOTE]
-> Think about the idea of [laboratory research](https://medium.com/checkout-com-techblog/scientific-methodology-test-driven-development-2570250dc1ae) where you **ONLY** modify single variables, annotate those changes, verify the results, and then conduct additional experiments...
+### Testing Types vs Levels
+
+#### Types
+
+* **White Box vs Black Box**
+  * White Box: Tester has full knowledge of the internal code/structure (e.g., looking at the Java classes, methods, and logic).
+  * Black Box: Tester has no knowledge of the internal code — only tests inputs and outputs (e.g., using the application like a normal user).
+
+* **Automated vs Manual**
+  * Automated: Tests are written as code (e.g., JUnit 5 tests) and run automatically every time the build runs — fast, repeatable, and cheap.
+  * Manual: A human tester manually clicks through the application — slower and more expensive but great for exploratory or usability testing.
+
+* **Random vs Directed**
+  * Random: Tests are chosen randomly to simulate real-world unpredictable usage.
+  * Directed: A specific test that is intentionally written to test edge/corner cases (e.g., what happens when a user enters a negative number, null value, or maximum allowed input).
+
+* **Functional vs Non-functional**
+  * Functional: Does the application do what it is supposed to do? (e.g., “Does the login button actually log the user in?”)
+  * Non-functional: Focuses on how well the application performs (e.g., Security requirements, performance, scalability, usability, reliability).
+
+#### Levels
+
+* **Unit**
+  * E.g., The integration of methods within Classes. Smallest level — testing one method or one class in isolation (usually with JUnit 5).
+
+* **Integration**
+  * E.g., The interaction between Units. Tests how different modules or layers work together (e.g., Controller calling Service calling Repository).
+
+* **End-to-End (System Integration)**
+  * E.g., Testing against original outcomes and expectations. Tests the entire application flow from start to finish, just like a real user would experience it.
+
+* **User Acceptance Testing (UAT)**
+  * E.g., Walking the user through using the new feature. Real business users validate that the software meets their actual business needs before it goes live.
+
+* **Alpha Testing**
+  * E.g., Letting users experiment and use the application. Internal testing done by the development or QA team in a controlled environment (pre-release).
+
+* **Beta Testing**
+  * E.g., Observing a set number of users (beta-testers) that directly supervise and work with R&D. Real external users test the application in their own environment and provide feedback.
+
+* **Regression Testing**
+  * E.g., Running a set of small tests... A bunch of small test cases that combine together and run miniature tests that will generate bugs that will need to be resolved. Re-running previous tests after changes to make sure new code didn’t break existing functionality.
+
+* **Requirement Traceability Matrix (RTM)**
+  * E.g., PM functions. A document/table that maps every requirement to its test cases — ensures nothing is missed and everything is tested (mostly used by Project Managers).
+
+* **Line Coverage**
+  * Measures what percentage of your actual code lines were executed by the tests (e.g., 85% line coverage means 85% of your Java code was run during testing).
+
 
 ### TDD Steps and Pyramid
 * **Arrange** – Instantiate the test
 * **Act** – Trigger the action
 * **Assert** - Expected results
+
+> [!NOTE]
+> Think about the idea of [laboratory research](https://medium.com/checkout-com-techblog/scientific-methodology-test-driven-development-2570250dc1ae) where you **ONLY** modify single variables, annotate those changes, verify the results, and then conduct additional experiments...
 
 #### Testing Pyramid
 
@@ -833,8 +883,7 @@ class CalcTest {
 
 <img src="./images/spring_overview.png">
 
-* Your .java files (POJOs [Plain Old Java Objects]) get "injected" into the Spring Container (also called the IoC—Inversion of Control—container), where Spring handles wiring them up securely based on metadata (annotations like `@Controller`, `@Service`, `@Repository`). 
-
+* Your .java files (POJOs [Plain Old Java Objects]) get "injected" into the Spring Container (also called the IoC-Inversion of Control—container), where Spring handles wiring them up securely based on metadata (annotations like `@Controller`, `@Service`, `@Repository`). 
 
 ### Spring Container - Simplified (`Controller`, `Service`, `Repository`)
 * Digging a bit deeper into the Spring Container itself, there's the `Controller`, `Service`, and `Repository` sections that form its layered architecture of modern Java Web Apps.
@@ -867,7 +916,7 @@ class CalcTest {
 * It ensures that code is more modular, testable, and maintainable-solving issues. It exists to decouple data management (Model), user interface (View), and input handling/orchestration (Controller), allowing independent development and scaling [2].
 
 > [!TIP]
-> The MVC setup includes `Entities` (data objects), `Services` (business logic), and `Repositories` (DB access). This is why annotations like `@Entity`, `@Service`, and `@Repository` are used with backend developement because they mark classes to fit into Spring's MVC flow.
+> The MVC setup includes `Entities` (data objects), `Services` (business logic), and `Repositories` (DB access). This is why annotations like `@Entity`, `@Service`, and `@Repository` are used with backend development because they mark classes to fit into Spring's MVC flow.
 
 <img src="./images/Spring-MVC-Architecture.png">
 
