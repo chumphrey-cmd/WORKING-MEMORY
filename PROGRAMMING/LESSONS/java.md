@@ -579,12 +579,6 @@ public class BinarySearch {
 
 ### Do-While Loop Practice
 
-```java
-
-```
-
-### Arrays + Menu Selection
-
 #### Main.java
 
 ```java
@@ -693,6 +687,41 @@ public class Average {
         System.exit(0);
     }
 
+}
+```
+
+### Arrays
+
+#### Basic Arrays
+
+##### ScoreBoard.java
+
+```java
+import java.util.Scanner;
+
+public class score_board {
+
+    public static void main(String[] args){
+
+        /// NOTE 1: Java has a built-in "Arrays.toString()" function that can easily output the contents of a list
+        /// NOTE 2: Use a for-loop if you want to customize the output of something, use "Arrays.toString()" when you want a quick method to output contents
+
+      /// Specific if you want to initialize a new Class object OR a new LIST!
+        int [] scores = new int[5];
+        Scanner obj = new Scanner(System.in);
+
+        for(int i=0; i < scores.length; i++){
+            System.out.println("Enter your score...");
+            
+            /// KEY: since arrays function via indicies, we use "i" to iterate and add space inside of the array as needed.
+            scores[i] = obj.nextInt();
+        }
+            System.out.println("--- FINAL HIGH SCORES ---");
+
+        for(int j = 0; j < scores.length; j++){
+            System.out.print(scores[j] + " ");
+        }
+    }
 }
 ```
 
@@ -940,6 +969,10 @@ class CalcTest {
 * Managing data: CRUD (Create, Read, Update, Delete) operations.
 * Enforcing business rules.
 * Notifying the `View` and `Controller` of state changes (via observer patterns in classic MVC; in web frameworks like Spring, the Controller often fetches updates from the Model and pushes them to the View).
+
+### Data Structures and Algorithms (Big O Notation)
+
+* When looking for efficiency, and optimization **LOOK AT THE LOOPS**!
 
 # References
 1. https://www.geeksforgeeks.org/dsa/control-structures-in-programming-languages/
