@@ -3097,3 +3097,5 @@ CREATE INDEX index_name ON table_name (column_name);
 CREATE INDEX first_name_last_name_age_idx
 ON users (first_name, last_name, age);
 ```
+
+# Data Structures and Algorithms
