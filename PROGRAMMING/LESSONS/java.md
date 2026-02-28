@@ -794,9 +794,13 @@ public class score_board {
 
 <img src="./images/testing_pyramid.png">
 
-* **Unit Tests**: run very fast, there should be lots of these. This covers at the unit (methods and class) level.
+* **Unit Tests**: run very fast, there should be lots of these. This covers at the unit (methods and class) level. Allows you to have a higher confidence that the feature implementation is successful.
 * **Integration Testing (Service Tests)**: Test the compatibility with other methods, classes, or objects within your code base.
 * **End-to-End Tests (UI Tests)**: Slower, simulate the user actually interacting with the application.
+
+> [!NOTE]
+> The core of this concept is to feed into CI/CD and scalability. 
+> If you continually develop and approve unit tests, you'll be able to have a higher degree of confidence in what you're shipping.
 
 ### TDD and JUnit
 * JUnit is just a modern Unit Testing framework that can be used across different IDEs that comes with a variety of assertions dependent on the modules that you import (e.g., `org.junit.jupiter.api.Assertions`).
@@ -901,6 +905,7 @@ class CalcTest {
 ## Spring Boot Application Framework
 
 * Spring Boot is a modern Java Web Development Framework that standardizes and streamlines the Web Application process when working with Java. It builds directly on the core Spring Framework (which handles dependency injection and the container) but adds "batteries-included" features like autoconfiguration, embedded servers (e.g., Tomcat), and starter dependencies. 
+  * Dependency injection annotating the specific values that are called and ran at start up (e.g., @Mockioto)
 
 > [!NOTE]
 > Essentially, it's an all-in-one backend framework with front-end(ish) capabilities (it's not a dedicated front-end framework like React or Vue). It provides all the built-in tools for database interactions (via Spring Data JPA for CRUD).
@@ -939,6 +944,12 @@ class CalcTest {
 > [!NOTE]
 > HTTP methods like `GET`, `PUT`, `DELETE`, `PATCH` are used at the `Controller` level, `Repository` uses JPA methods like `findAll()`, `save()`, `deleteById()` to map to SQL queries.
 
+### API Testing of Endpoints
+
+* Using Mockito to "mock" action of the database.
+* It's a fake/reflected implementation of the "shape" or entity (relationship to database)
+* WHEN an action occurs THEN return something.
+
 ## Model View Controller (MVC)
 
 * Model-View-Controller (MVC) is an architectural/design pattern that separates an application into three main logical parts: `Model`, `View`, and `Controller`. 
@@ -946,6 +957,8 @@ class CalcTest {
 
 > [!TIP]
 > The MVC setup includes `Entities` (data objects), `Services` (business logic), and `Repositories` (DB access). This is why annotations like `@Entity`, `@Service`, and `@Repository` are used with backend development because they mark classes to fit into Spring's MVC flow.
+
+* `@Entity` tags a specific .java file and sets the conditions for the type of data that the object is going to expect...
 
 <img src="./images/Spring-MVC-Architecture.png">
 
@@ -970,10 +983,80 @@ class CalcTest {
 * Enforcing business rules.
 * Notifying the `View` and `Controller` of state changes (via observer patterns in classic MVC; in web frameworks like Spring, the Controller often fetches updates from the Model and pushes them to the View).
 
-### Data Structures and Algorithms (Big O Notation)
+### Spring Boot (MVC) by Layers
+
+<img src="./images/springboot_by_layers.png">
+
+* **Browser** sends a `request` to the **Controller**.
+* The **Controller** `manipulates` the **Model**.
+* The **Model** (which contains **`Repositories`**, **`Entities`**, **`Services`**, and **`Components`**) communicates back and forth with the **Database**.
+* The **Model** `displays` information to the **View**.
+* The **Controller** `renders` the **View**.
+* The **View** sends the final response back to the **Browser**.
+
+#### Spring Annotations and Testing Strategies
+
+**@Controller**
+
+* Accepts (POST, GET, PUT, ...) requests
+* Is tested by @MockMVC
+* Calls @Service
+* Should keep the controller skinny (or dumb)
+
+*(Flows to)* **@Service**
+
+* Does the business logic
+* Tested with @Mockito
+* Calls @Repository
+
+*(Flows to)* **@Repository**
+
+* Handles the database transactions
+* Only test custom queries w/ @SpringBootTest
+* Uses @Entity objects
+
+*(Flows to)* **@Entity**
+
+* Relationship to database table and columns
+* Needs @Id field
+* Defines your objects
+
+## Sping Boot Setup and Walk-Through
+* Clone Kurt's Git Repo for this process... https://github.com/arbtin/books
+* Autowire used in testing to connect to a Repository
+* Primitives vs non-primitives when using IDs:
+  * We want non-primitives here because we want our database to generate the value for us.
+* Method Overloading: useful when UPDATING our database, rather than modifying the original method constructor, we would just add a smaller constructor...
+
+* Stub: an empty object
+* POJO: book.java
+* @Mock: the mirror reflecting (the thing we need for the thing under test)
+* @InjectMock: the reflection back at you (the thing under test)
+* `verify`: ensure that the method was called
+* Stack: object in memory
+* Heap: reference to the object that in the stack
+
+> [!NOTE]
+> Ensure that you keep the function of each layer that you're working in...
+> CONTROLLER: e.g., @Get... @Post...
+
+**Controller**
+* ObjectMapper: used to convert HTTP GET/POST requests to JSON
+* MockittoBean: creates a STUB of the application
+* MockMVC: used to test the entire application using the specific path that you set 
+* @PostMapping, @ResponseStatus(HttpStatus...)
+* Security: 
+  * @AuthenticationPrincipal OidcUser oidcUser (touches the identity provider)
+  * Once the authentication is provided, you use the object of `AuthenticationPrincipal`
+
+* Integration Testing is identified by the crossing of boundaries...
+* A good indicator of integration is the abscence of "Mocking" within each layer
+
+## Data Structures and Algorithms (Java)
 
 * When looking for efficiency, and optimization **LOOK AT THE LOOPS**!
 
 # References
 1. https://www.geeksforgeeks.org/dsa/control-structures-in-programming-languages/
 2. https://www.geeksforgeeks.org/software-engineering/mvc-framework-introduction/
+3. https://geeksforgeeks.org/dsa/time-complexities-of-all-sorting-algorithms/
