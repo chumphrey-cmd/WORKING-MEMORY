@@ -3098,8 +3098,18 @@ CREATE INDEX first_name_last_name_age_idx
 ON users (first_name, last_name, age);
 ```
 
-# Data Structures and Algorithms
+# Data Structures and Algorithms (DSA)
 
 > [!NOTE]
 > When looking for efficiency, and optimization **LOOK AT THE LOOPS**!
 > This is where increases in inefficiency can be found.
+
+## Algorithm Basics
+
+* An algorithm is a finite sequence of well-defined, computer-implementable instructions.
+  * There is a specific sequence of steps that performs a task (**Defined**). 
+  * There is a "correct" and "incorrect" interpretation of the steps (**Unambiguous**). 
+  * It can be executed using software and hardware (**Implementable**).
+
+> [!TIP]
+> The key is to **decompose** the problem or algorithm to its simplest and most logical form, then reassemble the problem in the language of your choice.
