@@ -1053,6 +1053,7 @@ public class User {
 
 * **Testing**: Minimal (usually just `@DataJpaTest` to check mappings/constraints).
 * Used to make sure the table structure is correct before anything else touches it.
+* We're basically aligning the data types we've decided to use within our database to the the `Entity.java`.
 
 ### 2. Repository Layer (Database Bridge)
 * **Setup**: An interface that extends `JpaRepository` and works directly with your Entity.
@@ -1066,7 +1067,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 ```
 
 * **Testing**: `@DataJpaTest` (uses H2 database dependency).  
-* Used to ensure CRUD and custom queries work with the Entity.
+* Used to ensure CRUD and custom queries work with the `Entity`.
+  
+> [!NOTE]
+> We are using the **Non-primitive Type** of `Long` to prevent the use of `null` values being generated when we interact or update the database with values.
 
 ### 3. Service Layer (Business Logic & Orchestrator)
 * `@Service` class that receives the Repository via dependency injection and adds rules.
@@ -1097,6 +1101,25 @@ public class UserService {
   * `@InjectMocks` injects that mock into the Service under test.
 
 * **@MockitoBean** is also used here when we want Spring to replace a real bean with a mock/stub during integration tests. We use this to test only business rules/logic.
+
+* **@Mock** = the **Mirror**  
+  → This is the fake/stub object (e.g., a fake `UserRepository`).  
+  It “reflects” exactly what you tell it to reflect.  
+  You program it with `when(...).thenReturn(...)` — you control the image it shows.
+
+* **@InjectMocks** = the **Object standing in front of the mirror** (the class under test)  
+  → This is your real `UserService`.  
+  Mockito automatically injects the mirror (@Mock) into it (via constructor, field, or setter).  
+  The Service now “sees” the fake reflection and does its work.
+
+* **The Test validates the reflection**  
+  → You call methods on the `@InjectMocks` object and assert on the results.  
+  You are checking what the Service produces when it looks into the mirror (the fake dependency).
+
+**Simple Heuristic:**
+* You create the mirror (`@Mock`)
+* You place the real object in front of it (`@InjectMocks`)
+* You look at what the mirror shows you (`assertEquals`, `assertThrows`, etc.)
 
 ### 4. Controller Layer (HTTP Entry Point)
 * `@RestController` that receives requests from the client and calls the Service.
@@ -1136,11 +1159,11 @@ This lets you test the **entire endpoint** (request → controller → response)
 
 > [!NOTE]
 > **SECURITY**:
+> 
 > When your controller uses `@AuthenticationPrincipal OidcUser oidcUser`, it pulls the logged-in user from the Identity Provider (e.g., Google, Okta, E-EMAS).
 > In tests we mock this to simulate authenticated users making requests.
 
-* **@MockitoBean** is commonly used here too — it replaces the real Service with a stub so you can control exactly what the controller receives.
-* Overall we use this step to verify HTTP status, JSON shape, headers, and correct Service calls.
+* **@MockitoBean** is commonly used here too. It replaces the real Service with a stub so you can control exactly what the controller receives.
 
 ### 5. Client Layer (Frontend – React / Angular / etc.)
 * Sends HTTP requests (fetch / Axios) to your Controller endpoints.
