@@ -3099,3 +3099,7 @@ ON users (first_name, last_name, age);
 ```
 
 # Data Structures and Algorithms
+
+> [!NOTE]
+> When looking for efficiency, and optimization **LOOK AT THE LOOPS**!
+> This is where increases in inefficiency can be found.

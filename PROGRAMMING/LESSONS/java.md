@@ -1166,10 +1166,6 @@ const createUser = async (userData) => {
 4. Controller → `@WebMvcTest` + `@MockMvc` (with `@MockitoBean` and mocked `@AuthenticationPrincipal OidcUser`)
 5. Full stack / Client → `@SpringBootTest` or Cypress E2E
 
-## Data Structures and Algorithms (Java)
-
-* When looking for efficiency, and optimization **LOOK AT THE LOOPS**!
-
 # References
 1. https://www.geeksforgeeks.org/dsa/control-structures-in-programming-languages/
 2. https://www.geeksforgeeks.org/software-engineering/mvc-framework-introduction/
