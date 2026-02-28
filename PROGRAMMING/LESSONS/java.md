@@ -944,12 +944,6 @@ class CalcTest {
 > [!NOTE]
 > HTTP methods like `GET`, `PUT`, `DELETE`, `PATCH` are used at the `Controller` level, `Repository` uses JPA methods like `findAll()`, `save()`, `deleteById()` to map to SQL queries.
 
-### API Testing of Endpoints
-
-* Using Mockito to "mock" action of the database.
-* It's a fake/reflected implementation of the "shape" or entity (relationship to database)
-* WHEN an action occurs THEN return something.
-
 ## Model View Controller (MVC)
 
 * Model-View-Controller (MVC) is an architectural/design pattern that separates an application into three main logical parts: `Model`, `View`, and `Controller`. 
@@ -1022,35 +1016,155 @@ class CalcTest {
 * Defines your objects
 
 ## Sping Boot Setup and Walk-Through
-* Clone Kurt's Git Repo for this process... https://github.com/arbtin/books
 * Autowire used in testing to connect to a Repository
 * Primitives vs non-primitives when using IDs:
   * We want non-primitives here because we want our database to generate the value for us.
 * Method Overloading: useful when UPDATING our database, rather than modifying the original method constructor, we would just add a smaller constructor...
 
-* Stub: an empty object
-* POJO: book.java
-* @Mock: the mirror reflecting (the thing we need for the thing under test)
-* @InjectMock: the reflection back at you (the thing under test)
-* `verify`: ensure that the method was called
-* Stack: object in memory
-* Heap: reference to the object that in the stack
-
-> [!NOTE]
-> Ensure that you keep the function of each layer that you're working in...
-> CONTROLLER: e.g., @Get... @Post...
-
-**Controller**
-* ObjectMapper: used to convert HTTP GET/POST requests to JSON
-* MockittoBean: creates a STUB of the application
-* MockMVC: used to test the entire application using the specific path that you set 
-* @PostMapping, @ResponseStatus(HttpStatus...)
-* Security: 
-  * @AuthenticationPrincipal OidcUser oidcUser (touches the identity provider)
-  * Once the authentication is provided, you use the object of `AuthenticationPrincipal`
-
 * Integration Testing is identified by the crossing of boundaries...
 * A good indicator of integration is the abscence of "Mocking" within each layer
+
+## Spring Boot Layered Architecture & Testing Flow
+
+* This is the standard bottom-up order used in Spring Boot (Entity → Repository → Service → Controller → Client).  
+* We **setup** each layer first, then **test** it in isolation before moving to the next. This catches bugs early and keeps tests fast.
+
+### 1. Entity Layer (The Base / Data Blueprint)
+* `Entity` is a plain Java class that defines the "shape" of your data and maps to a database table.
+
+```java
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false, unique = true)
+    private String username;
+    
+    @Column(nullable = false)
+    private String email;
+    
+    private String password;
+    // getters + setters (or use Lombok)
+}
+```
+
+* **Testing**: Minimal (usually just `@DataJpaTest` to check mappings/constraints).
+* Used to make sure the table structure is correct before anything else touches it.
+
+### 2. Repository Layer (Database Bridge)
+* **Setup**: An interface that extends `JpaRepository` and works directly with your Entity.
+
+```java
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByUsername(String username);
+    List<User> findByEmailContaining(String keyword);
+}
+```
+
+* **Testing**: `@DataJpaTest` (uses H2 database dependency).  
+* Used to ensure CRUD and custom queries work with the Entity.
+
+### 3. Service Layer (Business Logic & Orchestrator)
+* `@Service` class that receives the Repository via dependency injection and adds rules.
+
+```java
+@Service
+public class UserService {
+    private final UserRepository repository;
+
+    public UserService(UserRepository repository) {
+        this.repository = repository;
+    }
+
+    public User createUser(User user) {
+        if (user.getUsername() == null) throw new IllegalArgumentException("Username required");
+        return repository.save(user);
+    }
+
+    public List<User> getAllUsers() {
+        return repository.findAll();
+    }
+}
+```
+
+* **Testing**: `@ExtendWith(MockitoExtension.class)` (pure unit test — no Spring context).  
+* Here we use **@Mock** and **@InjectMocks**:
+  * `@Mock` creates a fake/stub version of the Repository.
+  * `@InjectMocks` injects that mock into the Service under test.
+
+* **@MockitoBean** is also used here when we want Spring to replace a real bean with a mock/stub during integration tests. We use this to test only business rules/logic.
+
+### 4. Controller Layer (HTTP Entry Point)
+* `@RestController` that receives requests from the client and calls the Service.
+
+```java
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+    private final UserService service;
+
+    public UserController(UserService service) {
+        this.service = service;
+    }
+
+    @PostMapping
+    public ResponseEntity<User> create(@RequestBody User user) {
+        return ResponseEntity.ok(service.createUser(user));
+    }
+
+    @GetMapping
+    public List<User> getAll() {
+        return service.getAllUsers();
+    }
+}
+```
+
+* Use `@WebMvcTest(UserController.class)` + **@MockMvc** for testing
+  * `@MockMvc` lets you simulate full HTTP requests against specific paths (e.g., `/api/users`) without starting a real server.
+  * It tests the entire controller layer based on the exact path and checks status codes, JSON responses, etc.
+
+#### API Testing of Endpoints
+* Using Mockito (via `@MockitoBean` or `@Mock`) to "mock" the action of the database (or Service layer).
+* It's a fake/reflected implementation of the "shape" or entity (relationship to database).
+* **WHEN** an action occurs (e.g., a GET or POST hits the endpoint) **THEN** return something specific (the mocked response).
+
+This lets you test the **entire endpoint** (request → controller → response) without touching the real database or Service (very efficient).
+
+> [!NOTE]
+> **SECURITY**:
+> When your controller uses `@AuthenticationPrincipal OidcUser oidcUser`, it pulls the logged-in user from the Identity Provider (e.g., Google, Okta, E-EMAS).
+> In tests we mock this to simulate authenticated users making requests.
+
+* **@MockitoBean** is commonly used here too — it replaces the real Service with a stub so you can control exactly what the controller receives.
+* Overall we use this step to verify HTTP status, JSON shape, headers, and correct Service calls.
+
+### 5. Client Layer (Frontend – React / Angular / etc.)
+* Sends HTTP requests (fetch / Axios) to your Controller endpoints.
+
+```jsx
+// Example React service
+const createUser = async (userData) => {
+    const response = await axios.post('/api/users', userData);
+    return response.data;
+};
+```
+
+* **Testing**:
+  * Unit: Jest + React Testing Library (mock Axios)
+  * End-to-End: Cypress / Playwright (real browser → real backend)
+
+* Here we are confirming the full round-trip works (user clicks → backend → database → UI updates).
+
+### Overall Testing Order (Bottom-Up)
+1. Entity → `@DataJpaTest`
+2. Repository → `@DataJpaTest`
+3. Service → Mockito (`@Mock` + `@InjectMocks`) or `@MockitoBean`
+4. Controller → `@WebMvcTest` + `@MockMvc` (with `@MockitoBean` and mocked `@AuthenticationPrincipal OidcUser`)
+5. Full stack / Client → `@SpringBootTest` or Cypress E2E
 
 ## Data Structures and Algorithms (Java)
 
