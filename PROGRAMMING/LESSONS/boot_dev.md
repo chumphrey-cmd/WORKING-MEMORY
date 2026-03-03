@@ -3113,3 +3113,44 @@ ON users (first_name, last_name, age);
 
 > [!TIP]
 > The key is to **decompose** the problem or algorithm to its simplest and most logical form, then reassemble the problem in the language of your choice.
+
+### Exponents
+
+```python
+def get_estimated_spread(audiences_followers):
+    count = 0
+    sum = 0
+
+    if audiences_followers == []:
+        return 0
+        
+    for i in audiences_followers:
+        sum += i
+        count += 1
+    avg = sum / count
+    
+    # Use of "**" is the identifier of an exponent!
+    return avg * (count ** 1.2)
+```
+
+### Logs
+
+```python
+import math
+
+print(f"Logarithm base 2 of 16 is: {math.log(16, 2)}")
+# Logarithm base 2 of 16 is: 4.0
+```
+
+### Factorials
+
+* This was a deceptively simple solution that I spent way too much time on... I ended up looking up and example and solved it in less than a minute...
+
+```python
+def num_possible_orders(num_posts):
+
+    start = 1
+    for i in range(1, num_posts + 1):
+        start =* i
+    return start
+```
