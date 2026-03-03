@@ -131,6 +131,80 @@ class Person { private Address address; public Person(Address addr) { address = 
 > 
 > If "**X has-a** Y" sounds logical and multiple classes can use it (e.g., Person has-an Address), use composition instead.
 
+### Recursion Fundamentals
+
+**When to Use Recursion: Sanity Check**
+
+1. Any problem that can be defined within itself, but optimized and smaller... (called the **`Recursive Case`**).
+2. If there is a trivial case... Meaning that it being stated is itself (e.g., 1! is 1). (called the **`Base Case`**).
+3. When working with inherently recursive data structures, such as navigating file directories, trees, or graphs.
+4. When a problem can be easily broken down into smaller, identical sub-problems (often referred to as a "Divide and Conquer" approach).
+
+#### How to Solve Recursion
+
+1. Identifying the terminating Case (the **Base Case**), or the logic or "equation" that describes the problem or that can be reused. 
+> [!WARNING]
+> Without a proper terminating case, your Java program will run infinitely and crash with a `StackOverflowError`
+
+2. **DEFINE** the problem in terms of itself (the logic of the solution within itself). You must ensure that **every time you define the problem within itself, the input gets closer to the terminating case**.
+3. Determine what data needs to be returned and how the results of those smaller sub-problems will combine to give you your final answer.
+
+
+> [!NOTE]
+> Don't solve the problem! Just define the problem!
+> If it reads right, then it is right!
+> Defining the **limiting** OR **boundary conditions** that are required to solve the problem
+> The computer uses a "Call Stack" to remember where it left off. Every time a recursive definition is called, it pauses the current step, adds a new step to the top of the stack, and waits for the smaller problem to finish first.
+
+#### Factorial
+
+```java
+    public static int factorial(int n){
+
+        ///  Define terminating case... Essentially conditions that make the solution trivial...
+
+        if (n == 1)
+            return 1;
+
+        ///  Define the problem in terms of itself...
+        return n * factorial(n-1);
+}
+```
+
+#### Fibonacci Sequence
+
+```java
+    public static int fibRec(int n){
+
+        ///  NOTE: positions 0 and 1 are hardcoded to 1 so every other case works!
+        if (n == 0)
+            return 1;
+
+        if (n == 1)
+            return 1;
+
+        return fibRec(n -1) + fibRec(n -2);
+
+  }
+```
+
+#### Palindromic Identification
+
+```java
+    /// The key here is that we first convert the Integer to String so that we can iterate through it...
+    public static boolean palindromic(String n){
+        if (n.length() == 0)
+            return true;
+
+        if (n.length() == 1)
+            return true;
+
+        /// Here we are using the `charAt`: which returns the value of a character at a specific length
+        ///  We are also calling the palindromic() function and then calling the `substring` built-in to compare the middle values to each other and ensure that the match...
+        return(n.charAt(0) == n.charAt(n.length() -1)) && palindromic(n.substring(1, n.length() - 1));
+  }
+```
+
 ## Java Coding Examples
 
 ### Scanner Usage, Setters, Getters, ToString (Automobile)
