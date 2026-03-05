@@ -492,3 +492,61 @@ class Crossbowman(Archer):
 * **`target.get_name()`**: Since `target` is another object that is also a `Human`, the Crossbowman can use the public method `get_name()` to identify the victim.
 
 ### Polymorphism
+
+* In progress...
+
+## Data Structures and Algorithms
+
+> I'll use this specific section to cover the major DSA examples in either Java or Python. I won't include the full code blocks here, just snippets from sections of the code.
+
+### Merge Sort
+
+> Here is a snippet from the larger Merge Sort algorithm that I added [here](https://github.com/chumphrey-cmd/Java-Practice/blob/main/dsa/MergeSort.java).
+
+**Snippet A**
+
+```java
+int left = mid - lower + 1;
+int[] arr_left = new int[left];
+```
+
+The "left" variable is being assigned as the primitive type of `int`. It's being used to get the actual length of the array of the left side. To get the exact size we need to take the mid-point (or the middle-most index) subtracted from the lowest index (e.g., 0) + 1 to get the exact **capacity (how many boxes we need to build)**.
+
+Next we're creating another array (`array_left`) with the exact size of the "left" variable that we set in the line above. This sets the correct length of the `arr_left` so that when the array is filled, it doesn't overflow.
+
+---
+
+**Snippet B**
+
+```java
+for (int i = 0; i < left; i++)
+    arr_left[i] = arr[lower + i];
+```
+
+Here we are getting the actual values of the `arr_left` (currently it contains **default 0s**, but not the **real** values). We are iterating through the indices using a for-loop and extracting the values at each index.
+
+* `arr_left[i]` is the array that has the correct length set by Snippet A that is going to be filled as we iterate through the index with the values of the original `array[lower + i]` (lower index + i (iteration up until it is equal to the length arr_left set in Snippet A)).
+
+---
+
+**Snippet C**
+
+```java
+while ((i < arr_left.length) && (j < arr_right.length))
+    if(arr_left[i] < arr_right[j])
+        arr_comb[k++] = arr_left[i++];
+    else
+        arr_comb[k++] = arr_right[j++];
+```
+
+Here we are doing the actual value comparison that serves to sort each part of the array. Earlier we initialized `i`, `j`, and `k` as primitive types of "int" set to 0.
+
+* We are using `i` for `arr_left`, `j` for `arr_right`, and `k` for the combined array (`arr_comb`) which will contain both values from `i` and `j`.
+
+Within the while loop, while both `i` and `j` are less than the length of their respective arrays' length, continue with the conditional statement.
+
+`IF` the values within the arr_left are LESS THAN the values within `arr_right` (here we are describing the actual values at each index (e.g., 0 = 99, 1 = 12, etc.); place the left value into **the next available empty slot in the `arr_comb` array (tracked by `k`)**.
+
+`ELSE` (meaning if the values in `arr_right` are LESS THAN the values of the `arr_left`); place the right value into **the next available empty slot in the `arr_comb` array (tracked by `k`)**.
+
+We're basically **building a new array from scratch**, with each lowest value being **placed sequentially** from left to right (e.g., 1, 2, 3, 4, etc.).

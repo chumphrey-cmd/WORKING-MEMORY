@@ -131,80 +131,6 @@ class Person { private Address address; public Person(Address addr) { address = 
 > 
 > If "**X has-a** Y" sounds logical and multiple classes can use it (e.g., Person has-an Address), use composition instead.
 
-### Recursion Fundamentals
-
-**When to Use Recursion: Sanity Check**
-
-1. Any problem that can be defined within itself, but optimized and smaller... (called the **`Recursive Case`**).
-2. If there is a trivial case... Meaning that it being stated is itself (e.g., 1! is 1). (called the **`Base Case`**).
-3. When working with inherently recursive data structures, such as navigating file directories, trees, or graphs.
-4. When a problem can be easily broken down into smaller, identical sub-problems (often referred to as a "Divide and Conquer" approach).
-
-#### How to Solve Recursion
-
-1. Identifying the terminating Case (the **Base Case**), or the logic or "equation" that describes the problem or that can be reused. 
-> [!WARNING]
-> Without a proper terminating case, your Java program will run infinitely and crash with a `StackOverflowError`
-
-2. **DEFINE** the problem in terms of itself (the logic of the solution within itself). You must ensure that **every time you define the problem within itself, the input gets closer to the terminating case**.
-3. Determine what data needs to be returned and how the results of those smaller sub-problems will combine to give you your final answer.
-
-
-> [!NOTE]
-> Don't solve the problem! Just define the problem!
-> If it reads right, then it is right!
-> Defining the **limiting** OR **boundary conditions** that are required to solve the problem
-> The computer uses a "Call Stack" to remember where it left off. Every time a recursive definition is called, it pauses the current step, adds a new step to the top of the stack, and waits for the smaller problem to finish first.
-
-#### Factorial
-
-```java
-    public static int factorial(int n){
-
-        ///  Define terminating case... Essentially conditions that make the solution trivial...
-
-        if (n == 1)
-            return 1;
-
-        ///  Define the problem in terms of itself...
-        return n * factorial(n-1);
-}
-```
-
-#### Fibonacci Sequence
-
-```java
-    public static int fibRec(int n){
-
-        ///  NOTE: positions 0 and 1 are hardcoded to 1 so every other case works!
-        if (n == 0)
-            return 1;
-
-        if (n == 1)
-            return 1;
-
-        return fibRec(n -1) + fibRec(n -2);
-
-  }
-```
-
-#### Palindromic Identification
-
-```java
-    /// The key here is that we first convert the Integer to String so that we can iterate through it...
-    public static boolean palindromic(String n){
-        if (n.length() == 0)
-            return true;
-
-        if (n.length() == 1)
-            return true;
-
-        /// Here we are using the `charAt`: which returns the value of a character at a specific length
-        ///  We are also calling the palindromic() function and then calling the `substring` built-in to compare the middle values to each other and ensure that the match...
-        return(n.charAt(0) == n.charAt(n.length() -1)) && palindromic(n.substring(1, n.length() - 1));
-  }
-```
-
 ## Java Coding Examples
 
 ### Scanner Usage, Setters, Getters, ToString (Automobile)
@@ -799,16 +725,143 @@ public class score_board {
 }
 ```
 
-## Test Driven Development (TDD)
 
-### Laws of TDD
+### Recursion Fundamentals
+
+**When to Use Recursion: Sanity Check**
+
+1. Any problem that can be defined within itself, but optimized and smaller... (called the **`Recursive Case`**).
+2. If there is a trivial case... Meaning that it being stated is itself (e.g., 1! is 1). (called the **`Base Case`**).
+3. When working with inherently recursive data structures, such as navigating file directories, trees, or graphs.
+4. When a problem can be easily broken down into smaller, identical sub-problems (often referred to as a "Divide and Conquer" approach).
+
+#### How to Solve Recursion
+
+1. Identifying the terminating Case (the **Base Case**), or the logic or "equation" that describes the problem or that can be reused.
+> [!WARNING]
+> Without a proper terminating case, your Java program will run infinitely and crash with a `StackOverflowError`
+
+2. **DEFINE** the problem in terms of itself (the logic of the solution within itself). You must ensure that **every time you define the problem within itself, the input gets closer to the terminating case**.
+3. Determine what data needs to be returned and how the results of those smaller sub-problems will combine to give you your final answer.
+
+
+> [!NOTE]
+> Don't solve the problem! Just define the problem!
+> If it reads right, then it is right!
+> Defining the **limiting** OR **boundary conditions** that are required to solve the problem
+> The computer uses a "Call Stack" to remember where it left off. Every time a recursive definition is called, it pauses the current step, adds a new step to the top of the stack, and waits for the smaller problem to finish first.
+
+#### Factorial
+
+```java
+    public static int factorial(int n){
+
+        ///  Define terminating case... Essentially conditions that make the solution trivial...
+
+        if (n == 1)
+            return 1;
+
+        ///  Define the problem in terms of itself...
+        return n * factorial(n-1);
+}
+```
+
+#### Fibonacci Sequence
+
+```java
+    public static int fibRec(int n){
+
+        ///  NOTE: positions 0 and 1 are hardcoded to 1 so every other case works!
+        if (n == 0)
+            return 1;
+
+        if (n == 1)
+            return 1;
+
+        return fibRec(n -1) + fibRec(n -2);
+
+  }
+```
+
+#### Palindromic Identification
+
+```java
+    /// The key here is that we first convert the Integer to String so that we can iterate through it...
+    public static boolean palindromic(String n){
+        if (n.length() == 0)
+            return true;
+
+        if (n.length() == 1)
+            return true;
+
+        /// Here we are using the `charAt`: which returns the value of a character at a specific length
+        ///  We are also calling the palindromic() function and then calling the `substring` built-in to compare the middle values to each other and ensure that the match...
+        return(n.charAt(0) == n.charAt(n.length() -1)) && palindromic(n.substring(1, n.length() - 1));
+  }
+```
+
+#### Merge Sort
+
+> Here is a snippet from the larger Merge Sort algorithm that I added [here](https://github.com/chumphrey-cmd/Java-Practice/blob/main/dsa/MergeSort.java).
+
+**Snippet A**
+
+```java
+int left = mid - lower + 1;
+int[] arr_left = new int[left];
+```
+
+The "left" variable is being assigned as the primitive type of `int`. It's being used to get the actual length of the array of the left side. To get the exact size we need to take the mid-point (or the middle-most index) subtracted from the lowest index (e.g., 0) + 1 to get the exact **capacity (how many boxes we need to build)**.
+
+Next we're creating another array (`array_left`) with the exact size of the "left" variable that we set in the line above. This sets the correct length of the `arr_left` so that when the array is filled, it doesn't overflow.
+
+---
+
+**Snippet B**
+
+```java
+for (int i = 0; i < left; i++)
+    arr_left[i] = arr[lower + i];
+```
+
+Here we are getting the actual values of the `arr_left` (currently it contains **default 0s**, but not the **real** values). We are iterating through the indices using a for-loop and extracting the values at each index.
+
+* `arr_left[i]` is the array that has the correct length set by Snippet A that is going to be filled as we iterate through the index with the values of the original `array[lower + i]` (lower index + i (iteration up until it is equal to the length arr_left set in Snippet A)).
+
+---
+
+**Snippet C**
+
+```java
+while ((i < arr_left.length) && (j < arr_right.length))
+    if(arr_left[i] < arr_right[j])
+        arr_comb[k++] = arr_left[i++];
+    else
+        arr_comb[k++] = arr_right[j++];
+```
+
+Here we are doing the actual value comparison that serves to sort each part of the array. Earlier we initialized `i`, `j`, and `k` as primitive types of "int" set to 0.
+
+* We are using `i` for `arr_left`, `j` for `arr_right`, and `k` for the combined array (`arr_comb`) which will contain both values from `i` and `j`.
+
+Within the while loop, while both `i` and `j` are less than the length of their respective arrays' length, continue with the conditional statement.
+
+`IF` the values within the arr_left are LESS THAN the values within `arr_right` (here we are describing the actual values at each index (e.g., 0 = 99, 1 = 12, etc.); place the left value into **the next available empty slot in the `arr_comb` array (tracked by `k`)**.
+
+`ELSE` (meaning if the values in `arr_right` are LESS THAN the values of the `arr_left`); place the right value into **the next available empty slot in the `arr_comb` array (tracked by `k`)**.
+
+We're basically **building a new array from scratch**, with each lowest value being **placed sequentially** from left to right (e.g., 1, 2, 3, 4, etc.).
+
+# Test Driven Development (TDD)
+
+## Laws of TDD
 * You are not allowed to write any production code unless it passes failing unit tests.
 * You are not allowed to write any more of a unit test than is sufficient to fail; and compilation failures are failures.
 * Don't write any more production code than is enough to pass ONE failing unit test. Test in isolation, do not change, and test more than one variable at a time.
 
-### Testing Types vs Levels
+## Testing Types vs Levels
 
-#### Types
+### Types
 
 * **White Box vs Black Box**
   * White Box: Tester has full knowledge of the internal code/structure (e.g., looking at the Java classes, methods, and logic).
@@ -826,7 +879,7 @@ public class score_board {
   * Functional: Does the application do what it is supposed to do? (e.g., “Does the login button actually log the user in?”)
   * Non-functional: Focuses on how well the application performs (e.g., Security requirements, performance, scalability, usability, reliability).
 
-#### Levels
+### Levels
 
 * **Unit**
   * E.g., The integration of methods within Classes. Smallest level — testing one method or one class in isolation (usually with JUnit 5).
@@ -856,7 +909,7 @@ public class score_board {
   * Measures what percentage of your actual code lines were executed by the tests (e.g., 85% line coverage means 85% of your Java code was run during testing).
 
 
-### TDD Steps and Pyramid
+## TDD Steps and Pyramid
 * **Arrange** – Instantiate the test
 * **Act** – Trigger the action
 * **Assert** - Expected results
@@ -864,7 +917,7 @@ public class score_board {
 > [!NOTE]
 > Think about the idea of [laboratory research](https://medium.com/checkout-com-techblog/scientific-methodology-test-driven-development-2570250dc1ae) where you **ONLY** modify single variables, annotate those changes, verify the results, and then conduct additional experiments...
 
-#### Testing Pyramid
+### Testing Pyramid
 
 <img src="./images/testing_pyramid.png">
 
@@ -876,10 +929,10 @@ public class score_board {
 > The core of this concept is to feed into CI/CD and scalability. 
 > If you continually develop and approve unit tests, you'll be able to have a higher degree of confidence in what you're shipping.
 
-### TDD and JUnit
+## TDD and JUnit
 * JUnit is just a modern Unit Testing framework that can be used across different IDEs that comes with a variety of assertions dependent on the modules that you import (e.g., `org.junit.jupiter.api.Assertions`).
 
-#### Equality and Comparison Assertions
+### Equality and Comparison Assertions
 
 These check if values match or meet conditions useful for validating method outputs in web apps, like comparing expected JSON data or entity fields.
 
@@ -898,7 +951,7 @@ assertNotEquals(0, userList.size()); // List shouldn't be empty after query.
 * **assertSame(expected, actual)**: Checks if two references point to the same object (identity equality).
 * **assertNotSame(unexpected, actual)**: Ensures they're not the same object.
 
-#### Boolean Assertions
+### Boolean Assertions
 Great for flag checks or condition validations, like verifying authentication states.
 * **assertTrue(condition)**: Checks if a boolean is true.
 
@@ -912,7 +965,7 @@ assertTrue(user.isActive()); // User account should be active.
 assertFalse(service.hasErrors()); // No errors after processing.
 ```
 
-#### Nullness Assertions
+### Nullness Assertions
 Essential for handling optional returns or ensuring no nulls where forbidden, common in data access layers.
 * **assertNull(actual)**: Checks if the value is null.
 
@@ -926,7 +979,7 @@ assertNull(repository.findById(invalidId)); // No entity for bad ID.
 assertNotNull(controller.getResponse()); // Response should exist.
 ```
 
-#### Exception Assertions
+### Exception Assertions
 Critical for testing error handling in web apps, like validating that invalid input throws an exception.
 * **assertThrows(expectedType, executable)**: Expects the code block to throw a specific exception.
 
@@ -940,7 +993,7 @@ assertThrows(IllegalArgumentException.class, () -> service.process(null)); // Nu
 assertDoesNotThrow(() -> validator.validate(validObject));
 ```
 
-#### Collection and Array Assertions
+### Collection and Array Assertions
 Handy for testing lists or arrays, like API response payloads.
 * **assertArrayEquals(expectedArray, actualArray)**: Checks if arrays are equal.
 * **assertIterableEquals(expectedIterable, actualIterable)**: For lists/sets; checks equality in order.
@@ -950,7 +1003,7 @@ Handy for testing lists or arrays, like API response payloads.
 > In modern Java web dev (e.g., Spring Boot), these cover 80-90% of unit test needs.
 
 
-#### TDD Example(s)
+### TDD Example(s)
 ```java
 class CalcTest {
 
@@ -976,7 +1029,7 @@ class CalcTest {
     }
 ```
 
-## Spring Boot Application Framework
+# Spring Boot Application Framework
 
 * Spring Boot is a modern Java Web Development Framework that standardizes and streamlines the Web Application process when working with Java. It builds directly on the core Spring Framework (which handles dependency injection and the container) but adds "batteries-included" features like autoconfiguration, embedded servers (e.g., Tomcat), and starter dependencies. 
   * Dependency injection annotating the specific values that are called and ran at start up (e.g., @Mockioto)
@@ -987,13 +1040,13 @@ class CalcTest {
 
 * Spring Boot basically takes the bespoke business logic of your enterprise environment (e.g., the unique ways that you want to interact and display your company's proprietary data via dashboards, internal applications, public-facing applications, etc.), moves that `.java` file into the "Spring Container," and then securely configures your application. 
 
-### Spring Overview
+## Spring Overview
 
 <img src="./images/spring_overview.png">
 
 * Your .java files (POJOs [Plain Old Java Objects]) get "injected" into the Spring Container (also called the IoC-Inversion of Control—container), where Spring handles wiring them up securely based on metadata (annotations like `@Controller`, `@Service`, `@Repository`). 
 
-### Spring Container - Simplified (`Controller`, `Service`, `Repository`)
+## Spring Container - Simplified (`Controller`, `Service`, `Repository`)
 * Digging a bit deeper into the Spring Container itself, there's the `Controller`, `Service`, and `Repository` sections that form its layered architecture of modern Java Web Apps.
 
 <img src="./images/spring_boot_container_simple.png">
@@ -1018,7 +1071,7 @@ class CalcTest {
 > [!NOTE]
 > HTTP methods like `GET`, `PUT`, `DELETE`, `PATCH` are used at the `Controller` level, `Repository` uses JPA methods like `findAll()`, `save()`, `deleteById()` to map to SQL queries.
 
-## Model View Controller (MVC)
+# Model View Controller (MVC)
 
 * Model-View-Controller (MVC) is an architectural/design pattern that separates an application into three main logical parts: `Model`, `View`, and `Controller`. 
 * It ensures that code is more modular, testable, and maintainable-solving issues. It exists to decouple data management (Model), user interface (View), and input handling/orchestration (Controller), allowing independent development and scaling [2].
@@ -1032,26 +1085,26 @@ class CalcTest {
 
 > Here, the `Browser` sends requests to `Controller`, which manipulates the `Model` (including Repositories ↔ Database, Entities, Services, Components), then renders the `View`, which displays data from the `Model` back to the `Browser`.
 
-### Controller
+## Controller
 * Is the central "connector" or "intermediary" between the client browser, rendering incoming requests, and orchestration. It coordinates the flow, processes some business logic, manipulates data using the `Model`, and interacts with the `View` to display the specific outputs.
 * The controller also receives user input and interprets it.
 * Updating the `Model` based on user actions.
 * Selecting and displaying the appropriate View.
 
-### View
+## View
 * Generates a UI for the user.
 * Views are created by the data collected by the Model component, but it's often passive and relies on the `Controller` to pass that data.
 * It **ONLY** interacts with the `Controller`.
 * The primary purpose is to take the rendered view of that data and display that information for the end user.
 
-### Model
+## Model
 * This section seems to be the meat-and-potatoes and backend work that is required to actually interact with the database.
 * Thinking out the lecture in class today, we used annotations (e.g., `@Repository` and `@Service`) to mark specific sections inside our Java application.
 * Managing data: CRUD (Create, Read, Update, Delete) operations.
 * Enforcing business rules.
 * Notifying the `View` and `Controller` of state changes (via observer patterns in classic MVC; in web frameworks like Spring, the Controller often fetches updates from the Model and pushes them to the View).
 
-### Spring Boot (MVC) by Layers
+# Spring Boot + MVC by Layers
 
 <img src="./images/springboot_by_layers.png">
 
@@ -1062,7 +1115,7 @@ class CalcTest {
 * The **Controller** `renders` the **View**.
 * The **View** sends the final response back to the **Browser**.
 
-#### Spring Annotations and Testing Strategies
+## Spring Annotations and Testing Strategies
 
 **@Controller**
 
