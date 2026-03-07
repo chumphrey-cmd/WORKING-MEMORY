@@ -2620,7 +2620,7 @@ FROM users
 WHERE age BETWEEN 18 AND 30;
 ```
 
-**Distinct Clause´´´**
+**Distinct Clause**
 ```sql
 -- DISTINCT Clause identifying unique values
 SELECT DISTINCT previous_company
@@ -3144,7 +3144,7 @@ print(f"Logarithm base 2 of 16 is: {math.log(16, 2)}")
 
 ### Factorials
 
-* This was a deceptively simple solution that I spent way too much time on... I ended up looking up and example and solved it in less than a minute...
+* This was a deceptively simple solution that I spent way too much time on... I ended up looking and example and solved it in less than a minute...
 
 ```python
 def num_possible_orders(num_posts):
@@ -3154,3 +3154,90 @@ def num_possible_orders(num_posts):
         start =* i
     return start
 ```
+
+### Exponential Decay
+
+```python
+# Basic Formula
+remaining_total = quantity * ( retention_rate ^ time )
+```
+
+```python
+def decayed_followers(initial_followers, fraction_lost_daily, days):
+
+# To get retention rate, we need to get the difference from fraction_lost_daily
+
+    retention_rate = 1 - fraction_lost_daily
+    return initial_followers * (retention_rate ** days)
+```
+
+## Big O Notation
+
+> [Big-O Complexity Cheatsheet](https://www.bigocheatsheet.com/)
+
+<img src="./images/big_o_time_complexity.png">
+
+* `O(1)` - constant
+* `O(log n)` - logarithmic
+* `O(n)` - linear
+* `O(n^2)` - squared
+* `O(2^n)` - exponential
+* `O(n!)` - factorial
+
+### O(n) - Linear Time
+
+* When the number of steps in an algorithm grows at the same rate as its input size, it's classified as `O(n)`
+  * As the list of `nums` grows, the time through the iteration also grows
+
+> [!TIP]
+> **Typical Pattern:** Presence of a single for-loop passing in a list
+
+```python
+# Example of O(n)
+
+def find_max(nums):
+    max_so_far = float("-inf")
+    for num in nums:
+        if num > max_so_far:
+            max_so_far = num
+    return max_so_far
+```
+
+### O(n^2) - Exponential Time
+
+* Grows in complexity much more rapidly, BUT for small and medium input sizes, these algorithms can still be very useful. 
+* A common reason an algorithm falls into `O(n^2)` is by using a nested loop, where **the number of iterations of each loop is equal to the number of items in the input**.
+
+> [!TIP]
+> A common reason an algorithm falls into `O(n^2)` is by using a nested loop, where the number of iterations of each loop is equal to the number of items in the input...
+
+```python
+def does_name_exist(first_names, last_names, full_name):
+    for outer in first_names:
+        for inner in last_names:
+            if f"{outer} {inner}" == full_name:
+                return True
+    return False
+```
+
+### O(nm)
+
+* Very similar to `O(n^2)`, but instead of a single input that we care about, there are two. 
+  * If `n` and `m` increase at the same rate, then `O(nm)` is effectively the same as `O(n^2)`. 
+  * However, if `n` or `m` increases faster or slower, then it's useful to track their complexity separately
+
+```python 
+def get_avg_brand_followers(all_handles, brand_name):
+    handle_found_count = 0
+
+# n = nest for-loop
+# m = if-statement
+
+    for handle in all_handles:
+        for single_handle in handle:
+            if brand_name in single_handle:
+                handle_found_count += 1
+    return handle_found_count / len(all_handles)
+```
+
+
