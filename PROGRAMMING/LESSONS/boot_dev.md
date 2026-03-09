@@ -3101,25 +3101,8 @@ ON users (first_name, last_name, age);
 # Data Structures and Algorithms (DSA)
 
 > [!NOTE]
-> When looking for efficiency, and optimization **LOOK AT THE LOOPS**... this is where increases in inefficiency can be found.
->
-> When analyzing using Big O the human interpretation of time vs. Big O interpretation of time **IS NOT THE SAME THING**. Big O just cares about proportionality!
-
-```python
-
-# O(n) Time Complexity
-def print_names_once(names):
-    for name in names:
-        print(name)
-
-# O(n) Time Complexity
-def print_names_twice(names):
-    for name in names:
-        print(name)
-    for name in names:
-        print(name)
-```
-* Even though the same function is called twice, Big O just cares about the proportional time complexity used (e.g., O(n) in both!)
+> When looking for efficiency, and optimization **LOOK AT THE LOOPS**!
+> This is where increases in inefficiency can be found.
 
 ## Algorithm Basics
 
@@ -3257,34 +3240,4 @@ def get_avg_brand_followers(all_handles, brand_name):
     return handle_found_count / len(all_handles)
 ```
 
-### Efficiency Example in `O(1)` - Constant Time
 
-#### LBYL (Look Before You Leap)
-
-* This style involves explicitly checking for preconditions before performing an action. It uses `if` statements to verify that an operation will succeed.
-
-```python
-# LBYL Example
-def get_val(my_dict, key):
-    if key in my_dict:
-        return my_dict[key]
-    return None
-```
-
-#### EAFP (Easier to Ask for Forgiveness than Permission)
-
-* This style assumes the operation will usually work and uses `try/except` blocks to handle any errors that arise. This is the "Pythonic" way of writing code.
-
-```python
-# EAFP Example
-def get_val(my_dict, key):
-    try:
-        return my_dict[key]
-    except KeyError:
-        return None
-```
-
-> [!NOTE]
-> EAFP is faster if the "happy path" (the key existing) happens most of the time, as it only does one lookup. LBYL does two lookups (one to check, one to retrieve).
-> 
-> EAFP is safer in multi-threaded environments where a value might be deleted between the "check" and the "access."
