@@ -98,6 +98,26 @@ Person p2 = new Person("Bob");
 
 * **Composition Relationship**: A "has-a" relationship where one class owns an instance of another as a field.
 
+### Java OOP Concepts
+
+#### Access Modifiers (The Security Guards)
+* **`public`**: **Everyone.** Any class, anywhere in the program, can access it. Normally used for methods that other classes need to use.
+* **`private`**: **Only the class itself.** No one outside the class can see it. Used for sensitive data (attributes/properties). Outsiders must use a `public` Getter or Setter to interact with it.
+* **`protected`**: **Children AND package neighbors.** Visible to subclasses (children) *and* any other classes sitting in the exact same folder (package). (Semi-Private).
+
+#### Method Manipulation (Changing Behaviors)
+* **Overload**: Same method name, **different signature** (parameters). Giving the exact same method multiple ways to behave depending on what data is passed in.
+* **Override**: Same method name, **same signature**. The Child writes its own method to completely replace the parent's version of that method.
+
+#### The `super` Keyword (Talking to the Parent)
+* **`super()`**: Calls the **Parent's Constructor**. It must be the very first line inside the child's constructor.
+* **`super.value` / `super.methodName()`**: Accesses a specific variable or method located in the parent.
+
+#### The `final` Keyword (The Padlock)
+* **`final` Class**: Used to prevent any other children from inheriting from a class. No one can ever 'extend' it.
+* **`final` Method**: A child class can inherit this method, but they are **never allowed to Override it**.
+* **`final` Variable**: The value is locked forever (a constant).
+
 ### Coupling and Cohesion
 
 * **Nouns (Classes):**
@@ -1315,6 +1335,34 @@ const createUser = async (userData) => {
 3. Service → Mockito (`@Mock` + `@InjectMocks`) or `@MockitoBean`
 4. Controller → `@WebMvcTest` + `@MockMvc` (with `@MockitoBean` and mocked `@AuthenticationPrincipal OidcUser`)
 5. Full stack / Client → `@SpringBootTest` or Cypress E2E
+
+
+## Spring Boot Back and Frontend From Scratch!
+
+* [1. Basic Springboot Setup](https://docs.google.com/document/d/1unguDrrlFYuRG6n1BW2IGNdjnEkR5ZJLAt2yfLr20Ik/edit?tab=t.0)
+* Open GitHub Repo
+* Navigate to [Spring Initializer](https://start.spring.io/) to create zip file using basic dependencies:
+  * H2, SpringWeb, JPA
+* Unzip dependencies inside the root of the project.
+* Run the following for a sanity check:
+  * `./gralew build`
+  * `./gradel test`
+  * `/gradel bR`
+
+> [!NOTE]
+> Order should create @Repository + @Entity > @Service > @Controller
+
+* @Entity: private properties > constructors > getters > setters
+  * **NOTE:** you don't want to create everything all at once, you want to create the test incrementally!
+
+* [2. Springboot Backend Setup](https://docs.google.com/document/d/1rZslXBb1X5zd4bfANwwqgNhJ5D3NapGM7gGNy2YLvrc/edit?tab=t.0#heading=h.rafcyfrj339q)
+
+* Singleton and Beans
+  * Singleton's are used as a "routing" or manager so that an application only needs to create a single java object for a specific function...
+
+* Testing Through the Layers
+  * I need to determine how and when to conduct specific parts of testing through the MVC layers...
+  * I'll go ahead and copy and provide each of Java Directories and create a pathway for testing...
 
 # References
 1. https://www.geeksforgeeks.org/dsa/control-structures-in-programming-languages/
