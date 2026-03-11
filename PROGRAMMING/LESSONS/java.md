@@ -98,6 +98,52 @@ Person p2 = new Person("Bob");
 
 * **Composition Relationship**: A "has-a" relationship where one class owns an instance of another as a field.
 
+### `static` vs. `void`
+
+#### 1. `void` Answers: "What do you give back?"
+
+Every method in Java must declare a **return type**. It has to tell the compiler what kind of data it will hand back when it finishes running.
+
+* **Return Types (`int`, `String`, `boolean`, etc.):** The method does some work and gives you a specific piece of data back (a "receipt").
+* **`void`:** The method performs an action (like printing to the console, changing a variable, or adding an item to a list) but returns **nothing**. It does its job and quietly finishes.
+
+**Example:**
+
+```java
+// Returns an integer
+public int calculateAge(int birthYear) {
+    return 2024 - birthYear;
+}
+
+// Returns nothing, just performs an action
+public void printWelcomeMessage() {
+    System.out.println("Welcome to the company!");
+}
+```
+
+#### 2. `static` Answers: "Who owns this?"
+
+This keyword is all about Object-Oriented architecture: the difference between the **Blueprint** (the Class) and the **House** (the Object).
+
+* **Non-Static (Instance Methods/Variables):** These belong to a specific *House*. You must build an object using the `new` keyword before you can use them. If you create three different `Company` objects, they each get their own separate `employees` list.
+* **`static` (Class Methods/Variables):** These belong to the *Blueprint*. They exist independently of any objects, and there is only ever **one** copy of them shared across the entire program. You don't need to build an object to use them.
+
+**The Golden Rule of Static:** A `static` method is "blind" to instance variables. The Blueprint doesn't know what color the walls are in a specific House. *Therefore, a static method cannot directly interact with a non-static variable.*
+
+#### 3. The Combo: `static void`
+
+When you put them together, you are simply stating two separate facts about the method:
+
+1. **`static`:** This method belongs to the Class blueprint, not an instantiated object.
+2. **`void`:** This method will not return any data when it finishes.
+
+**Example:**
+
+```java
+// Belongs to the Main class itself, and returns nothing.
+public static void main(String[] args) { ... }
+```
+
 ### Java OOP Concepts
 
 #### Access Modifiers (The Security Guards)
