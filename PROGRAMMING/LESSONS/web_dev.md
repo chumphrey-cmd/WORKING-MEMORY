@@ -50,9 +50,43 @@
 * Precedence:
   * The use of PEMDAS (order of operations...)
 
+### Document Object Model (DOM)
+
+* The hierarchy of your HTML and interact with the elements of the HTML.
+  * e.g., interacting with a database
+
+### BootStrap
+* Front-end CSS framework to speed up the creation of basic web applications. Essentially, it's a pre-collected 
+* From a design standpoint, it's crucial to understand the specific "grid" or UI of the application that you're building...
+  * For example, if you anticipate your user base to primarily be mobile, ensure that your styling and spacing is able to account for that end-user device plane
+
+### Consuming APIs
+* Serving/Building: creating the access to resources, structure, HTTP Methods, etc.
+  * Is the data I need present?
+  * Cost?
+  * How data is sent?
+  * Authentication?
+
+* Consuming: utilization an already built code, data, resources, etc. (e.g., THINK OpenAI, Anthropic, Gemini, etc.)
+  * Endpoints?
+  * Methods (HTTP)
+  * How is data sent?
+  * How much is data sent?
+  * What does the data look like?
+
+> [!NOTE]
+> Your columns when designing applications should ALWAYS add up to 12! 
+> You can dynamically include different sizing options within different devices (e.g., large, medium, small)
+
+
+> [!NOTE] 
+> When moving from dev to prod, REMOVE console.log errors as they are a security concern!
+> 
+
 # References and Frameworks
 
 * [React.dev](https://react.dev/learn)
 * [Vue.js](https://vuejs.org/)
 * [CSS Garden](https://csszengarden.com/)
 * [Browser Safe Colors](https://147colors.com/)
+* [Boot Strap Basics](https://getbootstrap.com/)
