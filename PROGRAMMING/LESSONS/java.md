@@ -1383,7 +1383,7 @@ const createUser = async (userData) => {
 5. Full stack / Client → `@SpringBootTest` or Cypress E2E
 
 
-## Spring Boot Back and Frontend From Scratch!
+## Spring Boot Back and Frontend
 
 * [1. Basic Springboot Setup](https://docs.google.com/document/d/1unguDrrlFYuRG6n1BW2IGNdjnEkR5ZJLAt2yfLr20Ik/edit?tab=t.0)
 * Open GitHub Repo
@@ -1410,7 +1410,211 @@ const createUser = async (userData) => {
   * I need to determine how and when to conduct specific parts of testing through the MVC layers...
   * I'll go ahead and copy and provide each of Java Directories and create a pathway for testing...
 
+### RestAPI Testing
+
+> [!NOTE]
+> After your basic CRUD-based application is set up, use the following commands to test functionality.
+> Generate a new HTTP Client via: `Tools > Service > Create Request in HTTP Client` and input the example content below.
+
+```http
+POST http://localhost:8080/api/v1/APP_NAME
+Accept: application/json
+Content-Type: application/json
+
+# Format based on your Entity.java 
+# CHANGED: Moved this comment OUTSIDE the JSON body. JSON does not support '#' comments, and leaving it inside the curly braces would cause a parsing error.
+{
+  "title": "Learn TDD",
+  "description": "More TDD",
+  "isComplete": false,
+  "category": {
+    "name": "learning"
+  }
+} 
+
+###
+
+GET /api/v1/APP_NAME
+Host: localhost:8080
+Accept: application/json
+
+```
+
+* This HTTP Client file acts as a fake "Browser" or front-end. The `POST` block sends a JSON payload to your Controller to create a new record in your database. The `###` acts as a delimiter so you can keep multiple requests in one file. The `GET` block will fetch the data back out to verify your `POST` worked.
+
+
+### Flyway Migration, `compose.yaml`, and `application.yaml` Setup for PostgreSQL
+
+#### Flyway Migration
+
+* Navigate to `src/main/resources`
+* Inside of resources, make the following nested directories:
+* `db` > `migration`
+
+
+* Create Flyway Init Migration file.
+* Right-click `db/migration` > `New` > `File` > Name it `V1__init.sql` (Note the double underscore).
+
+**Section Description:**
+Flyway is a version control system for your database. By placing SQL scripts in this folder, Flyway will run them in order (V1, V2, etc.) right before your Spring app boots up. This guarantees your database tables exist *before* your Java code tries to access them.
+
+#### `compose.yaml`
+
+```bash
+
+# Basic Docker Startup...
+
+cd your-spring-boot-project
+
+docker init
+
+docker-compose up --build
+
+docker-compose ps
+
+docker-compose stop
+
+docker-compose start
+
+docker-compose down
+
+docker-compose down -v
+
+```
+
+* Insert the following information into the `compose.yaml`:
+
+```yaml
+# compose.yaml template
+
+services:
+  postgres-db:
+    container_name: CONTAINER_NAME
+    image: postgres # using the latest official postgres version
+    restart: always
+    volumes:
+      # Ensures your database data survives container restarts.
+      - ./postgresql_data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: YOUR_NAME
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: APP_DB_NAME
+      POSTGRES_HOST_AUTH_METHOD: password
+    ports:
+      - "5434:5432" # 5434 (external port) : 5432 (internal port)
+
+# This tells Docker to create and manage a volume named 'postgresql_data' specifically for our database service above.
+volumes:
+  postgresql_data:
+    driver: local
+```
+
+* Docker Compose reads this file to spin up an isolated, running instance of PostgreSQL on your machine. The port mapping (`5434:5432`) is crucial: it means your Java app (running on your local machine) must talk to port `5434` to reach the database hidden inside the Docker container.
+
+#### `application.yaml`
+
+* Update the following information into `application.yaml`:
+
+```yaml
+spring:
+  application:
+    name: APP_NAME
+
+  datasource:
+    url: jdbc:postgresql://localhost:5434/todo # NOTE: this MUST match the external port (5434) from compose.yaml for proper connection!
+    driver-class-name: org.postgresql.Driver
+    username: YOUR_NAME
+    password: password
+
+  jpa:
+    hibernate:
+      # Since we are using Flyway to manage our database schema, we want Hibernate to only 'validate' that our Java classes match the tables Flyway created. We don't want Hibernate trying to change the tables automatically.
+      ddl-auto: validate 
+    show-sql: true # Prints the SQL queries Hibernate generates to the console, highly useful for debugging.
+
+  flyway:
+    enabled: true
+    # this specifies the location of where we created our flyway setup, defaults to db/migration path...
+    locations: classpath:db/migration
+
+server:
+  port: 8080 # This is the port your actual Spring application runs on, completely separate from the database port.
+
+```
+
+## Spring JPA Overview
+
+* References: 4,5
+
+**Spring Framework Fundamentals:**
+At its core, the Spring Framework is a lightweight, open-source framework designed to simplify enterprise Java applications. It relies heavily on **Inversion of Control (IoC)** and **Dependency Injection (DI)**. By using Spring Boot, much of the boilerplate configuration is eliminated, allowing you to run applications with embedded servers easily.
+
+**Object Relational Mapping (ORM) and JPA:**
+
+* **ORM:** A programming technique that allows you to map your Java objects (like your `Todo` class) directly to relational database tables (like a `todos` table).
+* **Hibernate:** The default underlying ORM tool used by Spring. It is schema-agnostic, meaning it generates the necessary SQL behind the scenes regardless of whether you are using PostgreSQL, MySQL, or H2.
+* **Spring Data JPA:** This module sits on top of Hibernate. It drastically reduces the amount of code you write by allowing you to create "Repositories" (simple interfaces). You don't have to write basic CRUD (Create, Read, Update, Delete) SQL queries anymore; Spring Data JPA handles it for you.
+
+### Query Methods in Spring Data JPA
+
+Based on the official Spring Data documentation, there are a few powerful ways to get data out of your database without writing complex Java code:
+
+1. **Derived Query Methods:** Spring can automatically generate SQL just by looking at the *name* of the method in your Repository interface. For example, if you create a method called `findByIsCompleteTrue()`, Spring parses the method name and automatically writes the SQL to find all completed tasks.
+2. **`@Query` Annotation:** If your query is too complex for a derived method name, you can write manual JPQL (Java Persistence Query Language) or native SQL directly above the method using the `@Query` annotation (e.g., `@Query("SELECT t FROM Todo t WHERE t.category.name = ?1")`).
+
+### Annotations
+
+* **`@Repository`:** Marks an interface as a Data Access Object. It tells Spring to implement the interface and manage it as a bean.
+* **`@Entity`:** Placed on a Model class (like `Todo.java`). It tells JPA, "This class represents a table in the database."
+* **`@Table`:** (Optional) Allows you to specify the exact name of the table in the database if it differs from the class name (e.g., `@Table(name = "todo_items")`).
+* **`@Id`:** Marks a specific field as the Primary Key for the database table.
+* **`@GeneratedValue`:** *(Clarification from previous notes)* This annotation is responsible for automatically generating the sequential ID numbers (1, 2, 3...) for new records when they are saved. **Flyway** generates the *tables*, but `@GeneratedValue` generates the *primary key values*.
+* **`@Column`:** Allows you to map a Java variable to a specific column name in the database, or apply constraints (like `nullable = false`).
+
 # References
 1. https://www.geeksforgeeks.org/dsa/control-structures-in-programming-languages/
 2. https://www.geeksforgeeks.org/software-engineering/mvc-framework-introduction/
 3. https://geeksforgeeks.org/dsa/time-complexities-of-all-sorting-algorithms/
+4. https://www.geeksforgeeks.org/advance-java/spring/
+5. https://docs.spring.io/spring-data/jpa/reference/jpa/query-methods.html
+
+
+Ah, excellent discovery! That is a fantastic catch.
+
+You ran into a very specific change with the newer PostgreSQL images (version 18+). They changed how they manage the underlying data directories to better support version upgrades, which means standard local directory "bind mounts" (like the `./postgres-data` folder we tried) can cause initialization errors due to strict permission and formatting requirements.
+
+Switching back to a **Docker-managed named volume** is the perfect and most robust solution for this. Let's update your notes and `compose.yaml`, and then I'll provide you with a beefed-up, essential list of Docker commands for your daily development workflow.
+
+---
+
+### Updated `compose.yaml`
+
+Here is your revised file. We are switching the volume mapping back to a named volume (`postgresql_data`) and officially declaring it at the bottom.
+
+```yaml
+# compose.yaml template
+
+services:
+  postgres-db:
+    container_name: CONTAINER_NAME
+    image: postgres # using the latest official postgres version
+    restart: always
+    volumes:
+      # CHANGED: Reverted to a Docker-managed named volume. 
+      # This resolves the pg_ctlcluster initialization errors in Postgres 18+ 
+      # while still ensuring your database data survives container restarts.
+      - postgresql_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: YOUR_NAME
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: APP_DB_NAME
+      POSTGRES_HOST_AUTH_METHOD: password
+    ports:
+      - "5434:5432" # 5434 (external port) : 5432 (internal port)
+
+# CHANGED: Added the volumes block back. This tells Docker to create and manage 
+# a volume named 'postgresql_data' specifically for our database service above.
+volumes:
+  postgresql_data:
+
+```
