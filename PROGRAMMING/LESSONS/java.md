@@ -197,6 +197,13 @@ class Person { private Address address; public Person(Address addr) { address = 
 > 
 > If "**X has-a** Y" sounds logical and multiple classes can use it (e.g., Person has-an Address), use composition instead.
 
+
+### RAM vs Stack
+
+* **RAM**: The hardware that is large, general-purpose memory where all running programs, their code, data, stack, and heap live.
+  *  Random here means you can jump directly to any address in (almost) constant time (`O(1)`), instead of stepping through data in order.
+* **Stack**: the region inside a process’s RAM space, used mainly for function call bookkeeping: return addresses, parameters, and local (automatic) variables. It grows and shrinks in a strict **last-in, first-out (LIFO)** order: each function call pushes a new “stack frame,” and returning from the function pops that frame.
+
 ## Java Coding Examples
 
 ### Scanner Usage, Setters, Getters, ToString (Automobile)
