@@ -57,3 +57,97 @@ If Git spots conflicting code, it will pause the rebase.
 2. `git add .` - Stage the resolved files to tell Git you fixed them.
 3. `git rebase --continue` - Tells Git to move on to the next commit. *(Note: Do NOT run `git commit` here!)*
    *Repeat steps 1-3 if Git pauses again, until it says the rebase is successful.*
+
+I’ve updated your guide with the "bulletproof" additions. I modified the `includeIf` syntax to use the case-insensitive flag (`gitdir/i:`) and added a dedicated step for the SSH agent, which is the most common "gotcha" in this process.
+
+## Git Multi-Account Authentication Setup
+
+* Reference: https://www.freecodecamp.org/news/git-config-how-to-configure-git-settings/
+
+### Step 1: Organize Your Project Folders
+Create separate directories to act as the "trigger" for each Git profile.
+* Create a folder for personal work: `mkdir ~/personal-projects`
+* Create a folder for professional work: `mkdir ~/work-projects`
+
+### Step 2: Create Profile-Specific Config Files
+Create individual configuration files in your home directory (`~`) for each identity.
+
+#### .gitconfig-personal
+```ini
+[user]
+    name = Your Personal Name
+    email = personal@email.com
+[core]
+    # Link specific SSH key for this profile
+    sshCommand = "ssh -i ~/.ssh/id_ed25519_personal"
+```
+
+#### .gitconfig-work
+
+```ini
+[user]
+    name = Your Work Name
+    email = work@company.com
+[core]
+    # Link specific SSH key for this profile
+    sshCommand = "ssh -i ~/.ssh/id_ed25519_work"
+```
+
+### Step 3: Configure the Global .gitconfig
+
+Edit your main `~/.gitconfig` file. Using `gitdir/i:` ensures case-insensitivity, making the setup more robust across different operating systems.
+
+**Note:** Ensure paths end with a trailing slash `/`.
+
+```ini
+# Global settings
+[user]
+    name = Default Name
+    email = default@email.com
+
+# Apply personal config if inside the personal-projects directory
+[includeIf "gitdir/i:~/personal-projects/"]
+    path = ~/.gitconfig-personal
+
+# Apply work config if inside the work-projects directory
+[includeIf "gitdir/i:~/work-projects/"]
+    path = ~/.gitconfig-work
+```
+
+### Step 4: Generate SSH Keys (Authentication)
+
+Generate unique keys for each account.
+
+1. **Personal Key:**
+   `ssh-keygen -t ed25519 -C "personal@email.com" -f ~/.ssh/id_ed25519_personal`
+2. **Work Key:**
+   `ssh-keygen -t ed25519 -C "work@company.com" -f ~/.ssh/id_ed25519_work`
+
+*Add the `.pub` versions of these keys to your respective Git hosting accounts (Settings > SSH and GPG keys).*
+
+### Step 5: Start the SSH Agent
+
+To ensure your computer "remembers" these keys during a session, add them to the SSH agent:
+
+```bash
+# Start the agent in the background
+eval "$(ssh-agent -s)"
+
+# Add your specific keys
+ssh-add ~/.ssh/id_ed25519_personal
+ssh-add ~/.ssh/id_ed25519_work
+```
+
+### Step 6: Verification
+
+Navigate into your folders and check if the configuration switched correctly.
+
+```bash
+cd ~/work-projects
+git config user.email
+# Expected Output: work@company.com
+
+cd ~/personal-projects
+git config user.email
+# Expected Output: personal@email.com
+```
