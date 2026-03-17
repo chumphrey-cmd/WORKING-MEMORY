@@ -67,7 +67,7 @@
 
 ## Node.js Basics
 
-* https://nodejs.org/en/learn/getting-started/introduction-to-nodejs
+* [Node.js Intro](https://nodejs.org/en/learn/getting-started/introduction-to-nodejs)
 
 * Node.js is used primarily for scaffolding projects (setting up structures, installing packages, and running build processes) rather than for mastering its entire API.
 * Node.js transformed JavaScript from a client-side language into a versatile, full-stack powerhouse.
@@ -138,7 +138,7 @@ To avoid the "No inputs found" error, always organize your code:
 
 **Destructuring**
 * `let {fname, lname, associates} = person`
-  * Here we are assigning the common nesting options to the "person" keyword that allows you to access spcific arrays much easier!
+  * Here we are assigning the common nesting options to the "person" keyword that allows you to access specific arrays much easier!
 
 # References and Frameworks
 
