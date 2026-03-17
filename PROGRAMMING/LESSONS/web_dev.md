@@ -109,6 +109,37 @@ console.log(catMe())
 node index.js
 ```
 
+## TypeScript Setup Basics
+
+* Reference: [TS Setup](https://www.geeksforgeeks.org/typescript/how-to-setup-a-typescript-project/)
+
+### Initial Project Initialization
+1. **`npm init -y`**: Creates a `package.json` file with default settings. This is the "ID card" for your project.
+2. **`npm install -D typescript`**:
+  * **`-D` (Dev Dependency):** Installs tools needed only during development (like the compiler). These are **not** bundled into the final production code, which keeps your app lightweight.
+3. **`npx tsc --init`**: Generates the `tsconfig.json` file. This is where you tell TypeScript how to behave (e.g., where to find files and where to put the converted JavaScript).
+
+### Project Structure (The "Bulletproof" Way)
+To avoid the "No inputs found" error, always organize your code:
+* **`mkdir src`**: Create a source folder.
+* **`touch src/index.ts`**: Create your main entry point inside that folder.
+
+### Common Commands & Tips
+* **`npx tsc`**: Runs the compiler once to turn your `.ts` into `.js`.
+* **`npx tsc -w`**: Starts "Watch Mode"—it stays open and re-compiles every time you hit Save.
+* **`npm i`**: Short for `npm install`. Run this immediately after downloading a project to install all required libraries listed in the `package.json`.
+
+> [!TIP]
+> **Type Definitions:** While you don't always need to "import packages" for TypeScript's core features, you often need to install "Type Definitions" for external libraries so TS understands them.
+> *Example:* `npm install -D @types/node` (This helps TS understand Node.js specific commands like `process` or `__dirname`).
+
+> [!NOTE]
+> **Node Modules:** Never manually edit the `node_modules` folder. If you need to add or update a package, always use `npm install <package-name>`.
+
+**Destructuring**
+* `let {fname, lname, associates} = person`
+  * Here we are assigning the common nesting options to the "person" keyword that allows you to access spcific arrays much easier!
+
 # References and Frameworks
 
 * [React.dev](https://react.dev/learn)
