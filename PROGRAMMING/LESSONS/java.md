@@ -204,6 +204,160 @@ class Person { private Address address; public Person(Address addr) { address = 
   *  Random here means you can jump directly to any address in (almost) constant time (`O(1)`), instead of stepping through data in order.
 * **Stack**: the region inside a process’s RAM space, used mainly for function call bookkeeping: return addresses, parameters, and local (automatic) variables. It grows and shrinks in a strict **last-in, first-out (LIFO)** order: each function call pushes a new “stack frame,” and returning from the function pops that frame.
 
+
+### Error Handling (Java)
+
+> [!NOTE]
+> The most resilient way to validate input (for critical services) is to accept everything as a String and then just regular expressions to validate!
+> Do not write normal business logic around errors. Log context, fail fast, and fix the root cause.
+
+#### 1) Quick definitions
+
+- **Exception** = a problem your program can often anticipate, handle, or report clearly.
+- **Checked exception** = must be handled with `try/catch` or declared with `throws`.
+- **Unchecked exception** = subclass of `RuntimeException`; does not need to be declared.
+- **Error** = serious JVM or system problem, usually not handled in normal business code.
+
+#### 2) Errors vs Exceptions
+
+* Errors: thrown by the OS and is out of your control!
+* Exceptions: thrown by the program and is in your control!
+
+Common Error examples:
+- `OutOfMemoryError`
+- `StackOverflowError`
+
+#### 3) Common exceptions and when to use them
+
+| Exception | Meaning | Typical fix |
+|---|---|---|
+| `NullPointerException` | Code used a `null` reference | Validate inputs, initialize values early |
+| `NumberFormatException` | Text could not be parsed as a number | Validate before parsing |
+| `IllegalArgumentException` | Caller passed a bad argument | Throw with a clear message |
+| `IllegalStateException` | Object/app state does not allow operation | Check lifecycle or call order |
+| `IndexOutOfBoundsException` | Code accessed an invalid index | Validate length/index first |
+| `ClassCastException` | Wrong type cast at runtime | Use proper typing, generics, `instanceof` |
+| `IOException` | File or stream operation failed | Catch or declare with `throws` |
+
+#### 4) Best practice rules
+
+- Catch only exceptions you can actually handle.
+- Validate inputs early.
+- Throw the most specific exception possible.
+- Do not catch broad `Exception` unless at an application boundary.
+- Do not swallow exceptions silently.
+- Preserve the original cause when wrapping exceptions.
+- Use clear error messages.
+
+#### 5) Common implementations
+
+##### A) Bad input -> `IllegalArgumentException`
+
+```java
+public void setQuantity(int quantity) {
+    if (quantity < 0) {
+        throw new IllegalArgumentException("quantity cannot be negative");
+    }
+}
+```
+
+##### B) Bad state -> `IllegalStateException`
+
+```java
+public class ConnectionManager {
+    private boolean connected;
+
+    public void connect() {
+        connected = true;
+    }
+
+    public void send(String message) {
+        if (!connected) {
+            throw new IllegalStateException("Cannot send before connecting");
+        }
+        System.out.println("Sent: " + message);
+    }
+}
+```
+
+##### C) Prevent `NullPointerException`
+
+```java
+public void sendEmail(String address) {
+    if (address == null) {
+        throw new IllegalArgumentException("address must not be null");
+    }
+    System.out.println("Sending to " + address);
+}
+```
+
+##### D) Prevent `NumberFormatException`
+
+```java
+public int parseAge(String input) {
+    if (input == null || !input.matches("\\d+")) {
+        throw new IllegalArgumentException("age must be numeric");
+    }
+    return Integer.parseInt(input);
+}
+```
+
+##### E) Prevent index errors
+
+```java
+public char thirdLetter(String s) {
+    if (s == null || s.length() < 3) {
+        throw new IllegalArgumentException("string must contain at least 3 characters");
+    }
+    return s.charAt(2);
+}
+```
+
+##### F) Handle checked exceptions with `throws`
+
+```java
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+public String readConfig(Path path) throws IOException {
+    return Files.readString(path);
+}
+```
+
+##### G) Handle checked exceptions with `try/catch`
+
+```java
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+public String loadConfig(Path path) {
+    try {
+        return Files.readString(path);
+    } catch (IOException e) {
+        throw new RuntimeException("Failed to load config from " + path, e);
+    }
+}
+```
+
+##### H) Use try-with-resources for files
+
+```java
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+public void printFirstLine(Path path) {
+    try (BufferedReader reader = Files.newBufferedReader(path)) {
+        System.out.println(reader.readLine());
+    } catch (IOException e) {
+        System.err.println("Could not read file: " + e.getMessage());
+    }
+}
+```
+
 ## Java Coding Examples
 
 ### Scanner Usage, Setters, Getters, ToString (Automobile)
