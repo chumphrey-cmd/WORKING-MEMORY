@@ -115,7 +115,7 @@ get_greeting("user1@example.com")
 def some_function(foo, bar):
 ```
 
-* A good way to quickly determine what the function is suppose to do is to include a **`return None, None`** (basically like a "Debug Allow All" or Sanity Check to display the arguments that are required...)
+* A good way to quickly determine what the function is supposed to do is to include a **`return None, None`** (basically like a "Debug Allow All" or Sanity Check to display the arguments that are required...)
 
 ```python
 def some_function(foo, bar):
@@ -2382,9 +2382,136 @@ base_cost = super().get_trip_cost(distance, food_price)
 
 ## Polymorphism
 
-* Polymorphism is typically handeled at **run time** (meaning that the output can have many forms based on specific runtime criteria...)
+* Polymorphism is typically handled at **run time** (meaning that the output can have many forms based on specific runtime criteria...)
   * E.g., When a user logs in, what specific features or permissions are they allowed to have.
 * Polymorphism is **ONLY** applicable to Children contained underneath Parent classes. In order for the output to transform AT runtime, the children must all derive from the parent...
+* Polymorphism is where each type is responsible for its own data and code, but still adheres to the same interface, in this case a simple method "signature".
+
+### Polymorphism Examples
+
+```python
+class Unit:
+    def __init__(self, name, pos_x, pos_y):
+        self.name = name
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+
+  # Polymorphism here
+    def in_area(self, x1, y1, x2, y2):
+        return (
+            self.pos_x >= x1
+            and self.pos_x <= x2
+            and self.pos_y >= y1
+            and self.pos_y <= y2
+        )
+        
+        
+#####
+
+
+class Dragon(Unit):
+    def __init__(self, name, pos_x, pos_y, height, width, fire_range):
+    
+    # Reusing the properities inherited from Unit (similar to how super().XXX is used in Java)
+        super().__init__(name, pos_x, pos_y) 
+        self.height = height
+        self.width = width
+        self.fire_range = fire_range
+
+        half_width = width * 0.5
+        half_height = height * 0.5
+        
+        self.__hit_box = Rectangle(
+            pos_x - half_width,
+            pos_y - half_height,
+            pos_x + half_width,
+            pos_y + half_height
+        )
+
+  # Polymorphism here...
+    def in_area(self, x1, y1, x2, y2):
+        new_rect = Rectangle(x1, y1, x2, y2)
+        return new_rect.overlaps(self.__hit_box)
+        
+
+#####
+
+class Rectangle:
+    def overlaps(self, rect):
+        return (
+            self.get_left_x() <= rect.get_right_x()
+            and self.get_right_x() >= rect.get_left_x()
+            and self.get_top_y() >= rect.get_bottom_y()
+            and self.get_bottom_y() <= rect.get_top_y()
+        )
+
+    def __init__(self, x1, y1, x2, y2):
+        self.__x1 = x1
+        self.__y1 = y1
+        self.__x2 = x2
+        self.__y2 = y2
+
+    def get_left_x(self):
+        if self.__x1 < self.__x2:
+            return self.__x1
+        return self.__x2
+
+    def get_right_x(self):
+        if self.__x1 > self.__x2:
+            return self.__x1
+        return self.__x2
+
+    def get_top_y(self):
+        if self.__y1 > self.__y2:
+            return self.__y1
+        return self.__y2
+
+    def get_bottom_y(self):
+        if self.__y1 < self.__y2:
+            return self.__y1
+        return self.__y2
+```
+* **Polymorphism** here is the fact that Dragon overrides the `in_area` method from `Unit`. Both classes have an `in_area` method, but they behave differently:
+* `Unit.in_area`: checks if a single center point is within the area.
+* `Dragon.in_area`: checks if the dragon's hit box overlaps with the area.
+
+
+### Overloading Operators
+* Operator overloading is the practice of defining custom behavior for standard Python operators. For example:
+
+```python
+class Sword:
+    def __init__(self, sword_type):
+        self.sword_type = sword_type
+
+    def __add__(self, other):
+    
+        if "bronze" == self.sword_type and "bronze" == other.sword_type:
+            return Sword("iron")
+
+        elif "iron" == self.sword_type and "iron" == other.sword_type:
+            return Sword("steel")
+            
+        raise Exception("cannot craft")
+```
+
+* Here we are using the `__add__` operator to "add" and compare the sword values or "bronze" or "iron" to determine if we need to return a new `Sword` type of either "iron" or "steel".
+
+| Operation | Operator | Method |
+| :--- | :--- | :--- |
+| Addition | `+` | `__add__` |
+| Subtraction | `-` | `__sub__` |
+| Multiplication | `*` | `__mul__` |
+| Power | `**` | `__pow__` |
+| Division | `/` | `__truediv__` |
+| Floor Division | `//` | `__floordiv__` |
+| Remainder (modulo) | `%` | `__mod__` |
+| Bitwise Left Shift | `<<` | `__lshift__` |
+| Bitwise Right Shift | `>>` | `__rshift__` |
+| Bitwise AND | `&` | `__and__` |
+| Bitwise OR | `\|` | `__or__` |
+| Bitwise XOR | `^` | `__xor__` |
+| Bitwise NOT | `~` | `__invert__` |
 
 # SQL Basics
 
