@@ -119,13 +119,36 @@ node index.js
   * **`-D` (Dev Dependency):** Installs tools needed only during development (like the compiler). These are **not** bundled into the final production code, which keeps your app lightweight.
 3. **`npx tsc --init`**: Generates the `tsconfig.json` file. This is where you tell TypeScript how to behave (e.g., where to find files and where to put the converted JavaScript).
 
-### Project Structure (The "Bulletproof" Way)
+### Project Structure
 To avoid the "No inputs found" error, always organize your code:
 * **`mkdir src`**: Create a source folder.
 * **`touch src/index.ts`**: Create your main entry point inside that folder.
 
+**Simple `tsconfig.json` Setup**
+
+* Include the following within the `tsconfig.json` default:
+```json
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    "module": "CommonJS", // Basics module that is used to compile our project!
+    "target": "ES2022", // Year of JS that we want, be sure you have the correct year selected when compiling!
+    // File Layout
+    // "rootDir": "./src",
+    "outDir": "./build",
+    "removeComments": true
+  },
+
+  // the ** is a wild card to identify any level of directories that our application should look through until we hit a *.ts file.
+  "include": [
+    "./src/**/*.ts"
+  ]
+}
+```
+
 ### Common Commands & Tips
 * **`npx tsc`**: Runs the compiler once to turn your `.ts` into `.js`.
+  * `tsc` = transcript compiler
 * **`npx tsc -w`**: Starts "Watch Mode"—it stays open and re-compiles every time you hit Save.
 * **`npm i`**: Short for `npm install`. Run this immediately after downloading a project to install all required libraries listed in the `package.json`.
 
