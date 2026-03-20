@@ -574,7 +574,7 @@ services:
     image: postgres # using the latest official postgres version
     restart: always
     volumes:
-      # Ensures your database data survives container restarts.
+      # Ensures your database data survives container restarts, here we can specific additional backups for our database if needed.
       - ./postgresql_data:/var/lib/postgresql
     environment:
       POSTGRES_USER: YOUR_NAME
