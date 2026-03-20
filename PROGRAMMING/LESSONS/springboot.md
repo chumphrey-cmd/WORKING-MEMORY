@@ -473,7 +473,7 @@ const createUser = async (userData) => {
 * Run the following for a sanity check:
     * `./gralew build`
     * `./gradel test`
-    * `/gradel bR`
+    * `./gradel bR`
 
 > [!NOTE]
 > Order should create @Repository + @Entity > @Service > @Controller
@@ -535,8 +535,9 @@ Accept: application/json
 * Create Flyway Init Migration file.
 * Right-click `db/migration` > `New` > `File` > Name it `V1__init.sql` (Note the double underscore).
 
-**Section Description:**
-Flyway is a version control system for your database. By placing SQL scripts in this folder, Flyway will run them in order (V1, V2, etc.) right before your Spring app boots up. This guarantees your database tables exist *before* your Java code tries to access them.
+**What is Flyway??**
+
+* Flyway is a version control system for your database. By placing SQL scripts in this folder, Flyway will run them in order (V1, V2, etc.) right before your Spring app boots up. This guarantees your database tables exist *before* your Java code tries to access them.
 
 #### `compose.yaml`
 

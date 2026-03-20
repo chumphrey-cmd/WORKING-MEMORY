@@ -2,7 +2,7 @@
 
 > Standard workflow for managing your PostgreSQL database (and any other containers) using docker-compose.
 
-## 1. Lifecycle Commands (Starting and Stopping)
+## 1. Lifecycle Commands (Starting and Stopping)´
 
 * **`docker-compose up -d`**
   * Starts your containers in the background ("detached" mode). This is the most common way to run containers because it frees up your terminal so you can continue typing commands while the database runs silently.
@@ -18,9 +18,11 @@
 
 * **`docker-compose down -v`**
   * Stops containers AND **deletes your volumes**.
-  * This is incredibly useful in Test-Driven Development (TDD) when you want to completely wipe your database clean and start completely fresh!
+  * This is incredibly useful in Test-Driven Development (TDD) when you want to completely wipe your database clean and start completely fresh
 
-
+```bash
+docker stop name_of_container
+```
 
 ## 2. Monitoring & Debugging Commands
 
