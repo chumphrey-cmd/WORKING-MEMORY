@@ -2513,6 +2513,14 @@ class Sword:
 | Bitwise XOR | `^` | `__xor__` |
 | Bitwise NOT | `~` | `__invert__` |
 
+# TypeScript
+
+* [TypeScript](https://www.typescriptlang.org/) is a typed superset of JavaScript that transpiles to plain JavaScript.
+  * **Basically:** it allows you to have better control over code that runs in the browser (JavaScript) by dyanmically assigning data `types` and checks those assigned types before the code runs making it much more robust.
+
+> [!NOTE]
+> Like Java forcing the user to assign Primitive (`String`, `Integer`, `Objects`) or non-primitive reference types (`int`, `double`, `float`, `bool`) to variables.
+
 # SQL Basics
 
 ## NoSQL vs. SQL Databases
