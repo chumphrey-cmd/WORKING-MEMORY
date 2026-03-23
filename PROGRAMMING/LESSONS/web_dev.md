@@ -12,12 +12,6 @@
 
 * Inline Element: only as much as much space as it needs.
 * Block Element: all the space is used
-* Single Page Application (SPA)
-
-## Front End Frameworks
-* `React/Vue` vs the use of Vanilla HTML and CSS
-  * `React/Vue` use virtual Document Object Model (DOM) which allow the rendering of web pages to have **low coupling** and is **object-oriented**. When a web page is rendered, the rendering occurs in pieces allows for pieces of the form to be saved to avoid pieces of it being overwritten.
-  * Vanilla HTML and CSS have to render the entire web page each time a web app is updated 
 
 ## Front End Basics
 * `rem (short for "root em")` is a relative unit of measurement in CSS that defines sizes based on the font size of the website's root element. It allows for entire layouts and components to scale proportionally across different sizes.
@@ -146,7 +140,7 @@ To avoid the "No inputs found" error, always organize your code:
 }
 ```
 
-### Common Commands & Tips
+#### Common Commands & Tips
 * **`npx tsc`**: Runs the compiler once to turn your `.ts` into `.js`.
   * `tsc` = transcript compiler
 * **`npx tsc -w`**: Starts "Watch Mode"—it stays open and re-compiles every time you hit Save.
@@ -163,10 +157,123 @@ To avoid the "No inputs found" error, always organize your code:
 * `let {fname, lname, associates} = person`
   * Here we are assigning the common nesting options to the "person" keyword that allows you to access specific arrays much easier!
 
-# References and Frameworks
+## React + Vite (Vanilla JS)
 
-* [React.dev](https://react.dev/learn)
-* [Vue.js](https://vuejs.org/)
-* [CSS Garden](https://csszengarden.com/)
-* [Browser Safe Colors](https://147colors.com/)
-* [Boot Strap Basics](https://getbootstrap.com/)
+### Vite
+
+* [Vite](https://vite.dev/guide/) is a build tool that aims to provide a faster and leaner development experience for modern web projects and provides a dev server and build commands that bundle your code and allow you to push the content to production.
+
+* Create project folder and run the command below inside of that new directory
+
+```bash
+npm create vite@latest
+```
+
+* Select framework: `React`
+* Select a variant: `JavaScript` or `TypeScript`
+* Install with npm and start now? `Yes`
+
+```bash
+npm install
+```
+
+```bash
+npm run dev
+```
+
+> Running `npm run dev` starts Vite's local dev server (default: `http://localhost:5173`) with **Hot Module Replacement (HMR)**, meaning changes you make in your code reflect in the browser instantly without a full page reload.
+
+#### File Structure and Communication
+
+Overall flow of how the files talk to each other:
+
+```
+index.html  →  main.jsx  →  App.jsx  →  (your components)
+                   ↑
+           Vite processes everything
+           via esbuild under the hood
+```
+
+* **`index.html`**: The entry point and skeleton of the application — similar to a regular HTML file. It contains a single `<div id="root"></div>` which is the mount point where React injects the entire application.
+
+* **`main.jsx`**: The JavaScript entry point. It imports React and `App.jsx`, then uses `ReactDOM.createRoot()` to attach (mount) the `App` component to the `#root` div in `index.html`. Think of it as the bridge between your HTML and your React components.
+
+* **`App.jsx`**: The top-level React component and the root of your component tree. All other components branch out from here. This is where you'll eventually set up routing and import child components. 
+
+* **`vite.config.js`**: Configures Vite's build and dev behavior. Out of the box for a React project, it loads the `@vitejs/plugin-react` plugin which enables JSX support, Fast Refresh (HMR), and other React-specific features. You can also customize the dev server port, build output directory (`dist/`), and add other plugins here.
+
+* **`eslint.config.js`**: Defines the linting rules applied to your code. Catches syntax issues, enforces code style, and flags potential bugs before they cause problems at runtime.
+
+* **esbuild (under the hood)**: Vite uses **esbuild** to transpile and convert `.jsx` files into plain JavaScript that the browser can understand. 
+  * `esbuild` is significantly faster than Babel and handles the JSX transform automatically via the `@vitejs/plugin-react` plugin. 
+
+  > **Note on Babel**: Older React setups (like Create React App) used Babel for JSX transpilation. Vite replaced this with esbuild for speed, so you do **not** need to configure Babel manually in a fresh Vite project.
+
+* **`public/`**: Holds static assets (images, fonts, icons) that are served as-is and do not go through Vite's build pipeline.
+
+* **`src/assets/`**: Also holds assets (like images), but these *are* processed by Vite — useful when you want to import an image directly inside a component.
+
+
+### React + TypeScript + Vite
+
+* The file structure is nearly identical to the Vanilla JS setup, with a few key differences:
+  * File extensions change from `.jsx` → `.tsx` and `.js` → `.ts`
+
+#### Additional Files (TypeScript-Specific)
+
+* **`tsconfig.json`**: The base/root TypeScript config. It doesn't contain many settings itself — it acts as the top-level reference that points to the two environment-specific configs below using `"references"`.
+
+* **`tsconfig.app.json`**: TypeScript config specifically for your **app source code** (everything in `src/`). This targets the **browser** environment and is what Vite uses when building your React components and pages.
+
+* **`tsconfig.node.json`**: TypeScript config for the **Node.js** environment — specifically for Vite's own config file (`vite.config.ts`) and any build scripts. Browser APIs are not available here; it targets what Node can run.
+
+  > **In short:** your app code runs in the *browser* (uses `tsconfig.app.json`) and Vite itself runs in *Node* (uses `tsconfig.node.json`). They need separate configs because they are two completely different runtime environments.
+  
+#### Expanding `eslint.config.js` for TypeScript
+
+For a production app or stricter type safety, upgrade the `eslint.config.js` to **type-aware lint rules** by swapping in the templates [here](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts).
+
+* `tseslint.configs.recommendedTypeChecked` — enables lint rules that require TypeScript's type information (e.g. flags `any` types, unsafe assignments) rather than just syntax-level checks.
+* `tseslint.configs.strictTypeChecked` — an optional stricter version; good for production apps
+* `tseslint.configs.stylisticTypeChecked` — optional stylistic/consistency rules (naming conventions, etc.)
+* `parserOptions.project` — tells ESLint which `tsconfig` files to use so it can read type info during linting.
+* `tsconfigRootDir: import.meta.dirname` — ensures the path to your tsconfig files resolves correctly relative to the project root.
+
+## Front End Frameworks
+
+### React
+
+#### React vs Vanilla HTML/CSS/JS
+
+**React** [1]:
+* JavaScript *library* (not a full framework) for building user interfaces, especially single‑page applications (SPAs).
+* React uses routing (`React Router`), state management (`Redux/Zustand/Context`), and meta‑frameworks (`Next.js`) to complete the SPA stack.
+
+**Vanilla HTML/CSS/JS**: 
+* You manually manipulate the real Document Object Model (DOM) (e.g., `document.querySelector`, `innerHTML`) for every change; React lets you *declare* what the UI should look like for a given state and handles DOM updates automatically.
+* Must often re‑render the entire page (or large manual DOM fragments) whenever the app changes, which is slower and more error‑prone.
+
+#### Single‑Page Application (SPA)
+* The entire app loads once; navigation and data updates happen without full page reloads.
+* SPAs use **virtual DOM** which allows React keep an in‑memory, lightweight copy of the real DOM. When state changes:
+  1. React re‑renders only the affected components into a new virtual tree.
+  2. It **diffs** the new tree against the previous one.
+  3. It applies *only* the minimal set of changes to the real DOM (batched).
+* This gives **low coupling** between UI pieces and makes updates **declarative** and **component‑based** (similar to OOP).
+* When a page is rendered, it happens in *component pieces*; each component can maintain its own state, so pieces are *not* overwritten when other parts update.
+
+#### JSX 
+* **JSX:** HTML‑like syntax inside JavaScript that compiles to `React.createElement` calls.
+
+#### Vitest (Vite)
+* Basically a modern testing framework that comes bundled with `Vite`.
+
+# References
+
+1. [React.dev](https://react.dev/learn)
+2. [Vite](https://vite.dev/guide/)
+3. [reactjs.koida](https://reactjs.koida.tech/react-fundamentals/lesson-8-understanding-the-main-files-app.jsx-and-main.jsx)
+2. [Vue.js](https://vuejs.org/)
+3. [CSS Garden](https://csszengarden.com/)
+4. [Browser Safe Colors](https://147colors.com/)
+5. [Boot Strap Basics](https://getbootstrap.com/)
