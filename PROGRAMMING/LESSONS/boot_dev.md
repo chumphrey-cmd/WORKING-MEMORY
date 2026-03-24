@@ -2387,7 +2387,7 @@ base_cost = super().get_trip_cost(distance, food_price)
 * Polymorphism is **ONLY** applicable to Children contained underneath Parent classes. In order for the output to transform AT runtime, the children must all derive from the parent...
 * Polymorphism is where each type is responsible for its own data and code, but still adheres to the same interface, in this case a simple method "signature".
 
-### Polymorphism Examples
+### Example 1
 
 ```python
 class Unit:
@@ -2513,6 +2513,54 @@ class Sword:
 | Bitwise XOR | `^` | `__xor__` |
 | Bitwise NOT | `~` | `__invert__` |
 
+### Example 2
+
+**Card Comparison (Comparison Overloading)**
+
+```python
+SUITS = ["Clubs", "Diamonds", "Hearts", "Spades"]
+
+RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"]
+
+class Card:
+    def __init__(self, rank, suit):
+        self.rank = rank
+        self.suit = suit
+        self.rank_index = RANKS.index(rank)
+        self.suit_index = SUITS.index(suit)
+
+    def __eq__(self, other):
+        return (self.rank_index == other.rank_index and self.suit_index == other.suit_index)
+            
+    def __lt__(self, other):
+        if self.rank_index == other.rank_index:
+            return self.suit_index < other.suit_index
+        return self.rank_index < other.rank_index
+
+    def __gt__(self, other):
+        if self.rank_index == other.rank_index:
+            return self.suit_index > other.suit_index
+        return self.rank_index > other.rank_index
+```
+> [!NOTE]
+> Notice the implementation of using the `Card` class. 
+> We access the `other` parameter using the `other.[parameter_to_compart]`
+> The core idea is that **operator overloading as a form of polymorphism**, the same operator symbol behaves differently depending on the type of object it's operating on.
+
+* The polymorphism here is that Python's built-in comparison operators (`==`, `<`, `>`) now work on Card objects just as they do on integers or strings, but with our custom logic underneath. 
+* When you write `card_1` > `card_2`, Python calls your `__gt__` method instead of its default behavior.
+
+
+# JavaScript
+
+## Declaring Variables
+
+* `let` vs `const`:
+  * Use `let` for variables that you'll need to reassign, and `const` when you won't.
+
+* Why not `var`?:
+  * `var` is **function-scoped**, not **block-scoped**, which leads to unexpected behavior.
+
 # TypeScript
 
 * [TypeScript](https://www.typescriptlang.org/) is a typed superset of JavaScript that transpiles to plain JavaScript.
@@ -2520,6 +2568,30 @@ class Sword:
 
 > [!NOTE]
 > Like Java forcing the user to assign Primitive (`String`, `Integer`, `Objects`) or non-primitive reference types (`int`, `double`, `float`, `bool`) to variables.
+
+## Types
+
+### `any` Type: JavaScript to TypeScript Migration
+
+* The `any` type is useful when you **migrate an existing JavaScript codebase to TypeScript**. 
+* The (very simplified) process is:
+  * Change file extensions from `.js` to `.ts`
+  * Get tsc running without errors (often works out of the box, due to `any`)
+  * Overtime replace `any` with more specific types.
+
+### Inferred vs Explicit Return Types
+
+```typescript
+function divide(a: number, b: number) {
+  return a / b;
+}
+```
+**Inferred:**
+
+* If elements within your function have a definitive data type used, the element that's returned with return that specific data type.
+* Typically, referred return types are more narrow and explicit and prevent you from creating to broad of data types as your programming.
+
+**Explicit:**
 
 # SQL Basics
 
