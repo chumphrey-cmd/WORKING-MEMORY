@@ -183,9 +183,14 @@ npm run dev
 
 > Running `npm run dev` starts Vite's local dev server (default: `http://localhost:5173`) with **Hot Module Replacement (HMR)**, meaning changes you make in your code reflect in the browser instantly without a full page reload.
 
+```bash
+# Allows your application to be compressed (via gzip)
+npm run build
+```
+
 #### File Structure and Communication
 
-Overall flow of how the files talk to each other:
+[Key Files and Directories Talk to Each Other](https://reactjs.koida.tech/react-fundamentals/lesson-8-understanding-the-main-files-app.jsx-and-main.jsx#breakdown-of-key-files-and-directories) [3]:
 
 ```
 index.html  →  main.jsx  →  App.jsx  →  (your components)
@@ -194,25 +199,54 @@ index.html  →  main.jsx  →  App.jsx  →  (your components)
            via esbuild under the hood
 ```
 
-* **`index.html`**: The entry point and skeleton of the application — similar to a regular HTML file. It contains a single `<div id="root"></div>` which is the mount point where React injects the entire application.
+<img src="./images/react_dir_structure.png">
 
-* **`main.jsx`**: The JavaScript entry point. It imports React and `App.jsx`, then uses `ReactDOM.createRoot()` to attach (mount) the `App` component to the `#root` div in `index.html`. Think of it as the bridge between your HTML and your React components.
 
-* **`App.jsx`**: The top-level React component and the root of your component tree. All other components branch out from here. This is where you'll eventually set up routing and import child components. 
+#### 1. `public/`
+* **`index.html`**: The main HTML file that serves as the entry point for the browser. It typically contains the root element (`<div id="root"></div>`) where React renders the application.
 
-* **`vite.config.js`**: Configures Vite's build and dev behavior. Out of the box for a React project, it loads the `@vitejs/plugin-react` plugin which enables JSX support, Fast Refresh (HMR), and other React-specific features. You can also customize the dev server port, build output directory (`dist/`), and add other plugins here.
+* **`favicon.ico`**: The favicon image that appears in the browser tab.
+
+#### 2. `src/`
+* **`App.jsx`**: The main component of your application. It often handles the overall application logic and structure, and may contain child components.
+
+* **`index.jsx` or `main.jsx`**: The entry point of your application where you render the `App` component into the DOM.
+
+* **`components/`**: A folder to organize reusable components (e.g., `Header.jsx`, `Footer.jsx`, `Button.jsx`). This promotes modularity and code reusability.
+
+* **`styles/`**: A folder to store CSS or SCSS files for styling your components. This helps keep styles organized and separate from JavaScript logic.
+
+* **`assets/`**: A folder to store images, fonts, and other static assets used in your application.
+
+* **`services/`**: A folder to house functions that handle interactions with external APIs or data sources (e.g., `api.js` for making HTTP requests).
 
 * **`eslint.config.js`**: Defines the linting rules applied to your code. Catches syntax issues, enforces code style, and flags potential bugs before they cause problems at runtime.
 
-* **esbuild (under the hood)**: Vite uses **esbuild** to transpile and convert `.jsx` files into plain JavaScript that the browser can understand. 
+#### 3. `node_modules/`
+* This folder contains all the third-party dependencies (libraries and packages) that your project relies on (e.g., React, ReactDOM, Axios). Generated when you install dependencies using `npm install` or `yarn add`.
+
+* **`vite.config.js`**: Configures Vite's build and dev behavior. 
+  * Loads the `@vitejs/plugin-react` plugin which enables JSX support, Fast Refresh (HMR), and other React-specific features. 
+  * Here you can also customize the dev server port, build output directory (`dist/`), and add other plugins here.
+
+#### 4. `package.json`
+* This file contains metadata about your project, such as the project name, version, and author.
+* It lists the **dependencies** required for the app to run and defines **scripts** that can be executed, such as `dev` (to start the development server) or `build` (to prepare for production).
+
+
+#### 5. `vite.config.js`
+* This file is used to configure **Vite**, the build tool. It allows you to customize various aspects of the build process, such as:
+  * Root directory
+  * Plugins
+  * Server configuration
+  * Build options
+
+
+> [!NOTE]
+> Older React setups (like Create React App) used Babel for JSX transpilation. Vite replaced this with `esbuild` for speed, so you do **not** need to configure Babel manually in a fresh Vite project.
+
+* **`esbuild` (under the hood)**: Vite uses **esbuild** to transpile and convert `.jsx` files into plain JavaScript that the browser can understand. 
   * `esbuild` is significantly faster than Babel and handles the JSX transform automatically via the `@vitejs/plugin-react` plugin. 
-
-  > **Note on Babel**: Older React setups (like Create React App) used Babel for JSX transpilation. Vite replaced this with esbuild for speed, so you do **not** need to configure Babel manually in a fresh Vite project.
-
-* **`public/`**: Holds static assets (images, fonts, icons) that are served as-is and do not go through Vite's build pipeline.
-
-* **`src/assets/`**: Also holds assets (like images), but these *are* processed by Vite — useful when you want to import an image directly inside a component.
-
 
 ### React + TypeScript + Vite
 
@@ -239,9 +273,17 @@ For a production app or stricter type safety, upgrade the `eslint.config.js` to 
 * `parserOptions.project` — tells ESLint which `tsconfig` files to use so it can read type info during linting.
 * `tsconfigRootDir: import.meta.dirname` — ensures the path to your tsconfig files resolves correctly relative to the project root.
 
-## Front End Frameworks
+## Front End: React + Vite + JS/TS
 
-### React
+### Explained
+
+* React + Vite + JS/TS is a combination of three pieces that work together:
+  * `React` = the UI library (how you build the interface)
+  * `Vite` = the build tool + dev server (how you develop and ship it)
+  * `TypeScript` or `JavaScript` = the language you write the code in
+
+* Used to quickly prototype or production-scale browser-based frontends (dashboards, agent UIs, forms, SPAs, admin panels, etc.).
+* It **does not** handle backend/servers/databases — that’s separate (Node, Python, Java, etc.).
 
 #### React vs Vanilla HTML/CSS/JS
 
@@ -262,11 +304,6 @@ For a production app or stricter type safety, upgrade the `eslint.config.js` to 
 * This gives **low coupling** between UI pieces and makes updates **declarative** and **component‑based** (similar to OOP).
 * When a page is rendered, it happens in *component pieces*; each component can maintain its own state, so pieces are *not* overwritten when other parts update.
 
-#### JSX 
-* **JSX:** HTML‑like syntax inside JavaScript that compiles to `React.createElement` calls.
-
-#### Vitest (Vite)
-* Basically a modern testing framework that comes bundled with `Vite`.
 
 # References
 
@@ -277,3 +314,4 @@ For a production app or stricter type safety, upgrade the `eslint.config.js` to 
 3. [CSS Garden](https://csszengarden.com/)
 4. [Browser Safe Colors](https://147colors.com/)
 5. [Boot Strap Basics](https://getbootstrap.com/)
+6. [Node.js](https://nodejs.org/en/learn/getting-started/introduction-to-nodejs)
