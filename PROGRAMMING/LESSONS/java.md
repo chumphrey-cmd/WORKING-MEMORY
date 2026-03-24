@@ -358,6 +358,145 @@ public void printFirstLine(Path path) {
 }
 ```
 
+### Abstract Classes
+
+**Defined**
+* It's a way to strictly enforce methods and attributes that **MUST** be present in all other children that inherit (or extend) from the abstract parent class. It's like strictly enforced guard rails that keep the design of your code clean as it grows. 
+  * When we mark a method `abstract`, we're telling Java: "I don't care how each subclass does this, but every single one of them must do it." **No implementation means no compilation**.
+
+#### Template Method Pattern
+
+* The abstract class defines the **fixed algorithm skeleton**, and each subclass only fills in the unique steps. `run()` is marked `final` so no subclass can break the overall flow.
+
+```java
+// Abstract class defines the skeleton of the algorithm
+public abstract class DataProcessor {
+
+    // Concrete shared step - same for all subclasses
+    public void readData() {
+        System.out.println("Reading data from source...");
+    }
+
+    // Abstract step - each subclass MUST implement this
+    public abstract void processData();
+
+    // Concrete shared step - same for all subclasses
+    public void saveData() {
+        System.out.println("Saving processed data...");
+    }
+
+    // Template method - controls the full flow, final so it cannot be overridden
+    public final void run() {
+        readData();
+        processData();
+        saveData();
+    }
+}
+
+// Subclass only fills in what is unique to it
+public class CSVProcessor extends DataProcessor {
+    @Override
+    public void processData() {
+        System.out.println("Processing CSV data...");
+    }
+}
+
+public class JSONProcessor extends DataProcessor {
+    @Override
+    public void processData() {
+        System.out.println("Processing JSON data...");
+    }
+}
+
+// Usage
+public class Main {
+    public static void main(String[] args) {
+        DataProcessor csv = new CSVProcessor();
+        csv.run();
+        // Output:
+        // Reading data from source...
+        // Processing CSV data...
+        // Saving processed data...
+
+        DataProcessor json = new JSONProcessor();
+        json.run();
+        // Output:
+        // Reading data from source...
+        // Processing JSON data...
+        // Saving processed data...
+    }
+}
+```
+
+#### Shared State + Enforce Contract
+
+* The abstract class holds shared state (fields) that all subclasses automatically inherit, and forces each subclass to implement the `area()` method.
+
+```java
+// Abstract class holding shared state and a forced contract
+public abstract class Shape {
+    private String color; // shared state — all shapes have this automatically
+
+    public Shape(String color) {
+        this.color = color;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    // Each subclass MUST define how it calculates area
+    public abstract double area();
+
+    // Shared concrete method — no need to rewrite in each subclass
+    public void describe() {
+        System.out.println("This is a " + color + " shape with area: " + area());
+    }
+}
+
+public class Circle extends Shape {
+    private double radius;
+
+    public Circle(String color, double radius) {
+        super(color); // must call super() to supply shared state
+        this.radius = radius;
+    }
+
+    @Override
+    public double area() {
+        return Math.PI * radius * radius;
+    }
+}
+
+public class Rectangle extends Shape {
+    private double width, height;
+
+    public Rectangle(String color, double width, double height) {
+        super(color); // must call super() to supply shared state
+        this.width = width;
+        this.height = height;
+    }
+
+    @Override
+    public double area() {
+        return width * height;
+    }
+}
+
+// Usage
+public class Main {
+    public static void main(String[] args) {
+        Shape circle = new Circle("red", 5.0);
+        circle.describe();
+        // Output: This is a red shape with area: 78.53981633974483
+
+        Shape rect = new Rectangle("blue", 4.0, 6.0);
+        rect.describe();
+        // Output: This is a blue shape with area: 24.0
+    }
+}
+```
+
 ## Java Coding Examples
 
 ### Scanner Usage, Setters, Getters, ToString (Automobile)
@@ -1089,6 +1228,10 @@ We're basically **building a new array from scratch**, with each lowest value be
   * **Genetic Algorithm**
   * **Hungarian Sorting Algorithm**
   * **Tower of Hanoi (ToH)**
+
+### Data Structures and Algorithms (DSA)
+
+* https://www.geeksforgeeks.org/dsa/graph-data-structure-and-algorithms/
 
 # References
 1. https://www.geeksforgeeks.org/dsa/control-structures-in-programming-languages/
