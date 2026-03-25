@@ -51,28 +51,42 @@
   * **The Fetch API:** The standard JS method for requesting data from an endpoint.
   * **Status Codes:** `200` (OK), `404` (Not Found), `500` (Server Error).
 
----
-
 > [!IMPORTANT]
 > **Grid Logic:** When designing layouts, ensure your column spans add up to **exactly 12** to maintain alignment. Use responsive classes (e.g., `col-12 col-md-6`) to define how many columns an element occupies on different devices.
 
 > [!WARNING]
 > **Production Security:** When moving from development to production, **ALWAYS REMOVE** `console.log` statements. These can leak sensitive application logic or user data to the public browser console, creating a security vulnerability.
 
-## Node.js Basics
+## What is Node.js
 
 * [Node.js Intro](https://nodejs.org/en/learn/getting-started/introduction-to-nodejs)
 
 * Node.js is used primarily for scaffolding projects (setting up structures, installing packages, and running build processes) rather than for mastering its entire API.
-* Node.js transformed JavaScript from a client-side language into a versatile, full-stack powerhouse.
-* Node essentially allows JavaScript to run outside the browser, with the ability to read and write files, run servers, access databases, and automate tasks.
-  * **Built-in Modules**:
-    * fs:
-    * http:
-    * path:
-    * events:
-    * crypto:
 
+* Node.js transformed JavaScript from a client-side language into a versatile, full-stack toolset.
+
+* Node essentially allows JavaScript to run **outside the browser**, with the ability to read and write files, run servers, access databases, and automate tasks.
+
+**Built-in Modules** — these come packaged with Node.js and do not require any installation:
+* **`fs` (File System)**: Read, write, update, delete, and watch files and directories on your machine. This is what allows tools like Vite to create project folders and write config files during scaffolding.
+
+* **`http`**: Create and manage HTTP servers and handle incoming requests and outgoing responses. This is the foundation that web frameworks like Express are built on top of.
+
+* **`path`**: Safely construct and resolve file paths across different operating systems (e.g. handles the difference between `/` on Mac/Linux and `\` on Windows). Commonly seen in `vite.config.js` and `tsconfig.json` for resolving project directories.
+
+* **`events`**: Provides an `EventEmitter` class that allows different parts of your application to communicate by emitting and listening for named events — the backbone of Node's asynchronous, event-driven architecture.
+
+* **`crypto`**: Handles cryptographic functionality like hashing, encryption, and generating secure random tokens. Commonly used for things like hashing passwords or generating secure session IDs.
+
+* **npm (Node Package Manager)**: Bundled with Node.js, npm is the tool you use to install third-party packages (`npm install`), run scripts (`npm run dev`), and manage your project's dependencies via `package.json`.
+
+```bash
+# Check your installed Node and npm versions
+node -v
+npm -v
+```
+
+### Initializing Node
 
 * `npm init -y`
   * `-y`: used to accepts the defaults for you project.
@@ -91,16 +105,47 @@
 > [!WARNING]
 > Ensure that you've validated the actual package that you want to download for you web-app, this is easy hunting ground for potential threats to exploit individuals devs via drive by downloads!
 
-* `import packages`:
+* How to properly import packages:
 
 ```js
-const catMe = require("<name_of_package>")
-console.log(catMe())
+const yourVar = require("<name_of_package>")
+console.log(yourVar())
 ```
 
 ```bash
-# Simple way to run catMe() function to get ASCII art...
+# Simple way to run the app...
 node index.js
+```
+
+## Node + Jest Testing Setup
+
+* Create dedicated directory and subdirectories for your project...
+```java
+mkdir project_name
+```
+
+* Initialize project and download the `Jest` testing framework (similar to `JUnit5`)...
+```bash
+npm init -y
+npm install jest -D
+```
+
+* Make `src` and `tests` directory...
+```bash 
+mkdir src 
+mkdir tests
+touch tests/sanityCheckTest.test.js
+```
+
+* Complete sanity check to ensure that testing actually works!
+  * Add the placeholder test in `tests/sanityCheckTest.test.js`
+```javascript
+test('Jest is working', () => { expect(1 + 1).toBe(2); });
+```
+
+* Run sanity check test from within your created directory!
+```bash
+npm test
 ```
 
 ## TypeScript Setup Basics
