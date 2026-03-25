@@ -58,8 +58,6 @@ If Git spots conflicting code, it will pause the rebase.
 3. `git rebase --continue` - Tells Git to move on to the next commit. *(Note: Do NOT run `git commit` here!)*
    *Repeat steps 1-3 if Git pauses again, until it says the rebase is successful.*
 
-I’ve updated your guide with the "bulletproof" additions. I modified the `includeIf` syntax to use the case-insensitive flag (`gitdir/i:`) and added a dedicated step for the SSH agent, which is the most common "gotcha" in this process.
-
 ## Git Multi-Account Authentication Setup
 
 * Reference: https://www.freecodecamp.org/news/git-config-how-to-configure-git-settings/
