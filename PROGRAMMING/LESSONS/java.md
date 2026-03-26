@@ -358,13 +358,173 @@ public void printFirstLine(Path path) {
 }
 ```
 
-### Abstract Classes
+### Interfaces vs Abstract Classes
+
+* An `abstract class` is a **partial blueprint** — it defines shared identity, state, and behavior for closely related things (e.g., all `Animal` subclasses share a `color` and a `sleep()` method)
+* An `interface` is a **capability contract** — it says "anything that implements me **PROMISES** and will be **ENFORCED** to do these things," regardless of what that thing actually is (e.g., a `SUV` and a `Motorcycle` can both implement `Driveable`)
+
+**Side-by-side differences**
+
+| Feature | Abstract Class | Interface |
+|---|---|---|
+| Keyword | `extends` | `implements` |
+| Instantiation | ❌ Cannot be instantiated | ❌ Cannot be instantiated |
+| Methods | Can have both abstract AND concrete methods | Abstract by default; `default`/`static` allowed since Java 8 |
+| Fields/Variables | Any type — instance, static, final, non-final | Only `public static final` constants |
+| State | ✅ Can hold and manage state | ❌ Cannot hold state |
+| Constructors | ✅ Allowed | ❌ Not allowed |
+| Inheritance limit | A class can extend **only one** | A class can implement **multiple** |
+| Access modifiers | Members can be `private`, `protected`, `public` | Methods are `public` by default |
+
+**The Golden Rule**
+* **Shared code + shared state among related classes** → Abstract class
+* **Shared behavior contract across unrelated classes** → Interface
+* **Both needed** → Abstract class + one or more interfaces (Java allows this)
+
+#### Interfaces
+
+**Defined**
+* Highly useful when designing and making software architecture decision (CODE DESIGN)...
+* Interfaces **ARE NOT** classes, they are concepts, used within classes, and the Class **`implement`** it...
+* Basically, interfaces define **what a class can do**, not what it is. Any unrelated class can implement the same interface as long as it fulfills its contract.
+* The interface = the contract (what must be done)
+* The class = the implementation (how it gets done)
+  * A class can implement multiple interfaces but extend only one class
+  * The method bodies always live in the class, never in the interface itself (except for default and static methods added in Java 8)
+
+> [!NOTE]
+> **NORMALLY**, multiple forms of inheritance IS NOT allowed... BUT interfaces CAN ALLOW for multiple inheritance for example:
+```java
+class Numbers implements Math, Logic{...}
+```
+
+> [!TIP]
+> Recently Java introduced the idea of the `default` which is used to make changes to established code (backwards compatibility) so that if people want to modify legacy code you can ensure that the code is still operational!
+> * `default void new_func(){}`
+
+##### Interface Implementation
+
+```java
+// ── Interfaces (capability contracts) ──────────────────────────────
+
+public interface Flyable {
+    void fly(); // any implementing class MUST define this
+}
+
+public interface Swimmable {
+    void swim(); // any implementing class MUST define this
+}
+
+public interface Speakable {
+    void speak(); // any implementing class MUST define this
+}
+
+
+// ── Abstract base class (shared identity + state)
+
+public abstract class Animal {
+    private String name;
+
+    public Animal(String name) {
+        this.name = name;
+    }
+
+    public String getName() { return name; }
+
+    public abstract void makeSound(); // all animals must define this
+}
+
+
+// ── Concrete classes implementing multiple interfaces ───────────────
+
+// Duck is an Animal that can ALSO fly AND swim
+public class Duck extends Animal implements Flyable, Swimmable {
+
+    public Duck(String name) {
+        super(name);
+    }
+
+    @Override
+    public void makeSound() {
+        System.out.println(getName() + " says: Quack!");
+    }
+
+    @Override
+    public void fly() {
+        System.out.println(getName() + " is flying low over the pond");
+    }
+
+    @Override
+    public void swim() {
+        System.out.println(getName() + " is paddling through the water");
+    }
+}
+
+// Parrot is an Animal that can ALSO fly AND speak
+public class Parrot extends Animal implements Flyable, Speakable {
+
+    public Parrot(String name) {
+        super(name);
+    }
+
+    @Override
+    public void makeSound() {
+        System.out.println(getName() + " says: Squawk!");
+    }
+
+    @Override
+    public void fly() {
+        System.out.println(getName() + " is soaring through the trees");
+    }
+
+    @Override
+    public void speak() {
+        System.out.println(getName() + " says: Polly wants a cracker!");
+    }
+}
+
+// Plane has NOTHING to do with Animal but is still Flyable
+public class Plane implements Flyable {
+
+    @Override
+    public void fly() {
+        System.out.println("Plane is cruising at 35,000 feet");
+    }
+}
+
+
+// ── Usage ───────────────────────────────────────────────────────────
+
+public class Main {
+    public static void main(String[] args) {
+
+        Duck duck = new Duck("Donald");
+        duck.makeSound();  // Donald says: Quack!
+        duck.fly();        // Donald is flying low over the pond
+        duck.swim();       // Donald is paddling through the water
+
+        System.out.println("---");
+
+        Parrot parrot = new Parrot("Polly");
+        parrot.makeSound(); // Polly says: Squawk!
+        parrot.fly();       // Polly is soaring through the trees
+        parrot.speak();     // Polly says: Polly wants a cracker!
+
+        System.out.println("---");
+
+        Plane plane = new Plane();
+        plane.fly();        // Plane is cruising at 35,000 feet
+    }
+}
+```
+
+#### Abstract Classes
 
 **Defined**
 * It's a way to strictly enforce methods and attributes that **MUST** be present in all other children that inherit (or extend) from the abstract parent class. It's like strictly enforced guard rails that keep the design of your code clean as it grows. 
   * When we mark a method `abstract`, we're telling Java: "I don't care how each subclass does this, but every single one of them must do it." **No implementation means no compilation**.
 
-#### Template Method Pattern
+##### Template Method Pattern 
 
 * The abstract class defines the **fixed algorithm skeleton**, and each subclass only fills in the unique steps. `run()` is marked `final` so no subclass can break the overall flow.
 
@@ -428,7 +588,7 @@ public class Main {
 }
 ```
 
-#### Shared State + Enforce Contract
+##### Shared State + Enforce Contract
 
 * The abstract class holds shared state (fields) that all subclasses automatically inherit, and forces each subclass to implement the `area()` method.
 
@@ -1221,6 +1381,7 @@ We're basically **building a new array from scratch**, with each lowest value be
 ### `P`, `NP`, `NP_complete` Algorithms
 
 * P:
+  * **Coin Change Problem**
 * NP:
 * NP_complete:
   * **Greedy Algorithm** (Set coloring problem...)
