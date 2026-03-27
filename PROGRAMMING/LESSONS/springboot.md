@@ -463,7 +463,7 @@ const createUser = async (userData) => {
 5. Full stack / Client → `@SpringBootTest` or Cypress E2E
 
 
-## Spring Boot Back and Frontend
+# Backend Testing
 
 * [1. Basic Springboot Setup](https://docs.google.com/document/d/1unguDrrlFYuRG6n1BW2IGNdjnEkR5ZJLAt2yfLr20Ik/edit?tab=t.0)
 * Open GitHub Repo
@@ -490,7 +490,7 @@ const createUser = async (userData) => {
     * I need to determine how and when to conduct specific parts of testing through the MVC layers...
     * I'll go ahead and copy and provide each of Java Directories and create a pathway for testing...
 
-### RestAPI Testing
+## RestAPI Testing
 
 > [!NOTE]
 > After your basic CRUD-based application is set up, use the following commands to test functionality.
@@ -523,9 +523,9 @@ Accept: application/json
 * This HTTP Client file acts as a fake "Browser" or front-end. The `POST` block sends a JSON payload to your Controller to create a new record in your database. The `###` acts as a delimiter so you can keep multiple requests in one file. The `GET` block will fetch the data back out to verify your `POST` worked.
 
 
-### Flyway Migration, `compose.yaml`, and `application.yaml` Setup for PostgreSQL
+## Flyway Migration, `compose.yaml`, and `application.yaml` Setup for PostgreSQL
 
-#### Flyway Migration
+### Flyway Migration
 
 * Navigate to `src/main/resources`
 * Inside of resources, make the following nested directories:
@@ -539,7 +539,7 @@ Accept: application/json
 
 * Flyway is a version control system for your database. By placing SQL scripts in this folder, Flyway will run them in order (V1, V2, etc.) right before your Spring app boots up. This guarantees your database tables exist *before* your Java code tries to access them.
 
-#### `compose.yaml`
+### `compose.yaml`
 
 ```bash
 
@@ -592,7 +592,7 @@ volumes:
 
 * Docker Compose reads this file to spin up an isolated, running instance of PostgreSQL on your machine. The port mapping (`5434:5432`) is crucial: it means your Java app (running on your local machine) must talk to port `5434` to reach the database hidden inside the Docker container.
 
-#### `application.yaml`
+### `application.yaml`
 
 * Update the following information into `application.yaml`:
 
@@ -651,6 +651,207 @@ Based on the official Spring Data documentation, there are a few powerful ways t
 * **`@Id`:** Marks a specific field as the Primary Key for the database table.
 * **`@GeneratedValue`:** *(Clarification from previous notes)* This annotation is responsible for automatically generating the sequential ID numbers (1, 2, 3...) for new records when they are saved. **Flyway** generates the *tables*, but `@GeneratedValue` generates the *primary key values*.
 * **`@Column`:** Allows you to map a Java variable to a specific column name in the database, or apply constraints (like `nullable = false`).
+
+# Front End Testing
+* [Front End Testing Cheatsheet](https://testing-library.com/docs/react-testing-library/cheatsheet/)
+
+See **[Guide for Setting Up Frontend for Testing](https://docs.google.com/document/d/1qiwOumIcdrZDpAnouLh2rv4SHVzSiHs_RCKKm7U_Vqs/edit?tab=t.0)** to get official steps.
+
+> [!NOTE]
+> Refer to web_dev.md for additional commands for using npm. Basically the same thing as `npm` installation, BUT much faster
+
+* **Dependency Hell:**
+  * Major security risk — 2nd, 3rd, 4th order dependency reliance. How to address this? React to them as they arise seems to be the status quo and possibly a career niche.
+
+* `yarn create vite` — scaffolds a new Vite project (same flow as `npm create vite@latest`)
+* `yarn add -D vitest @testing-library/react @testing-library/jest-dom jsdom` — installs testing dependencies as **dev dependencies** (the `-D` flag means they won't be bundled into your production build):
+  * `vitest` — Vite-native test runner, replaces Jest in a Vite project; reads your `vite.config.js` automatically
+  * `@testing-library/react` — provides `render` and `screen` utilities to mount and query React components in tests
+  * `@testing-library/jest-dom` — extends Vitest/Jest with DOM-specific matchers like `.toBeInTheDocument()`, `.toHaveTextContent()`, etc.
+  * `jsdom` — simulates a browser DOM environment inside Node so your component tests have a DOM to render into
+* `yarn run dev` — restart/run the application
+
+* **Live Templates (IntelliJ):**
+  * `CMD + Shift + A > Templates > JavaScript Templates` to locate the templates you want to use!
+    * `descr` — generates a `describe()` block (groups related tests together)
+    * `it` — generates an `it()` / `test()` block (a single test case)
+
+> [!NOTE]
+> Front-end tests work in the inverse of backend tests.
+> It's a lot about the **interaction of triggers within the UI** — you're simulating what a user *sees and does*, not testing raw data or logic directly.
+
+## Query Types
+
+* [About Queries — Testing Library](https://testing-library.com/docs/queries/about)
+* [Priorities with Testing](https://testing-library.com/docs/queries/about#priority)
+  * Focus on **what the user interacts with**, not on the DOM structure or implementation details.
+
+Queries are the methods Testing Library gives you to find elements on the page. The difference between query types is what they return and whether they throw an error or retry asynchronously.
+
+### Types of Queries: Single Element
+
+| Query | 0 Matches | 1 Match | >1 Matches | Async/Retry? |
+|---|---|---|---|---|
+| `getBy...` | Throw error | Return element | Throw error | No |
+| `queryBy...` | Return `null` | Return element | Throw error | No |
+| `findBy...` | Throw error | Return element | Throw error | **Yes** |
+
+### Types of Queries: Multiple Elements
+
+| Query | 0 Matches | 1+ Matches | Async/Retry? |
+|---|---|---|---|
+| `getAllBy...` | Throw error | Return array | No |
+| `queryAllBy...` | Return `[]` | Return array | No |
+| `findAllBy...` | Throw error | Return array | **Yes** |
+
+* **`getBy`**: Use when the element is **static** and should already be in the DOM — it returns the element immediately or throws if not found.
+* **`queryBy`**: Use when you want to assert an element is **not present** — it returns `null` instead of throwing when nothing matches, making it safe for negative assertions.
+* **`find`**: Use when you're expecting to retrieve something **asynchronously** (e.g. after a fetch or state update). Returns a `Promise` and retries until the element appears or times out (default: 1000ms). Always pair with `async/await`.
+  * `findBy` is a combination of `getBy` + `waitFor` under the hood.
+
+### Query Priority
+
+Testing Library recommends querying the way a **real user would find an element** — not by class name or ID. Priority order from most to least preferred:
+
+1. **Accessible to Everyone** (prefer these first):
+  * `getByRole` — queries by ARIA role (e.g. `button`, `heading`, `input`). Top preference for almost everything. 
+    * Example: `getByRole('button', {name: /submit/i})`
+  * `getByLabelText` — best for form fields; mirrors how users navigate forms
+  * `getByPlaceholderText` — fallback if no label exists
+  * `getByText` — for non-interactive elements like `div`, `span`, `p`
+  * `getByDisplayValue` — useful for pre-filled form values
+
+2. **Semantic Queries** (HTML5 / ARIA):
+  * `getByAltText` — for `img`, `area`, `input` with alt text
+  * `getByTitle` — lower priority; not consistently read by screen readers
+
+3. **Last Resort**:
+  * `getByTestId` — only use when nothing else fits (e.g. dynamic content). Not visible to users.
+
+## `Async` + `Await` Example
+> Example of using `async` and `await` to simulate a user clicking and getting feedback...'
+
+```javascript
+it('should count button increment', async () => {
+
+  // Arrange — mount the App component into the jsdom test environment
+  render(<App/>)
+
+  // Query for the button by its ARIA role and name (matches text "count")
+  // getByRole is preferred because it mirrors how a real user or screen reader finds elements
+  const button = screen.getByRole('button', {name: /count/i});
+
+  // Set up a userEvent instance — this simulates real browser interactions
+  // (mouse events, focus, keyboard, etc.) more accurately than fireEvent
+  const user = userEvent.setup();
+
+  // Assert the button is present and visible in the DOM before interacting
+  expect(button).toBeInTheDocument();
+  expect(button).toBeVisible();
+
+  // Assert the button's initial label shows 0 (before any clicks)
+  expect(screen.getByRole('button', {name: /0/i}));
+
+  // Act — simulate a real user click; await because the click triggers
+  // an async state update in React that we need to wait for
+  await user.click(button);
+
+  // Assert the button's label has updated to 1 after the click
+  expect(screen.getByRole('button', {name: /1/i}));
+
+});
+```
+
+## TDD Procedure - Building a TaskItem Component
+
+> **OVERVIEW**
+> 1. Define Type (TaskType.ts)
+> 2. Write Test (TaskItem.test.tsx): **RED**
+> 3. Build Component (TaskItem.tsx): **GREEN**
+> 4. Refactor as needed: **REFACTOR**
+
+### Step 1 - Define the Type (`TaskType.ts`)
+
+Create a **Plain Old TypeScript Object (POTO)** that describes the shape of the data you want to work with. This becomes the single source of truth for what a `Task` looks like across your test and your component.
+
+```typescript
+export type Task = {
+    id?: number,       // optional — a task may not have an ID yet (e.g. before being saved)
+    title: string,
+    description: string
+}
+```
+
+### Step 2 - Write the Test First (`TaskItem.test.tsx`)
+
+Before building the component, write the test that describes **what the component should do**. At this point the test will be **red** (failing) because `TaskItem.tsx` doesn't exist yet.
+
+```typescript
+import {render, screen} from "@testing-library/react";
+import TaskItem from "../TaskItem.tsx";
+import type {Task} from "../TaskType.ts";
+
+describe('Task Item Test', () => {
+
+    it('should display Task Item', () => {
+
+        // Arrange — create a POTO using the Task type from TaskType.ts
+        const task1: Task = {id: 1, title: 'First Task', description: 'get task component built.'}
+
+        // Act — render the TaskItem component and pass the task in as a prop
+        render(<TaskItem initialTask={task1}/>);
+
+        // Utility — logs a Testing Playground URL to the console so you can
+        // visually inspect the rendered DOM and find the right query to use
+        screen.logTestingPlaygroundURL();
+
+        // Assert — the list item with aria-label "task" exists in the DOM
+        expect(screen.getByRole('listitem', {name: /task/i})).toBeInTheDocument();
+
+        // Assert — the rendered text contains both the title and description
+        expect(screen.getByText('First Task: get task component built.', {exact: false})).toBeInTheDocument();
+
+    });
+
+});
+```
+
+* `describe()` groups all tests related to `TaskItem` together.
+* `it()` defines one specific behavior the component should have.
+* `render(<TaskItem initialTask={task1}/>)` mounts the component into the jsdom environment with test data passed in as a prop.
+* `screen.logTestingPlaygroundURL()` is a handy debug utility — it prints a URL to the console that opens an interactive view of your rendered DOM, helping you figure out the right query to use.
+* `getByRole('listitem', {name: /task/i})` queries by ARIA role (`<li>`) and its `aria-label` — the preferred Testing Library approach.
+* `{exact: false}` on `getByText` allows a partial match, so it doesn't matter if there are extra spaces or surrounding elements.
+
+### Step 3 - Build the Component to Pass the Test (`TaskItem.tsx`)
+
+```typescript
+import React from 'react';
+import type {Task} from "./TaskType.ts";
+
+// Defines the shape of the props this component accepts
+type TaskProps = {
+    initialTask: Task
+}
+
+// Destructure initialTask directly from props
+export const TaskItem = ({initialTask}: TaskProps) => {
+
+    return (
+        // aria-label="task" is what allows getByRole('listitem', {name: /task/i}) to find this element
+        <li aria-label={"task"}>
+            {initialTask.id} {initialTask.title}: {initialTask.description}
+        </li>
+    );
+
+};
+
+export default TaskItem;
+```
+
+* `TaskProps` defines the expected prop shape locally — it uses the shared `Task` type from `TaskType.ts` to stay consistent.
+* The `aria-label="task"` on the `<li>` is what makes `getByRole('listitem', {name: /task/i})` work — without it, Testing Library can find the `listitem` role but not match it by name.
+* The rendered text `{initialTask.id} {initialTask.title}: {initialTask.description}` satisfies the `getByText('First Task: get task component built.', {exact: false})` assertion.
 
 # References
 1. https://www.geeksforgeeks.org/dsa/control-structures-in-programming-languages/
