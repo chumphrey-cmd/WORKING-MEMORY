@@ -475,7 +475,7 @@ class Crossbowman(Archer):
 
 **1. The Parent Class (`Human`)**
 
-* **`self.__name`:** The double underscore `__` indicates a **Private Attribute**. It cannot be accessed directly (e.g., `human.__name` will fail). You must use the getter method `get_name()`.
+* **`self.__name`:** The double underscore `__` indicates a **Private Attribute**. It cannot be accessed directly (e.g., `human.__name` will´ fail). You must use the getter method `get_name()`.
 
 **2. Child Class (`Archer`)**
 
