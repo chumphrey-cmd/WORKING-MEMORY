@@ -2553,13 +2553,38 @@ class Card:
 
 # JavaScript
 
-## Declaring Variables
+## JavaScript Variables
 
-* `let` vs `const`:
-  * Use `let` for variables that you'll need to reassign, and `const` when you won't.
+### `let` vs `const`
+
+* `let`: for variables that you'll need to reassign
+* `const`: for values you don't expect to change
 
 * Why not `var`?:
   * `var` is **function-scoped**, not **block-scoped**, which leads to unexpected behavior.
+
+```javascript
+if (true) {
+  var i = 42;
+}
+console.log(i); // 42, scoped beyond the if-block or "globally" (NO GOOD!)
+```
+
+```javascript
+if (true) {
+  let j = 42;
+  const k = 43;
+}
+console.log(j); // ReferenceError: j is not defined, scoped to the if-block (Block Scoped)
+console.log(k); // ReferenceError: k is not defined, scoped to the if-block (Block Scoped)´
+```
+
+### `null` vs `undefined`
+
+* `undefined` almost everywhere I would use None in Python.
+  * JavaScript is fairly unique in having two options. Use null in cases where the **behavioral difference matters**, or if you're relying on external code that forces you to use `null`.
+* `undefined`: It doesn't exist at all.
+* `null`: It (kind of) exists, but it's empty. 
 
 # TypeScript
 
