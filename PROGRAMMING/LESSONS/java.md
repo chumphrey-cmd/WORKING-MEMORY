@@ -657,6 +657,147 @@ public class Main {
 }
 ```
 
+### Generics
+
+#### What are Generics?
+
+Generics allow you to write a **single class, method, or interface that works with any data type**, rather than writing separate versions for `String`, `Integer`, etc.  Think of the type parameter `<T>` as a **placeholder** that gets replaced with a real type when you actually use the class or method.
+
+> [!NOTE]
+> If you find yourself writing the same class or method multiple times just to handle different data types, that is a strong signal that Generics is the right tool.
+
+The `<T>` naming convention stands for **Type**, but it can technically be any letter — `T`, `E` (element), `K` (key), and `V` (value) are the most common conventions.
+
+**Without Generics** you would need separate classes:
+```java
+class IntegerBox {
+    private Integer value;
+    public void set(Integer value) { this.value = value; }
+    public Integer get() { return value; }
+}
+
+class StringBox {
+    private String value;
+    public void set(String value) { this.value = value; }
+    public String get() { return value; }
+}
+```
+
+**With Generics** you write it once:
+```java
+class Box<T> {
+    private T value; // T is a placeholder for any type
+
+    public void set(T value) { this.value = value; }
+    public T get() { return value; }
+}
+```
+
+#### Generic Class Example
+
+```java
+// <T> is the type parameter — a placeholder for any data type
+class Box<T> {
+    private T value;
+
+    public Box(T value) {
+        this.value = value;
+    }
+
+    public T getValue() {
+        return value;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+
+        // T becomes String
+        Box<String> stringBox = new Box<>("Hello, Java!");
+        System.out.println(stringBox.getValue()); // Hello, Java!
+
+        // T becomes Integer
+        Box<Integer> intBox = new Box<>(42);
+        System.out.println(intBox.getValue()); // 42
+
+        // T becomes Double
+        Box<Double> doubleBox = new Box<>(3.14);
+        System.out.println(doubleBox.getValue()); // 3.14
+    }
+}
+```
+
+- `Box<String>` → `T` becomes `String` throughout the class
+- `Box<Integer>` → `T` becomes `Integer` throughout the class
+- Same class, different types — zero code duplication
+
+
+#### Generic Method Example
+
+You can also make individual methods generic without making the whole class generic.
+
+```java
+public class Main {
+
+    // <T> before the return type makes this a generic method
+    public static <T> void printItem(T item) {
+        System.out.println("Item: " + item);
+    }
+
+    public static void main(String[] args) {
+        printItem("Hello");    // Item: Hello
+        printItem(100);        // Item: 100
+        printItem(3.14);       // Item: 3.14
+        printItem(true);       // Item: true
+    }
+}
+```
+
+Java **infers the type** based on what you pass in — you don't have to specify it manually.
+
+
+#### Bounded Generics (bonus)
+
+You can restrict `<T>` to only accept certain types using `extends`.
+
+```java
+// T must be a Number or subclass of Number (Integer, Double, Float, etc.)
+class Calculator<T extends Number> {
+    private T value;
+
+    public Calculator(T value) {
+        this.value = value;
+    }
+
+    public double doubled() {
+        return value.doubleValue() * 2;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Calculator<Integer> intCalc = new Calculator<>(10);
+        System.out.println(intCalc.doubled()); // 20.0
+
+        Calculator<Double> dblCalc = new Calculator<>(5.5);
+        System.out.println(dblCalc.doubled()); // 11.0
+
+        // Calculator<String> strCalc = new Calculator<>("hi"); // WILL NOT COMPILE
+    }
+}
+```
+
+The last line **will not compile** — the bound `<T extends Number>` enforces that only numeric types are allowed.  This is another example of Java's compile-time guardrails at work.
+
+#### Quick reference
+
+| Syntax | Meaning |
+|---|---|
+| `<T>` | Any type (unbounded)  |
+| `<T extends Number>` | T must be `Number` or a subclass  |
+| `Box<String>` | T is replaced with `String` at usage |
+| `<T, U>` | Multiple type parameters |
+
 ## Java Coding Examples
 
 ### Scanner Usage, Setters, Getters, ToString (Automobile)
