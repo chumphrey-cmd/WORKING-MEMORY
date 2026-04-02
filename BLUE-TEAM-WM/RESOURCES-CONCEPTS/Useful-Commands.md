@@ -3,10 +3,13 @@
 ## Linux
 
 ```bash
-mkdir -p {dev,test,prod}/{backend,frontend}
+mkdir -p parent/{sub1,sub2} && touch parent/sub1/{file1,file2}.ext parent/sub2/file3.ext
 ```
 
-- Creates multiple nested directories.
+* **`mkdir -p`**: The `-p` flag tells the terminal to create the parent directories if they don't exist yet (so it makes `src` and the folders inside it all at once).
+* **Brace Expansion `{}`**: This is a bash shortcut. Writing `src/{components,pages}` is read by the terminal as `src/components src/pages`. It saves you from typing the path repeatedly!
+* **`&&`**: This chains two commands together. It tells the terminal: "Make the directories first, and *only if that succeeds*, run the `touch` command to create the files."
+* **`touch`**: The standard command for creating empty files.
 
 ```bash
 cd -
