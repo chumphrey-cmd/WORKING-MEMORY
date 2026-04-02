@@ -2586,6 +2586,28 @@ console.log(k); // ReferenceError: k is not defined, scoped to the if-block (Blo
 * `undefined`: It doesn't exist at all.
 * `null`: It (kind of) exists, but it's empty. 
 
+
+### Ternary Operators
+
+* Fancy way to convet `if-else` blocks into a one-liner
+
+```javascript
+// Ternary
+const price = isMember ? "$2.00" : "$10.00";
+
+// Traditional conditional
+let price;
+if (isMember) {
+  price = "$2.00";
+} else {
+  price = "$10.00";
+}
+```
+* If `isMember` is true, evaluate to `$2.00`, otherwise evaluate to `$10.00`.
+* A condition followed by a question mark (`?`)
+* An expression to execute if the condition is truthy followed by a colon (`:`)
+* The expression to execute if the condition is falsy.
+
 # TypeScript
 
 * [TypeScript](https://www.typescriptlang.org/) is a typed superset of JavaScript that transpiles to plain JavaScript.
