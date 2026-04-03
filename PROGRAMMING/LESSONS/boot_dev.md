@@ -2589,7 +2589,7 @@ console.log(k); // ReferenceError: k is not defined, scoped to the if-block (Blo
 
 ### Ternary Operators
 
-* Fancy way to convet `if-else` blocks into a one-liner
+* Fancy way to convert `if-else` blocks into a one-liner
 
 ```javascript
 // Ternary
@@ -2607,6 +2607,19 @@ if (isMember) {
 * A condition followed by a question mark (`?`)
 * An expression to execute if the condition is truthy followed by a colon (`:`)
 * The expression to execute if the condition is falsy.
+
+### Nullish Coalescing
+
+* [Nullish coalescing](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing) operator `??` is a way to handle these cases in a more concise way.
+* If the value on the left of `??` is `null` or `undefined`, the value on the right is returned. Otherwise, the value on the left is returned. **It's a way to set sane defaults for variables that might be empty**.
+
+```javascript
+let myName = null;
+console.log(myName ?? "Anonymous"); // "Anonymous"
+
+myName = "Bob";
+console.log(myName ?? "Anonymous"); // "Bob"
+```
 
 # TypeScript
 
