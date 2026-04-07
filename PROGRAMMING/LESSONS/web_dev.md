@@ -204,8 +204,6 @@ To avoid the "No inputs found" error, always organize your code:
 
 ## React + Vite (Vanilla JS)
 
-### Vite
-
 * [Vite](https://vite.dev/guide/) is a build tool that aims to provide a faster and leaner development experience for modern web projects and provides a dev server and build commands that bundle your code and allow you to push the content to production.
 
 * Create project folder and run the command below inside of that new directory
@@ -215,25 +213,36 @@ npm create vite@latest
 ```
 
 * Select framework: `React`
-* Select a variant: `JavaScript` or `TypeScript`
-* Install with npm and start now? `Yes`
+* Select a variant: `JavaScript` (or `JavaScript + React Router`)
+* Move into your newly created project directory and install the necessary dependencies:
 
 ```bash
 npm install
 ```
 
+* Open the generated `.gitignore` file and add the following lines to the bottom to protect your environment variables and ignore linting caches:
+```text
+# Environment Variables
+.env
+
+# ESLint Cache
+.eslintcache
+```
+
+* Start the development server:
+
 ```bash
 npm run dev
 ```
 
-> Running `npm run dev` starts Vite's local dev server (default: `http://localhost:5173`) with **Hot Module Replacement (HMR)**, meaning changes you make in your code reflect in the browser instantly without a full page reload.
+> [!NOTE] Running `npm run dev` starts Vite's local dev server (default: `http://localhost:517*`) with **Hot Module Replacement (HMR)**, meaning changes you make in your code reflect in the browser instantly without a full page reload.
 
 ```bash
-# Allows your application to be compressed (via gzip)
+# Allows your application to be compressed (via gzip) and optimized into a 'dist' folder for production
 npm run build
 ```
 
-#### File Structure and Communication
+### File Structure and Communication
 
 [Key Files and Directories Talk to Each Other](https://reactjs.koida.tech/react-fundamentals/lesson-8-understanding-the-main-files-app.jsx-and-main.jsx#breakdown-of-key-files-and-directories) [3]:
 
@@ -293,12 +302,12 @@ index.html  →  main.jsx  →  App.jsx  →  (your components)
 * **`esbuild` (under the hood)**: Vite uses **esbuild** to transpile and convert `.jsx` files into plain JavaScript that the browser can understand. 
   * `esbuild` is significantly faster than Babel and handles the JSX transform automatically via the `@vitejs/plugin-react` plugin. 
 
-### React + TypeScript + Vite
+## React + TypeScript + Vite
 
 * The file structure is nearly identical to the Vanilla JS setup, with a few key differences:
   * File extensions change from `.jsx` → `.tsx` and `.js` → `.ts`
 
-#### Additional Files (TypeScript-Specific)
+### Additional Files (TypeScript-Specific)
 
 * **`tsconfig.json`**: The base/root TypeScript config. It doesn't contain many settings itself — it acts as the top-level reference that points to the two environment-specific configs below using `"references"`.
 
@@ -308,7 +317,7 @@ index.html  →  main.jsx  →  App.jsx  →  (your components)
 
   > **In short:** your app code runs in the *browser* (uses `tsconfig.app.json`) and Vite itself runs in *Node* (uses `tsconfig.node.json`). They need separate configs because they are two completely different runtime environments.
   
-#### Expanding `eslint.config.js` for TypeScript
+### Expanding `eslint.config.js` for TypeScript
 
 For a production app or stricter type safety, upgrade the `eslint.config.js` to **type-aware lint rules** by swapping in the templates [here](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts).
 
@@ -349,6 +358,78 @@ For a production app or stricter type safety, upgrade the `eslint.config.js` to 
 * This gives **low coupling** between UI pieces and makes updates **declarative** and **component‑based** (similar to OOP).
 * When a page is rendered, it happens in *component pieces*; each component can maintain its own state, so pieces are *not* overwritten when other parts update.
 
+> [!NOTE]
+> Here we are using declarative routing, consult the docs for when to use which specific type! 
+> From the docs, "The features available in each mode are **additive**, so moving from Declarative to Data to Framework simply adds more features at the cost of architectural control. So pick your mode based on how much control or how much help you want from React Router."
+
+## React Router & Reactstrap
+
+```bash
+npm install react-router-dom reactstrap bootstrap
+```
+* `npm i react-router react-router-dom`
+* Install necessary router requirements from [React Router](https://reactrouter.com/start/declarative/installation)
+* https://reactrouter.com/start/declarative/installation
+
+
+#### 1. React Architecture and File Structure
+
+>[!NOTE]
+> **`src/assets/`**: Typically, core images like logo or other permanent pieces of your user interface go in location. For example, if you have a `SiteNavbar` that appears on every single page you can place it in `assets/`, Vite will optimize it, handle the cache-busting, and guarantee the link never breaks during the build process.
+> 
+> **`public/images`**: Other images that aren't as static as your logo (e.g., inventory that changes) are **content**. It's much easier to write a simple path like `image: "/images/your_image.jpg"` inside a data file rather than manually `import` 20 different images at the top of a React component. 
+> 
+> The `public` folder lets you reference your images dynamically without cluttering code.
+
+#### 2. Global Setup (`main.jsx`)
+To use Routing and Reactstrap styles across the entire application, you must wrap your `<App />` in a `<BrowserRouter>` and import the Bootstrap CSS file at the highest level of your project.
+
+```jsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App.jsx';
+
+// 1. Import Bootstrap CSS for Reactstrap
+import 'bootstrap/dist/css/bootstrap.min.css'; 
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    {/* 2. Wrap App in BrowserRouter */}
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>,
+);
+```
+
+#### 3. Creating the Shell (`App.jsx`)
+Set up your global layout and define which components load at which URL paths.
+
+```jsx
+import { Routes, Route } from 'react-router-dom';
+import SiteNavbar from './components/SiteNavbar';
+import HomePage from './pages/HomePage';
+// ... import other pages
+
+function App() {
+  return (
+    <>
+      {/* Components outside of <Routes> stay on the screen permanently (like Navbars) */}
+      <SiteNavbar />
+      
+      {/* <Routes> acts as a switch, swapping out the page component based on the URL */}
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/menu" element={<MenuPage />} />
+        {/* ... other routes */}
+      </Routes>
+    </>
+  );
+}
+
+export default App;
+```
 
 # References
 
