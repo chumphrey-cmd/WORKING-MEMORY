@@ -798,6 +798,881 @@ The last line **will not compile** — the bound `<T extends Number>` enforces t
 | `Box<String>` | T is replaced with `String` at usage |
 | `<T, U>` | Multiple type parameters |
 
+
+## Data Structures
+
+> [!NOTE] 
+> Before diving into Linked Lists, Stacks, and Queues individually, it is important to understand how these three concepts **build on top of each other**. They are not separate isolated ideas — each one depends on the layer below it.
+> 
+> Linked Lists, Stacks, and Queues are classified as **linear data structures**, meaning each node has at most one predecessor and one successor.  Data flows in a single line, one node at a time. This is what separates them from non-linear structures like trees and graphs, where a single node can branch out to multiple children.
+
+### The Hierarchy
+
+```
+Node
+ └── Linked List
+      ├── Stack
+      └── Queue
+```
+
+* The reason this hierarchy matters is that a `Node` by itself does nothing useful — it only becomes meaningful when nodes are connected into a `LinkedList`. Likewise, a `LinkedList` by itself has no enforced order of access — it only becomes a `Stack` or `Queue` when you apply a behavioral rule on top of it.
+
+> [!NOTE]
+> A **Node** is a single LEGO brick.
+> A **Linked List** is a chain of LEGO bricks snapped together.
+> A **Stack** is that same chain, but you can **only add or remove from the top**.
+> A **Queue** is that same chain, but you can **only add to the back and remove from the front**.
+
+#### Node (Foundation)
+
+* **Node** is the most primitive building block — it is just a container that holds a piece of data and a reference pointing to the next node in the chain. Nothing more.
+* This is the **smallest building block** — a single "box" or container.
+* Contains exactly **two fields**:
+  * `data` (the actual value — `Object` for now, later `<T>` when we add generics)
+  * `next` (a reference/pointer to the next Node, or `null` if nothing follows)
+* Every structure below is built *entirely* from these Nodes.
+
+
+#### Linked List (General Purpose)
+* **Linked List** is built from nodes chained together. It defines how to navigate, insert, and remove nodes. It is the **raw, general-purpose structure with no restrictions on where you add or remove**. 
+* A **flexible chain** made by connecting multiple Nodes together. 
+* You maintain a reference to the first Node (usually called `head`). 
+* You can:
+  * Add/remove Nodes at the head, tail, or anywhere in the middle 
+  * Traverse the entire chain by following each Node’s `next` pointer until you hit `null`
+
+> [!NOTE]
+> All the other structures (Stack & Queue) are just **restricted versions** of a Linked List. They reuse the exact same Node and linking logic, but limit where you’re allowed to add/remove.
+
+#### Stack (LIFO - Last In, First Out)
+
+* A **specialized Linked List** that only ever touches the **head** end. 
+* Operations are extremely simple because of the restriction:
+  * `push(item)` → add a new Node at the head (exactly the pointer dance we practiced)
+  * `pop()` → remove and return the Node at the head
+  * `peek()` → look at the head without removing it
+  * `isEmpty()` → check if `head == null`
+
+> [!TIP]
+> Basically a vertical stack of plates where only the top plate is accessible.
+> Every new Node’s `next` points **DOWN** to the previous top, and `head` just moves up or down one link. No traversal needed.
+
+#### Queue (FIFO - First In, First Out)
+
+* Another **specialized Linked List**, but it touches **both ends**.
+* You maintain two references:
+  * `head` (front of the line — where you remove)
+  * `tail` (back of the line — where you add)
+
+* Operations:
+  * `enqueue(item)` → add a new Node at the tail (update `tail.getNext` and move `tail`)
+  * `dequeue()` → remove and return the Node at the head (move `head` forward)
+  * `peek()` → look at the front without removing
+  * `isEmpty()` → check if `head == null`
+
+### Behavior Rules
+
+* The data storage mechanism is the same across all three — what changes is the **rule applied to how you interact with it**.
+
+| Structure | Rule | Real-world analogy |
+|---|---|---|
+| Linked List | No restriction — add or remove anywhere | A to-do list you can edit freely |
+| Stack | **LIFO** — Last In, First Out | A stack of cafeteria trays |
+| Queue | **FIFO** — First In, First Out | A line at a coffee shop |
+
+
+### Linked Lists
+
+* Linked lists are one of the most fundamental data structures in computer science, and understanding them in Java gives you a strong foundation for thinking about how data is stored and connected in memory.
+
+#### Types of Linked Lists
+* **Singly**: each node points to the next node only; traversal goes one direction
+* **Doubly**: each node points to both the next AND previous node; traversal goes both directions
+* **Circular**: the last node points back to the first node, forming a loop
+
+#### Linked List vs Array List
+
+<img src="images/linked_list_vs_array_list.png">
+
+> [!NOTE]
+> An array list is an array, however we don't specify the size of the list, it grows...
+> Don't assume that a linked list is side-by-side even though it is implemented in that way.
+
+* An array stores elements in **contiguous (side-by-side) memory slots**, so finding an element by index is fast.
+
+* A linked list instead **stores elements as nodes**, where each **node** holds two things: its data value and a reference (pointer) to the next node. Because of this, elements can be scattered anywhere in memory... **they are connected by references, not physical location**.
+
+#### Benefits
+
+* The key strength of a linked list is fast insertion and deletion, especially at the beginning or middle of the list.
+* With an array, inserting in the middle means shifting every element after it, which is expensive for large lists. With a linked list, you just rewire a few references.
+
+**Real-world use cases include:**
+
+* Undo/Redo history in text editors — fast insertions and removals at either end
+* Queues and Stacks — LinkedList implements both Queue and Deque interfaces in Java
+* Browser history — navigating forward and backward through pages
+* Music playlists — easily inserting or removing songs at any position
+
+#### Manual Node-Based Implementation
+
+##### The Node Class
+Every operation below depends on this building block. Build this first.
+
+```java
+// A single node that holds data and a reference to the next node
+class Node {
+    private int data;
+    private Node next;
+
+    public Node(int data) {
+        this.data = data;
+        this.next = null;
+    }
+}
+```
+
+##### The LinkedList Class — Setup
+The list only needs to track its `head` — the first node. All other nodes are reached by traversing from there.
+
+```java
+class LinkedList {
+    private Node head; // the first node in the list
+
+    LinkedList() {
+        this.head = null;
+    }
+}
+```
+
+##### 1. `append()` — Add a node to the end
+Creates a new node and links it after the last node in the list.
+
+```java
+public void append(int data) {
+    Node newNode = new Node(data);
+    if (head == null) {             // list is empty, new node becomes head
+        head = newNode;
+        return;
+    }
+    Node current = head;
+    while (current.next != null) { // traverse to the last node
+        current = current.next;
+    }
+    current.next = newNode;        // link the last node to the new node
+}
+```
+
+##### 2. `prepend()` — Add a node to the beginning
+Creates a new node and places it before the current head.
+
+```java
+public void prepend(int data) {
+    Node newNode = new Node(data);
+    newNode.next = head;           // new node points to the old head
+    head = newNode;                // new node becomes the new head
+}
+```
+
+##### 3. `delete()` — Remove a node by value
+Traverses the list and rewires the references to skip over the target node.
+
+```java
+public void delete(int data) {
+    if (head == null) return;
+
+    if (head.data == data) {       // if head itself holds the value
+        head = head.next;          // move head forward, old head is removed
+        return;
+    }
+
+    Node current = head;
+    while (current.next != null) {
+        if (current.next.data == data) {
+            current.next = current.next.next; // skip over the deleted node
+            return;
+        }
+        current = current.next;
+    }
+}
+```
+
+##### 4. `search()` — Find a node by value
+Traverses the list and returns `true` if the value exists, `false` if not.
+
+```java
+public boolean search(int data) {
+    Node current = head;
+    while (current != null) {
+        if (current.data == data) {
+            return true;           // value found
+        }
+        current = current.next;
+    }
+    return false;                  // value not found
+}
+```
+
+##### 5. `display()` — Print all nodes
+Traverses the full list and prints each node's data in order.
+
+```java
+public void display() {
+    if (head == null) {
+        System.out.println("List is empty.");
+        return;
+    }
+    Node current = head;
+    while (current != null) {
+        System.out.print(current.data + " -> ");
+        current = current.next;
+    }
+    System.out.println("null");
+}
+```
+
+##### All Together — Full Example
+
+```java
+class Node {
+    int data;
+    Node next;
+
+    Node(int data) {
+        this.data = data;
+        this.next = null;
+    }
+}
+
+class LinkedList {
+    private Node head;
+
+    LinkedList() {
+        this.head = null;
+    }
+
+    // 1. append — add a new node to the end
+    public void append(int data) {
+        Node newNode = new Node(data);
+        if (head == null) {
+            head = newNode;
+            return;
+        }
+        Node current = head;
+        while (current.next != null) {
+            current = current.next;
+        }
+        current.next = newNode;
+    }
+
+    // 2. prepend — add a new node to the beginning
+    public void prepend(int data) {
+        Node newNode = new Node(data);
+        newNode.next = head;
+        head = newNode;
+    }
+
+    // 3. delete — remove a node by value
+    public void delete(int data) {
+        if (head == null) return;
+        if (head.data == data) {
+            head = head.next;
+            return;
+        }
+        Node current = head;
+        while (current.next != null) {
+            if (current.next.data == data) {
+                current.next = current.next.next;
+                return;
+            }
+            current = current.next;
+        }
+    }
+
+    // 4. search — find a node by value
+    public boolean search(int data) {
+        Node current = head;
+        while (current != null) {
+            if (current.data == data) return true;
+            current = current.next;
+        }
+        return false;
+    }
+
+    // 5. display — print all nodes in order
+    public void display() {
+        if (head == null) {
+            System.out.println("List is empty.");
+            return;
+        }
+        Node current = head;
+        while (current != null) {
+            System.out.print(current.data + " -> ");
+            current = current.next;
+        }
+        System.out.println("null");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        LinkedList list = new LinkedList();
+
+        // append() — add nodes to the end
+        list.append(10);
+        list.append(20);
+        list.append(30);
+        list.display(); // 10 -> 20 -> 30 -> null
+
+        // prepend() — add a node to the beginning
+        list.prepend(5);
+        list.display(); // 5 -> 10 -> 20 -> 30 -> null
+
+        // search() — find a value
+        System.out.println(list.search(20)); // true
+        System.out.println(list.search(99)); // false
+
+        // delete() — remove a node by value
+        list.delete(20);
+        list.display(); // 5 -> 10 -> 30 -> null
+
+        // delete head
+        list.delete(5);
+        list.display(); // 10 -> 30 -> null
+    }
+}
+```
+
+##### Quick Reference
+
+| Operation | What it does | Time Complexity |
+|---|---|---|
+| `append(data)` | Creates a new node and links it to the end | O(n) |
+| `prepend(data)` | Creates a new node and places it at the head | O(1) |
+| `delete(data)` | Rewires references to remove a node by value | O(n) |
+| `search(data)` | Traverses list to find a value | O(n) |
+| `display()` | Traverses and prints all nodes in order | O(n) |
+
+> [!NOTE]
+> `prepend()` is O(1) because no traversal is needed — the new node always goes straight to the front. `append()`, `delete()`, and `search()` are all O(n) because they must traverse the list one node at a time to find their destination.
+
+### Stacks and Queues
+
+#### Stacks in Java
+
+* Stacks can be implemented into either an Array or Linked List
+* The implementation is hidden and are executed inside of `Main.java` in the same way!
+
+The key concept tying all 5 operations together is **LIFO (Last In, First Out)**: the last item added is always the first one removed, like a stack of plates.
+
+> [!NOTE]
+> Basically, a stack is basically a set of cafeteria trays — you can only interact with the **top** tray.
+>
+> You add to the top, remove from the top, and can **only peek at the top**.
+>
+> Always check `isEmpty()` before calling `pop()` or `peek()`, and always check `isFull()` before calling `push()` on a fixed-size stack — this prevents runtime exceptions and stack overflow errors.
+
+
+##### The Node Class
+Every operation below depends on this building block. Build this first.
+
+```java
+// A single node that holds data and a reference to the next node
+class Node {
+    int data;
+    Node next;
+
+    Node(int data) {
+        this.data = data;
+        this.next = null;
+    }
+}
+```
+
+
+
+##### The Stack Class — Setup
+Before the 5 operations, the stack needs to track its `top`, `size`, and `capacity`.
+
+```java
+class Stack {
+    private Node top;       // the node currently at the top
+    private int size;       // tracks how many nodes are in the stack
+    private int capacity;   // the maximum number of nodes allowed
+
+    Stack(int capacity) {
+        this.top = null;
+        this.size = 0;
+        this.capacity = capacity;
+    }
+}
+```
+
+
+
+##### 1. `push()` — Add to the top
+* Creates a new node and links it on top of the current top node.
+
+```java
+public void push(int data) {
+    if (isFull()) {
+        System.out.println("Stack is full! Cannot push " + data);
+        return;
+    }
+    Node newNode = new Node(data);
+    newNode.next = top;     // new node points to the current top
+    top = newNode;          // new node becomes the new top
+    size++;
+}
+```
+
+
+
+##### 2. `pop()` — Remove from the top
+* Removes AND returns the top node's data. Always check `isEmpty()` before calling this.
+
+```java
+public int pop() {
+    if (isEmpty()) {
+        System.out.println("Stack is empty! Nothing to pop.");
+        return -1;
+    }
+    int data = top.data;    // grab the top node's data
+    top = top.next;         // move top pointer down to the next node
+    size--;
+    return data;
+}
+```
+
+
+
+##### 3. `peek()` — Look at the top without removing
+* Returns the top node's data but **leaves the stack unchanged**.
+
+```java
+public int peek() {
+    if (isEmpty()) {
+        System.out.println("Stack is empty! Nothing to peek.");
+        return -1;
+    }
+    return top.data;        // return top data without removing the node
+}
+```
+
+##### 4. `isEmpty()` — Is the stack empty?
+* Checks whether the top node is `null`, meaning no nodes exist in the stack.
+
+```java
+public boolean isEmpty() {
+    return top == null;     // true if there are no nodes
+}
+```
+
+
+##### 5. `isFull()` — Can anything else be added?
+* Checks whether `size` has reached the set `capacity`.
+
+```java
+public boolean isFull() {
+    return size == capacity; // true if size has reached the limit
+}
+```
+
+
+
+##### All 5 Together — Full Example
+
+```java
+class Node {
+    int data;
+    Node next;
+
+    Node(int data) {
+        this.data = data;
+        this.next = null;
+    }
+}
+
+class Stack {
+    private Node top;
+    private int size;
+    private int capacity;
+
+    Stack(int capacity) {
+        this.top = null;
+        this.size = 0;
+        this.capacity = capacity;
+    }
+
+    // 4. isEmpty — check if stack has no nodes
+    public boolean isEmpty() {
+        return top == null;
+    }
+
+    // 5. isFull — check if stack has hit capacity
+    public boolean isFull() {
+        return size == capacity;
+    }
+
+    // 1. push — create a new node and place it on top
+    public void push(int data) {
+        if (isFull()) {
+            System.out.println("Stack is full! Cannot push " + data);
+            return;
+        }
+        Node newNode = new Node(data);
+        newNode.next = top;
+        top = newNode;
+        size++;
+    }
+
+    // 2. pop — remove the top node and return its data
+    public int pop() {
+        if (isEmpty()) {
+            System.out.println("Stack is empty! Nothing to pop.");
+            return -1;
+        }
+        int data = top.data;
+        top = top.next;
+        size--;
+        return data;
+    }
+
+    // 3. peek — return top node's data without removing it
+    public int peek() {
+        if (isEmpty()) {
+            System.out.println("Stack is empty! Nothing to peek.");
+            return -1;
+        }
+        return top.data;
+    }
+
+    // Helper — print all nodes from top to bottom
+    public void display() {
+        if (isEmpty()) {
+            System.out.println("Stack is empty.");
+            return;
+        }
+        Node current = top;
+        while (current != null) {
+            System.out.print(current.data + " -> ");
+            current = current.next;
+        }
+        System.out.println("null");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Stack stack = new Stack(5);
+
+        // isEmpty() — check before doing anything
+        System.out.println(stack.isEmpty()); // true
+
+        // push() — add nodes to the top
+        stack.push(10);
+        stack.push(20);
+        stack.push(30);
+        stack.display(); // 30 -> 20 -> 10 -> null
+
+        // peek() — look at top without removing
+        System.out.println(stack.peek()); // 30
+        stack.display();                  // 30 -> 20 -> 10 -> null (unchanged)
+
+        // pop() — remove from the top
+        System.out.println(stack.pop()); // 30
+        stack.display();                 // 20 -> 10 -> null
+
+        // isFull() — test capacity
+        stack.push(40);
+        stack.push(50);
+        stack.push(60);
+        stack.push(70); // Stack is full! Cannot push 70
+
+        // isEmpty() — check again after operations
+        System.out.println(stack.isEmpty()); // false
+    }
+}
+```
+
+##### Quick Reference
+
+| Operation | What it does | Returns | Time Complexity |
+|---|---|---|---|
+| `push(data)` | Creates a new node and places it on top | void | O(1) |
+| `pop()` | Removes top node and returns its data | int | O(1) |
+| `peek()` | Returns top node's data without removing | int | O(1) |
+| `isEmpty()` | Checks if top node is null | boolean | O(1) |
+| `isFull()` | Checks if size has reached capacity | boolean | O(1) |
+
+
+#### Queues in Java
+
+The key concept tying all 5 operations together is **FIFO (First In, First Out)**: the first item added is always the first one removed, like a line at a coffee shop. Each element is stored as a **Node** that holds data and a reference to the next node in line. You **add to the rear** and **remove from the front**.
+
+
+##### The Node Class
+Every operation below depends on this building block. Build this first.
+
+```java
+// A single node that holds data and a reference to the next node
+class Node {
+    int data;
+    Node next;
+
+    Node(int data) {
+        this.data = data;
+        this.next = null;
+    }
+}
+```
+
+
+
+##### The Queue Class — Setup
+Before the 5 operations, the queue needs to track its `front`, `rear`, and `size`.
+
+```java
+class Queue {
+    private Node front; // the node at the front (next to be removed)
+    private Node rear;  // the node at the rear (most recently added)
+    private int size;   // tracks how many nodes are in the queue
+
+    Queue() {
+        this.front = null;
+        this.rear = null;
+        this.size = 0;
+    }
+}
+```
+
+
+
+#### 1. `enqueue()` — Add to the back
+Creates a new node and links it to the rear of the queue.
+
+```java
+public void enqueue(int data) {
+    Node newNode = new Node(data);
+
+    if (rear == null) {         // queue is empty, new node is both front and rear
+        front = newNode;
+        rear = newNode;
+    } else {
+        rear.next = newNode;    // link current rear to the new node
+        rear = newNode;         // new node becomes the new rear
+    }
+    size++;
+}
+```
+
+
+
+#### 2. `dequeue()` — Remove from the front
+Removes the front node and returns its data. Always check `isEmpty()` before calling this.
+
+```java
+public int dequeue() {
+    if (isEmpty()) {
+        System.out.println("Queue is empty! Nothing to dequeue.");
+        return -1;
+    }
+    int data = front.data;      // grab the front node's data
+    front = front.next;         // move front pointer to the next node
+
+    if (front == null) {        // if the queue is now empty
+        rear = null;            // reset rear as well
+    }
+    size--;
+    return data;
+}
+```
+
+
+
+#### 3. `peek()` — Look at the front without removing
+Returns the front node's data but **leaves the queue unchanged**.
+
+```java
+public int peek() {
+    if (isEmpty()) {
+        System.out.println("Queue is empty! Nothing to peek.");
+        return -1;
+    }
+    return front.data;          // return front data without removing the node
+}
+```
+
+
+
+#### 4. `isEmpty()` — Is the queue empty?
+Checks whether the front node is `null`, meaning no nodes exist in the queue.
+
+```java
+public boolean isEmpty() {
+    return front == null;       // true if there are no nodes
+}
+```
+
+
+
+#### 5. `isFull()` — Can anything else be added?
+Since this is a node-based queue with no fixed array size, `isFull()` tracks against a manually set capacity.
+
+```java
+private int capacity = 5;       // set your max size here
+
+public boolean isFull() {
+    return size == capacity;    // true if size has reached the limit
+}
+```
+
+
+
+#### All 5 Together — Full Node-Based Queue
+
+```java
+class Node {
+    int data;
+    Node next;
+
+    Node(int data) {
+        this.data = data;
+        this.next = null;
+    }
+}
+
+class Queue {
+    private Node front;
+    private Node rear;
+    private int size;
+    private int capacity;
+
+    Queue(int capacity) {
+        this.front = null;
+        this.rear = null;
+        this.size = 0;
+        this.capacity = capacity;
+    }
+
+    // 4. isEmpty — check if queue has no nodes
+    public boolean isEmpty() {
+        return front == null;
+    }
+
+    // 5. isFull — check if queue has hit capacity
+    public boolean isFull() {
+        return size == capacity;
+    }
+
+    // 1. enqueue — add a new node to the rear
+    public void enqueue(int data) {
+        if (isFull()) {
+            System.out.println("Queue is full! Cannot enqueue " + data);
+            return;
+        }
+        Node newNode = new Node(data);
+        if (rear == null) {
+            front = newNode;
+            rear = newNode;
+        } else {
+            rear.next = newNode;
+            rear = newNode;
+        }
+        size++;
+    }
+
+    // 2. dequeue — remove the front node
+    public int dequeue() {
+        if (isEmpty()) {
+            System.out.println("Queue is empty! Nothing to dequeue.");
+            return -1;
+        }
+        int data = front.data;
+        front = front.next;
+        if (front == null) {
+            rear = null;
+        }
+        size--;
+        return data;
+    }
+
+    // 3. peek — look at front node without removing
+    public int peek() {
+        if (isEmpty()) {
+            System.out.println("Queue is empty! Nothing to peek.");
+            return -1;
+        }
+        return front.data;
+    }
+
+    // Helper — print all nodes in order
+    public void display() {
+        if (isEmpty()) {
+            System.out.println("Queue is empty.");
+            return;
+        }
+        Node current = front;
+        while (current != null) {
+            System.out.print(current.data + " -> ");
+            current = current.next;
+        }
+        System.out.println("null");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Queue queue = new Queue(5);
+
+        // isEmpty() — check before doing anything
+        System.out.println(queue.isEmpty()); // true
+
+        // enqueue() — add nodes to the rear
+        queue.enqueue(10);
+        queue.enqueue(20);
+        queue.enqueue(30);
+        queue.display(); // 10 -> 20 -> 30 -> null
+
+        // peek() — look at front without removing
+        System.out.println(queue.peek()); // 10
+        queue.display();                  // 10 -> 20 -> 30 -> null (unchanged)
+
+        // dequeue() — remove from the front
+        System.out.println(queue.dequeue()); // 10
+        queue.display();                     // 20 -> 30 -> null
+
+        // isFull() — test capacity
+        queue.enqueue(40);
+        queue.enqueue(50);
+        queue.enqueue(60);
+        queue.enqueue(70); // Queue is full! Cannot enqueue 70
+
+        // isEmpty() — check again after operations
+        System.out.println(queue.isEmpty()); // false
+    }
+}
+```
+
+
+
+#### Quick Reference
+
+| Operation | What it does | Returns | Time Complexity |
+|---|---|---|---|
+| `enqueue(data)` | Creates a new node and links it to the rear | void | O(1) |
+| `dequeue()` | Removes front node and returns its data | int | O(1) |
+| `peek()` | Returns front node's data without removing | int | O(1) |
+| `isEmpty()` | Checks if front node is null | boolean | O(1) |
+| `isFull()` | Checks if size has reached capacity | boolean | O(1) |
+
+#### Golden Rule
+Always check `isEmpty()` before calling `dequeue()` or `peek()`, and always check `isFull()` before calling `enqueue()` — this prevents null pointer errors and overflow issues when navigating nodes manually.
+
+## Debugging Process
+
+* [Step Into vs Step Over](https://medium.com/@manish90/step-into-vs-step-over-vs-step-out-in-debugging-process-448f87b54c12)
+
 ## Java Coding Examples
 
 ### Scanner Usage, Setters, Getters, ToString (Automobile)
