@@ -491,62 +491,66 @@ class Crossbowman(Archer):
 * **`self.use_arrows(3)`**: Here we don't need to rewrite the math for subtracting arrows inside of `use_arrows`. It just reuses the method meant for Archers.
 * **`target.get_name()`**: Since `target` is another object that is also a `Human`, the Crossbowman can use the public method `get_name()` to identify the victim.
 
-### Polymorphism
-
-* In progress...
-
 ## Data Structures and Algorithms
 
-> I'll use this specific section to cover the major DSA examples in either Java or Python. I won't include the full code blocks here, just snippets from sections of the code.
+### Circular Buffers in Java + Digital Forensics
 
-### Merge Sort
+#### What is a Circular Buffer?
+A fixed-size buffer where the end connects back to the beginning. When the buffer is full, new data overwrites the oldest entry. The rear pointer wraps back to index 0 using modulo arithmetic instead of stopping.
 
-> Here is a snippet from the larger Merge Sort algorithm that I added [here](https://github.com/chumphrey-cmd/Java-Practice/blob/main/dsa/MergeSort.java).
+> [!NOTE]
+> This is the same pattern your Java circular queue implements. The only difference is the layer of abstraction it operates at.
 
-**Snippet A**
+#### Why it Matters Algorithmically
 
-```java
-int left = mid - lower + 1;
-int[] arr_left = new int[left];
-```
-
-The "left" variable is being assigned as the primitive type of `int`. It's being used to get the actual length of the array of the left side. To get the exact size we need to take the mid-point (or the middle-most index) subtracted from the lowest index (e.g., 0) + 1 to get the exact **capacity (how many boxes we need to build)**.
-
-Next we're creating another array (`array_left`) with the exact size of the "left" variable that we set in the line above. This sets the correct length of the `arr_left` so that when the array is filled, it doesn't overflow.
-
----
-
-**Snippet B**
+| Queue Type | Dequeue Behavior | Time Complexity |
+|---|---|---|
+| Linear queue array | Shifts all remaining elements forward | O(n) |
+| Circular queue array | Moves front pointer only — no shifting | O(1) |
 
 ```java
-for (int i = 0; i < left; i++)
-    arr_left[i] = arr[lower + i];
+    /// Changing the front and the front has to move back...
+    public int dequeue() {
+        if(isEmpty()){
+            System.out.println("empty");
+            return -1;
+        }
+
+        int data = arr[front];
+
+        /// Always removed from the front...
+        front = (front + 1) % capacity;
+        size--;
+        return data;
+    }
 ```
 
-Here we are getting the actual values of the `arr_left` (currently it contains **default 0s**, but not the **real** values). We are iterating through the indices using a for-loop and extracting the values at each index.
+#### The Forensic Connection
+The circular buffer is not just an academic concept — it is deployed at every layer of a Windows system. Understanding it gives you a **predictive model for evidence survivability**.
 
-* `arr_left[i]` is the array that has the correct length set by Snippet A that is going to be filled as we iterate through the index with the values of the original `array[lower + i]` (lower index + i (iteration up until it is equal to the length arr_left set in Snippet A)).
+The three questions to always ask at any data source:
+1. **How large is the buffer?** — sets the maximum evidence window
+2. **How fast does it fill?** — determines how quickly old evidence gets overwritten
+3. **How much time elapsed before acquisition?** — determines what is actually still recoverable
 
----
+#### Where Circular Buffers Appear as Forensic Artifacts
 
-**Snippet C**
+| Layer | Implementation | Forensic Artifact | Evidence Risk |
+|---|---|---|---|
+| OS execution tracking | Prefetch circular buffer | `C:\Windows\Prefetch\*.pf` | Older executions overwritten as buffer fills |
+| OS event logging | Circular `.evtx` log | Windows Event Logs | High-volume logs fill faster — log flooding is a known anti-forensics technique |
+| Kernel tracing | ETW ring buffer | Live memory / Volatility | Delayed acquisition loses older kernel events permanently |
+| User activity | MRU registry keys | Registry hive analysis | Newest entries push oldest off the rolling window |
+| Network monitoring | Packet ring buffer | PCAP / network TAP | Evidence window defined by buffer size and traffic volume |
 
-```java
-while ((i < arr_left.length) && (j < arr_right.length))
-    if(arr_left[i] < arr_right[j])
-        arr_comb[k++] = arr_left[i++];
-    else
-        arr_comb[k++] = arr_right[j++];
-```
+#### Anti-Forensics Awareness
+Threat actors actively exploit circular overwrite behavior:
+- **Log flooding** — generating high event volume to push older Security log entries off the buffer
+- **Prefetch saturation** — launching many short-lived processes rapidly to overwrite older execution evidence
+- **Network buffer overflow** — rapid repeated connections to overflow packet capture buffers on underpowered sensors
 
-Here we are doing the actual value comparison that serves to sort each part of the array. Earlier we initialized `i`, `j`, and `k` as primitive types of "int" set to 0.
+> [!NOTE]
+> Any data source with a fixed maximum size, a rolling history window, or evidence that disappears past a certain point is almost certainly a circular buffer underneath. The algorithm is the same — only the layer changes.
 
-* We are using `i` for `arr_left`, `j` for `arr_right`, and `k` for the combined array (`arr_comb`) which will contain both values from `i` and `j`.
-
-Within the while loop, while both `i` and `j` are less than the length of their respective arrays' length, continue with the conditional statement.
-
-`IF` the values within the arr_left are LESS THAN the values within `arr_right` (here we are describing the actual values at each index (e.g., 0 = 99, 1 = 12, etc.); place the left value into **the next available empty slot in the `arr_comb` array (tracked by `k`)**.
-
-`ELSE` (meaning if the values in `arr_right` are LESS THAN the values of the `arr_left`); place the right value into **the next available empty slot in the `arr_comb` array (tracked by `k`)**.
-
-We're basically **building a new array from scratch**, with each lowest value being **placed sequentially** from left to right (e.g., 1, 2, 3, 4, etc.).
+#### The Mental Model in One Line
+> A **Node** holds data. A **Linked List** chains nodes. A **Stack** and **Queue** add behavioral rules. A **Circular Buffer** adds a fixed window and wrap-around overwrite — and that pattern runs from your Java homework all the way down to the kernel.
