@@ -799,12 +799,12 @@ The last line **will not compile** — the bound `<T extends Number>` enforces t
 | `<T, U>` | Multiple type parameters |
 
 
-## Data Structures
+## Linear Data Structures
 
 > [!NOTE] 
 > Before diving into Linked Lists, Stacks, and Queues individually, it is important to understand how these three concepts **build on top of each other**. They are not separate isolated ideas — each one depends on the layer below it.
 > 
-> Linked Lists, Stacks, and Queues are classified as **linear data structures**, meaning each node has at most one predecessor and one successor.  Data flows in a single line, one node at a time. This is what separates them from non-linear structures like trees and graphs, where a single node can branch out to multiple children.
+> Linked Lists, Stacks, and Queues are classified as **linear data structures**, meaning each node has at most one predecessor and one successor. Data flows in a single line, one node at a time. This is what separates them from non-linear structures like trees and graphs, where a single node can branch out to multiple children.
 
 ### The Hierarchy
 
@@ -1672,6 +1672,30 @@ Always check `isEmpty()` before calling `dequeue()` or `peek()`, and always chec
 ## Debugging Process
 
 * [Step Into vs Step Over](https://medium.com/@manish90/step-into-vs-step-over-vs-step-out-in-debugging-process-448f87b54c12)
+
+### Step Into
+
+* Instructs the debugger to **enter the code of the current line** if it is a function call. The debugger pauses at the first line of the called function.
+* **When to use:**
+  * **Deep Investigation:** When you suspect the bug is hidden inside a specific function you wrote (e.g., `calculateTotal()`).
+  * **Logic Verification:** When you need to see exactly how parameters are being handled as they enter a new scope.
+  * **Fine-Grained Tracking:** When you need to watch local variables change line-by-line within a sub-process.
+
+### Step Over
+
+* Executes the current line of code and pauses on the next line without entering any function calls present on that line.
+* **When to use:**
+  * **High-Level Navigation:** When you want to see the "big picture" of the current function's flow without getting bogged down in details.
+  * **Trusted Code:** When the line calls a standard library (like `Math.floor()`), a logging function (`console.log`), or a utility you’ve already verified is bug-free.
+  * **Efficiency:** When you are searching for a bug in the current scope and want to skip over unrelated logic quickly.
+
+### Step Out
+
+* Continues execution until it exits the current function, returning to the caller’s context.
+* **When to use:**
+  * **Accidental Entry:** When you accidentally "Stepped Into" a massive third-party library or a complex internal function you didn't mean to explore.
+  * **Completion of Scope:** When you’ve seen enough of the current function to know the bug isn't there, and you want to jump back to the parent function.
+  * **Verifying Returns:** When you want to skip to the end of a function to see exactly what value is being returned to the calling line.
 
 ## Java Coding Examples
 
