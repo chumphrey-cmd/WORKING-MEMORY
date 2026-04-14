@@ -2553,22 +2553,16 @@ class Card:
 
 # JavaScript
 
-## JavaScript Variables
+## Variables
 
-### `let` vs `const`
+### `let` vs `const` vs `var`
 
-* `let`: for variables that you'll need to reassign
-* `const`: for values you don't expect to change
+**`const` (Constant)**
+* Use this for 90% of your variables. If you are assigning a value and don't plan on completely overwriting it later, use `const`.
+* `const` means the variable cannot be reassigned. However, if your const is an Array or an Object, you can still modify the stuff inside it (like pushing a new item to the array).
 
-* Why not `var`?:
-  * `var` is **function-scoped**, not **block-scoped**, which leads to unexpected behavior.
-
-```javascript
-if (true) {
-  var i = 42;
-}
-console.log(i); // 42, scoped beyond the if-block or "globally" (NO GOOD!)
-```
+**`let` (Mutable)**
+* Use this when you know the variable's value will need to be reassigned or updated as your code runs. Counters in for loops, math totals, or variables that toggle between true and false. 
 
 ```javascript
 if (true) {
@@ -2577,6 +2571,18 @@ if (true) {
 }
 console.log(j); // ReferenceError: j is not defined, scoped to the if-block (Block Scoped)
 console.log(k); // ReferenceError: k is not defined, scoped to the if-block (Block Scoped)´
+```
+
+**`var` (Legacy)**
+* You should hardly every use this, you'll see it a lot in older tutorials and legacy codebases, but it is no longer recommended for modern JavaScript.
+* Why not `var`?:
+  * `var` is **function-scoped**, not **block-scoped**, which leads to unexpected behavior.
+
+```javascript
+if (true) {
+  var i = 42;
+}
+console.log(i); // 42, scoped beyond the if-block or "globally" (NO GOOD!)
 ```
 
 ### `null` vs `undefined`
@@ -2608,6 +2614,9 @@ if (isMember) {
 * An expression to execute if the condition is truthy followed by a colon (`:`)
 * The expression to execute if the condition is falsy.
 
+
+## Functions
+
 ### Nullish Coalescing
 
 * [Nullish coalescing](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing) operator `??` is a way to handle these cases in a more concise way.
@@ -2620,6 +2629,47 @@ console.log(myName ?? "Anonymous"); // "Anonymous"
 myName = "Bob";
 console.log(myName ?? "Anonymous"); // "Bob"
 ```
+
+### `switch` Statements
+
+```javascript
+function getMonthlyPrice(tier) {
+  switch(tier){
+    case "basic":
+      return 100 * 100 
+        break;
+      
+    case "premium":
+      return 100 * 150
+      break;
+      
+    case "enterprise":
+      return 100 * 500
+      break;
+      
+    default:
+      return 0
+  }
+}
+```
+
+### Scope
+
+#### 1. Global Scope:
+* Variables declared globally have the highest level of scope and can be accessed from anywhere in your code.
+* In browsers, global variables are properties of the `window` object. For example, `window.myGlobalVar = 'hello world'` defines a global variable.
+* In Node.js, global variables are properties of the `global` object: `global.myGlobalVar = 'hello world'`.
+
+#### 2. Module Scope:
+* In ES modules (both in Node.js and modern browsers), variables declared at the top level of a module are scoped to that module. They are not added to the global scope.
+* In the browser, using `<script type="module">` creates a module scope for that script.
+
+#### 3. Function Scope:
+* Variables declared with `var` (we try to avoid this) are limited to the function scope. They are accessible only within that function and any nested functions.
+
+#### 4. Block Scope:
+* ES6 introduced block scope with the `let` and `const` keywords. A block is typically defined by curly braces `{}`, like in `if` statements, loops, and other blocks of code.
+* Variables declared with `let` and `const` are confined to their block, making them more predictable and reducing the chances of accidental variable hoisting.
 
 # TypeScript
 
@@ -3554,6 +3604,4 @@ def get_val(my_dict, key):
 > [!NOTE]
 > EAFP is faster if the "happy path" (the key existing) happens most of the time, as it only does one lookup. LBYL does two lookups (one to check, one to retrieve).
 >
-> EAFP is safer in multi-threaded environments where a value might be deleted between the "check" and the "access."
-
-
+> EAFP is safer in multithreaded environments where a value might be deleted between the "check" and the "access."
