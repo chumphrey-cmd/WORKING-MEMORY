@@ -1448,7 +1448,7 @@ class Queue {
 
 
 
-#### 1. `enqueue()` — Add to the back
+##### 1. `enqueue()` — Add to the back
 Creates a new node and links it to the rear of the queue.
 
 ```java
@@ -1466,9 +1466,7 @@ public void enqueue(int data) {
 }
 ```
 
-
-
-#### 2. `dequeue()` — Remove from the front
+##### 2. `dequeue()` — Remove from the front
 Removes the front node and returns its data. Always check `isEmpty()` before calling this.
 
 ```java
@@ -1488,9 +1486,7 @@ public int dequeue() {
 }
 ```
 
-
-
-#### 3. `peek()` — Look at the front without removing
+##### 3. `peek()` — Look at the front without removing
 Returns the front node's data but **leaves the queue unchanged**.
 
 ```java
@@ -1503,9 +1499,7 @@ public int peek() {
 }
 ```
 
-
-
-#### 4. `isEmpty()` — Is the queue empty?
+##### 4. `isEmpty()` — Is the queue empty?
 Checks whether the front node is `null`, meaning no nodes exist in the queue.
 
 ```java
@@ -1514,9 +1508,7 @@ public boolean isEmpty() {
 }
 ```
 
-
-
-#### 5. `isFull()` — Can anything else be added?
+##### 5. `isFull()` — Can anything else be added?
 Since this is a node-based queue with no fixed array size, `isFull()` tracks against a manually set capacity.
 
 ```java
@@ -1526,7 +1518,6 @@ public boolean isFull() {
     return size == capacity;    // true if size has reached the limit
 }
 ```
-
 
 
 #### All 5 Together — Full Node-Based Queue
@@ -1668,6 +1659,231 @@ public class Main {
 
 #### Golden Rule
 Always check `isEmpty()` before calling `dequeue()` or `peek()`, and always check `isFull()` before calling `enqueue()` — this prevents null pointer errors and overflow issues when navigating nodes manually.
+
+### Trees
+* Trees are one of the most important **non-linear** data structures in computer science — unlike Linked Lists, Stacks, and Queues where data flows in a single line, a tree **branches out in multiple directions**.
+* Trees organize data **hierarchically**, meaning every piece of data has a parent-child relationship with the data around it.
+
+> [!NOTE]
+> Everything we have covered so far — Linked Lists, Stacks, and Queues — are **linear** structures. Each node has at most one successor. A tree breaks that rule: a single node can point to **multiple** children, which is what makes it non-linear and hierarchical.
+
+
+#### How Trees Connect Back to Nodes
+
+Just like Linked Lists, Stacks, and Queues, trees are still built from **Nodes**. The difference is that instead of each node holding one `next` reference, a tree node holds references to **multiple children**.
+
+```
+// The hierarchy we already know, extended:
+
+Node
+ └── Linked List  (one next reference — linear)
+      ├── Stack   (LIFO rule applied)
+      └── Queue   (FIFO rule applied)
+
+Node
+ └── Tree         (multiple child references — non-linear, hierarchical)
+```
+
+
+
+#### Essential Terminology
+
+Before the operations, the vocabulary matters. Every term below maps to a specific structural concept:
+
+| Term | Definition |
+|---|---|
+| **Root** | The top node of the tree — has no parent |
+| **Node** | Any element in the tree holding data and child references |
+| **Edge** | The link/reference connecting a parent node to a child node |
+| **Parent** | A node that has one or more children |
+| **Child** | A node that has a parent above it |
+| **Leaf** | A node with no children — the end of a branch |
+| **Subtree** | Any node and all of its descendants treated as its own tree |
+| **Height** | The number of edges from the root down to the deepest leaf |
+| **Depth** | The number of edges from the root to a specific node |
+| **Degree** | The number of children a node has |
+
+> [!NOTE]
+> A tree with **N nodes** will always have exactly **N - 1 edges**. There is always exactly one path between any two nodes.
+
+
+#### Types of Trees
+
+* **General Tree** — no restriction on the number of children a node can have; it is the superset of all other tree types
+* **Binary Tree** — each node can have **at most two children**: a left child and a right child; this is the most common and the foundation for more complex types
+* **Binary Search Tree (BST)** — a Binary Tree with a rule: left child is always **less than** the parent, right child is always **greater than** the parent
+* **AVL Tree** — a self-balancing BST that automatically keeps the height difference between left and right subtrees at most 1 through rotations
+* **Full Binary Tree** — every node has either 0 or 2 children, never just 1
+* **Complete Binary Tree** — all levels fully filled except possibly the last, which fills left to right
+
+
+
+#### The Node Class for a Binary Tree
+
+Since Binary Trees are the most commonly used, the Node here holds `left` and `right` child references instead of just `next`.
+
+```java
+class Node {
+    int data;
+    Node left;   // reference to left child
+    Node right;  // reference to right child
+
+    Node(int data) {
+        this.data = data;
+        this.left = null;
+        this.right = null;
+    }
+}
+```
+
+
+
+#### The Tree Class — Setup
+
+The tree only needs to track its `root` — everything else is reached by traversing from there.
+
+```java
+class BinaryTree {
+    Node root; // the top of the tree — the entry point
+
+    BinaryTree() {
+        this.root = null;
+    }
+}
+```
+
+
+
+#### Basic Operations
+
+Trees support four core operations:
+
+* **Insert** — add a new node into the tree
+* **Search** — find whether a value exists in the tree
+* **Delete** — remove a node and rewire the tree
+* **Traversal** — visit every node in a defined order
+
+
+
+#### Traversal — The Most Important Concept
+
+Traversal is how you **visit every node** in a tree. Unlike a Linked List where you always go front to back, trees have multiple valid traversal orders. The three most essential are all forms of **Depth-First Search (DFS)**:
+
+| Traversal | Order | Visits root... |
+|---|---|---|
+| **In-Order** | Left → Root → Right | In the middle |
+| **Pre-Order** | Root → Left → Right | First |
+| **Post-Order** | Left → Right → Root | Last |
+
+```
+Example Tree:
+        10
+       /  \
+      5    20
+     / \
+    3   7
+
+In-Order   → 3, 5, 7, 10, 20  (sorted order for a BST)
+Pre-Order  → 10, 5, 3, 7, 20  (root first — good for copying a tree)
+Post-Order → 3, 7, 5, 20, 10  (root last — good for deleting a tree)
+```
+
+
+
+#### All Together — Full Binary Tree in Java
+
+```java
+class Node {
+    int data;
+    Node left;
+    Node right;
+
+    Node(int data) {
+        this.data = data;
+        this.left = null;
+        this.right = null;
+    }
+}
+
+class BinaryTree {
+    Node root;
+
+    BinaryTree() {
+        this.root = null;
+    }
+
+    // In-Order Traversal: Left -> Root -> Right
+    public void inOrder(Node node) {
+        if (node == null) return;
+        inOrder(node.left);
+        System.out.print(node.data + " ");
+        inOrder(node.right);
+    }
+
+    // Pre-Order Traversal: Root -> Left -> Right
+    public void preOrder(Node node) {
+        if (node == null) return;
+        System.out.print(node.data + " ");
+        preOrder(node.left);
+        preOrder(node.right);
+    }
+
+    // Post-Order Traversal: Left -> Right -> Root
+    public void postOrder(Node node) {
+        if (node == null) return;
+        postOrder(node.left);
+        postOrder(node.right);
+        System.out.print(node.data + " ");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        BinaryTree tree = new BinaryTree();
+
+        // Manually building the tree
+        tree.root              = new Node(10);
+        tree.root.left         = new Node(5);
+        tree.root.right        = new Node(20);
+        tree.root.left.left    = new Node(3);
+        tree.root.left.right   = new Node(7);
+
+        /*
+         Tree structure:
+               10
+              /  \
+             5    20
+            / \
+           3   7
+        */
+
+        System.out.print("In-Order:   ");
+        tree.inOrder(tree.root);    // 3 5 7 10 20
+
+        System.out.print("\nPre-Order:  ");
+        tree.preOrder(tree.root);   // 10 5 3 7 20
+
+        System.out.print("\nPost-Order: ");
+        tree.postOrder(tree.root);  // 3 7 5 20 10
+    }
+}
+```
+
+#### Quick Reference
+
+| Concept | Key point |
+|---|---|
+| Structure | Non-linear, hierarchical — branches in multiple directions |
+| Built from | Nodes with `left` and `right` child references |
+| Entry point | Always the `root` node |
+| Leaf node | A node where both `left` and `right` are `null` |
+| N nodes → edges | Always exactly N - 1 edges |
+| In-Order traversal | Visits nodes in sorted order for a BST |
+| Pre-Order traversal | Root visited first — useful for copying a tree |
+| Post-Order traversal | Root visited last — useful for deleting a tree |
+
+> [!NOTE]
+> Trees are the foundation for some of the most powerful structures in DSA — Binary Search Trees, AVL Trees, and Heaps all build directly on top of the Binary Tree pattern you just learned. The traversal logic covered here carries forward into all of them.
 
 ## Debugging Process
 

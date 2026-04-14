@@ -465,6 +465,15 @@ const createUser = async (userData) => {
 
 # Backend Testing
 
+## Testing Basics
+
+```java
+// 1. Arrange: Create a fake user and a fake quiz
+// 2. Arrange: Tell Mockito what to do
+// 3. Act: Call the method
+// 4. Assert: Check the results
+```
+
 * [1. Basic Springboot Setup](https://docs.google.com/document/d/1unguDrrlFYuRG6n1BW2IGNdjnEkR5ZJLAt2yfLr20Ik/edit?tab=t.0)
 * Open GitHub Repo
 * Navigate to [Spring Initializer](https://start.spring.io/) to create zip file using basic dependencies:
