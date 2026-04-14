@@ -1883,7 +1883,219 @@ public class Main {
 | Post-Order traversal | Root visited last — useful for deleting a tree |
 
 > [!NOTE]
+> 
 > Trees are the foundation for some of the most powerful structures in DSA — Binary Search Trees, AVL Trees, and Heaps all build directly on top of the Binary Tree pattern you just learned. The traversal logic covered here carries forward into all of them.
+
+#### Tree Deletion — The 3 Cases
+* [GFG Implementation](https://www.geeksforgeeks.org/dsa/deletion-in-binary-search-tree/)
+
+Before deleting any node, the BST must first **search for the target node** by traversing left if the value is less than the current node, or right if greater. Once found, one of three cases applies based on how many children that node has.
+
+> [!IMPORTANT]
+> 
+> **BST deletion depends entirely on how many children the target node has:**
+>
+> - **0 children** → remove the node
+> - **1 child** → remove the node and connect its parent to the node's only child
+> - **2 children** → replace the node with its inorder successor/predecessor, then delete that replacement node
+
+> [!NOTE]
+> Deletion is the trickiest BST operation because after removing a node you must ensure the **BST property is preserved**: left child is always less than parent, right child is always greater. The three cases below are how you guarantee that.
+
+##### Case 1 — Node has NO children (Leaf Node)
+The simplest case. Since the node has no children, simply remove it. Nothing needs to be rewired.
+
+```
+Before:          After deleting 7:
+     10               10
+    /  \             /  \
+   5    20          5    20
+  / \              /
+ 3   7            3
+```
+
+```java
+// If the node is a leaf, just return null to its parent
+if (node.left == null && node.right == null) {
+    return null;
+}
+```
+
+##### Case 2 — Node has ONE child
+Bypass the node being deleted by linking its **parent directly to its one child**. The child takes the deleted node's place.
+
+```
+Before:          After deleting 5:
+     10               10
+    /  \             /  \
+   5    20          3    20
+  /
+ 3
+```
+
+```java
+// If only a right child exists, return it to replace the deleted node
+if (node.left == null) {
+    return node.right;
+}
+// If only a left child exists, return it to replace the deleted node
+if (node.right == null) {
+    return node.left;
+}
+```
+
+##### Case 3 — Node has TWO children
+The most complex case. You cannot simply remove the node because two subtrees would be left disconnected. The solution is to replace the deleted node's value with its **in-order successor** (the smallest value in its right subtree), then delete the successor.
+
+```
+Before:          After deleting 10:
+     10               12
+    /  \             /  \
+   5    20          5    20
+       /  \              \
+      12   25             25
+
+In-order successor of 10 = 12 (smallest in right subtree)
+Step 1: Replace 10's value with 12
+Step 2: Delete 12 from its original position
+```
+
+The three steps are always:
+1. Find the **in-order successor** — traverse to the right subtree, then go as far **left** as possible to find the smallest value there
+2. **Replace** the target node's value with the successor's value
+3. **Delete the successor** from its original position (it will always be Case 1 or Case 2)
+
+```java
+// Find the in-order successor (smallest value in right subtree)
+public Node findMin(Node node) {
+    while (node.left != null) {
+        node = node.left;
+    }
+    return node;
+}
+```
+
+##### All 3 Cases Together — Full Delete Implementation
+
+```java
+class Node {
+    int data;
+    Node left;
+    Node right;
+
+    Node(int data) {
+        this.data = data;
+        this.left = null;
+        this.right = null;
+    }
+}
+
+class BinarySearchTree {
+    Node root;
+
+    // Helper — find the smallest node in a subtree (in-order successor)
+    private Node findMin(Node node) {
+        while (node.left != null) {
+            node = node.left;
+        }
+        return node;
+    }
+
+    // Delete a node by value
+    public Node delete(Node node, int data) {
+        if (node == null) return null; // value not found in tree
+
+        if (data < node.data) {
+            // target is in the left subtree
+            node.left = delete(node.left, data);
+
+        } else if (data > node.data) {
+            // target is in the right subtree
+            node.right = delete(node.right, data);
+
+        } else {
+            // target node found — apply the correct case
+
+            // CASE 1: Leaf node — no children
+            if (node.left == null && node.right == null) {
+                return null;
+            }
+
+            // CASE 2: One child — bypass the deleted node
+            if (node.left == null) return node.right;
+            if (node.right == null) return node.left;
+
+            // CASE 3: Two children — replace with in-order successor
+            Node successor = findMin(node.right);            // find smallest in right subtree
+            node.data = successor.data;                      // replace value with successor
+            node.right = delete(node.right, successor.data); // delete the successor
+        }
+
+        return node;
+    }
+
+    // In-Order Traversal to verify BST structure after deletion
+    public void inOrder(Node node) {
+        if (node == null) return;
+        inOrder(node.left);
+        System.out.print(node.data + " ");
+        inOrder(node.right);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        BinarySearchTree bst = new BinarySearchTree();
+
+        bst.root             = new Node(10);
+        bst.root.left        = new Node(5);
+        bst.root.right       = new Node(20);
+        bst.root.left.left   = new Node(3);
+        bst.root.left.right  = new Node(7);
+        bst.root.right.left  = new Node(12);
+        bst.root.right.right = new Node(25);
+
+        /*
+         Initial Tree:
+               10
+              /  \
+             5    20
+            / \  /  \
+           3   7 12  25
+        */
+
+        System.out.print("Before: ");
+        bst.inOrder(bst.root);     // 3 5 7 10 12 20 25
+
+        // Case 1 — delete leaf node 7
+        bst.root = bst.delete(bst.root, 7);
+        System.out.print("\nAfter deleting 7  (Case 1): ");
+        bst.inOrder(bst.root);     // 3 5 10 12 20 25
+
+        // Case 2 — delete node 5 (now has only left child 3)
+        bst.root = bst.delete(bst.root, 5);
+        System.out.print("\nAfter deleting 5  (Case 2): ");
+        bst.inOrder(bst.root);     // 3 10 12 20 25
+
+        // Case 3 — delete node 20 (has two children: 12 and 25)
+        bst.root = bst.delete(bst.root, 20);
+        System.out.print("\nAfter deleting 20 (Case 3): ");
+        bst.inOrder(bst.root);     // 3 10 12 25
+    }
+}
+```
+
+##### Quick Reference
+
+| Case | Condition | Action |
+|---|---|---|
+| **Case 1** | Node has no children (leaf) | Remove it directly — return `null` to parent |
+| **Case 2** | Node has one child | Bypass deleted node — link parent to its one child |
+| **Case 3** | Node has two children | Replace value with in-order successor, then delete successor |
+
+> [!NOTE]
+> 
+> The **in-order successor** is always the **leftmost node in the right subtree** — the smallest value that is still greater than the deleted node. This guarantees the BST property is preserved after every deletion. In-order traversal after any deletion should always return values in sorted ascending order — use that as your verification check.
 
 ## Debugging Process
 
