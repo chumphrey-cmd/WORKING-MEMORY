@@ -56,13 +56,13 @@ System.out.println(Integer.MAX_VALUE);
 ```
 
 * **Non-Primitive / Reference Type**: A variable that holds a memory address (pointer) to an object on the heap, not the value itself. It allows for complex structures and can be `null`.
-  * `String s = "hello";` — `s` is the variable that **points** to the string object ("hello") on the heap.
+  * `String s = "hello";` - `s` is the variable that **points** to the string object ("hello") on the heap.
 
 * **Primitive Type**: A built-in type that stores the actual value directly in the variable (no pointer or heap involved). The 8 primitives are `byte`, `short`, `int`, `long`, `float`, `double`, `char`, `boolean`. They can't be `null`.
-  * `int age = 30;` — `age` contains value 30 directly.
+  * `int age = 30;` - `age` contains value 30 directly.
 
 * **Private Property**: A class field declared with the `private` keyword to hide it from direct access outside the class. It enforces encapsulation, allowing control via getters/setters.
-  * `private String name;` — Only accessible within the class or through methods.
+  * `private String name;` - Only accessible within the class or through methods.
 
 * **Constructor**: A method that is the **same name as the class**, that runs when creating an object with `new`. It initializes the object's state (fields) using passed parameters.
 ```java
@@ -360,8 +360,8 @@ public void printFirstLine(Path path) {
 
 ### Interfaces vs Abstract Classes
 
-* An `abstract class` is a **partial blueprint** — it defines shared identity, state, and behavior for closely related things (e.g., all `Animal` subclasses share a `color` and a `sleep()` method)
-* An `interface` is a **capability contract** — it says "anything that implements me **PROMISES** and will be **ENFORCED** to do these things," regardless of what that thing actually is (e.g., a `SUV` and a `Motorcycle` can both implement `Driveable`)
+* An `abstract class` is a **partial blueprint** - it defines shared identity, state, and behavior for closely related things (e.g., all `Animal` subclasses share a `color` and a `sleep()` method)
+* An `interface` is a **capability contract** - it says "anything that implements me **PROMISES** and will be **ENFORCED** to do these things," regardless of what that thing actually is (e.g., a `SUV` and a `Motorcycle` can both implement `Driveable`)
 
 **Side-by-side differences**
 
@@ -370,7 +370,7 @@ public void printFirstLine(Path path) {
 | Keyword | `extends` | `implements` |
 | Instantiation | ❌ Cannot be instantiated | ❌ Cannot be instantiated |
 | Methods | Can have both abstract AND concrete methods | Abstract by default; `default`/`static` allowed since Java 8 |
-| Fields/Variables | Any type — instance, static, final, non-final | Only `public static final` constants |
+| Fields/Variables | Any type - instance, static, final, non-final | Only `public static final` constants |
 | State | ✅ Can hold and manage state | ❌ Cannot hold state |
 | Constructors | ✅ Allowed | ❌ Not allowed |
 | Inheritance limit | A class can extend **only one** | A class can implement **multiple** |
@@ -595,7 +595,7 @@ public class Main {
 ```java
 // Abstract class holding shared state and a forced contract
 public abstract class Shape {
-    private String color; // shared state — all shapes have this automatically
+    private String color; // shared state - all shapes have this automatically
 
     public Shape(String color) {
         this.color = color;
@@ -608,7 +608,7 @@ public abstract class Shape {
     // Each subclass MUST define how it calculates area
     public abstract double area();
 
-    // Shared concrete method — no need to rewrite in each subclass
+    // Shared concrete method - no need to rewrite in each subclass
     public void describe() {
         System.out.println("This is a " + color + " shape with area: " + area());
     }
@@ -666,7 +666,7 @@ Generics allow you to write a **single class, method, or interface that works wi
 > [!NOTE]
 > If you find yourself writing the same class or method multiple times just to handle different data types, that is a strong signal that Generics is the right tool.
 
-The `<T>` naming convention stands for **Type**, but it can technically be any letter — `T`, `E` (element), `K` (key), and `V` (value) are the most common conventions.
+The `<T>` naming convention stands for **Type**, but it can technically be any letter - `T`, `E` (element), `K` (key), and `V` (value) are the most common conventions.
 
 **Without Generics** you would need separate classes:
 ```java
@@ -696,7 +696,7 @@ class Box<T> {
 #### Generic Class Example
 
 ```java
-// <T> is the type parameter — a placeholder for any data type
+// <T> is the type parameter - a placeholder for any data type
 class Box<T> {
     private T value;
 
@@ -729,7 +729,7 @@ public class Main {
 
 - `Box<String>` → `T` becomes `String` throughout the class
 - `Box<Integer>` → `T` becomes `Integer` throughout the class
-- Same class, different types — zero code duplication
+- Same class, different types - zero code duplication
 
 
 #### Generic Method Example
@@ -753,7 +753,7 @@ public class Main {
 }
 ```
 
-Java **infers the type** based on what you pass in — you don't have to specify it manually.
+Java **infers the type** based on what you pass in - you don't have to specify it manually.
 
 
 #### Bounded Generics (bonus)
@@ -787,7 +787,7 @@ public class Main {
 }
 ```
 
-The last line **will not compile** — the bound `<T extends Number>` enforces that only numeric types are allowed.  This is another example of Java's compile-time guardrails at work.
+The last line **will not compile** - the bound `<T extends Number>` enforces that only numeric types are allowed.  This is another example of Java's compile-time guardrails at work.
 
 #### Quick reference
 
@@ -802,7 +802,7 @@ The last line **will not compile** — the bound `<T extends Number>` enforces t
 ## Linear Data Structures
 
 > [!NOTE] 
-> Before diving into Linked Lists, Stacks, and Queues individually, it is important to understand how these three concepts **build on top of each other**. They are not separate isolated ideas — each one depends on the layer below it.
+> Before diving into Linked Lists, Stacks, and Queues individually, it is important to understand how these three concepts **build on top of each other**. They are not separate isolated ideas - each one depends on the layer below it.
 > 
 > Linked Lists, Stacks, and Queues are classified as **linear data structures**, meaning each node has at most one predecessor and one successor. Data flows in a single line, one node at a time. This is what separates them from non-linear structures like trees and graphs, where a single node can branch out to multiple children.
 
@@ -815,7 +815,7 @@ Node
       └── Queue
 ```
 
-* The reason this hierarchy matters is that a `Node` by itself does nothing useful — it only becomes meaningful when nodes are connected into a `LinkedList`. Likewise, a `LinkedList` by itself has no enforced order of access — it only becomes a `Stack` or `Queue` when you apply a behavioral rule on top of it.
+* The reason this hierarchy matters is that a `Node` by itself does nothing useful - it only becomes meaningful when nodes are connected into a `LinkedList`. Likewise, a `LinkedList` by itself has no enforced order of access - it only becomes a `Stack` or `Queue` when you apply a behavioral rule on top of it.
 
 > [!NOTE]
 > A **Node** is a single LEGO brick.
@@ -825,10 +825,10 @@ Node
 
 #### Node (Foundation)
 
-* **Node** is the most primitive building block — it is just a container that holds a piece of data and a reference pointing to the next node in the chain. Nothing more.
-* This is the **smallest building block** — a single "box" or container.
+* **Node** is the most primitive building block - it is just a container that holds a piece of data and a reference pointing to the next node in the chain. Nothing more.
+* This is the **smallest building block** - a single "box" or container.
 * Contains exactly **two fields**:
-  * `data` (the actual value — `Object` for now, later `<T>` when we add generics)
+  * `data` (the actual value - `Object` for now, later `<T>` when we add generics)
   * `next` (a reference/pointer to the next Node, or `null` if nothing follows)
 * Every structure below is built *entirely* from these Nodes.
 
@@ -861,8 +861,8 @@ Node
 
 * Another **specialized Linked List**, but it touches **both ends**.
 * You maintain two references:
-  * `head` (front of the line — where you remove)
-  * `tail` (back of the line — where you add)
+  * `head` (front of the line - where you remove)
+  * `tail` (back of the line - where you add)
 
 * Operations:
   * `enqueue(item)` → add a new Node at the tail (update `tail.getNext` and move `tail`)
@@ -872,13 +872,13 @@ Node
 
 ### Behavior Rules
 
-* The data storage mechanism is the same across all three — what changes is the **rule applied to how you interact with it**.
+* The data storage mechanism is the same across all three - what changes is the **rule applied to how you interact with it**.
 
 | Structure | Rule | Real-world analogy |
 |---|---|---|
-| Linked List | No restriction — add or remove anywhere | A to-do list you can edit freely |
-| Stack | **LIFO** — Last In, First Out | A stack of cafeteria trays |
-| Queue | **FIFO** — First In, First Out | A line at a coffee shop |
+| Linked List | No restriction - add or remove anywhere | A to-do list you can edit freely |
+| Stack | **LIFO** - Last In, First Out | A stack of cafeteria trays |
+| Queue | **FIFO** - First In, First Out | A line at a coffee shop |
 
 
 ### Linked Lists
@@ -909,10 +909,10 @@ Node
 
 **Real-world use cases include:**
 
-* Undo/Redo history in text editors — fast insertions and removals at either end
-* Queues and Stacks — LinkedList implements both Queue and Deque interfaces in Java
-* Browser history — navigating forward and backward through pages
-* Music playlists — easily inserting or removing songs at any position
+* Undo/Redo history in text editors - fast insertions and removals at either end
+* Queues and Stacks - LinkedList implements both Queue and Deque interfaces in Java
+* Browser history - navigating forward and backward through pages
+* Music playlists - easily inserting or removing songs at any position
 
 #### Manual Node-Based Implementation
 
@@ -932,8 +932,8 @@ class Node {
 }
 ```
 
-##### The LinkedList Class — Setup
-The list only needs to track its `head` — the first node. All other nodes are reached by traversing from there.
+##### The LinkedList Class - Setup
+The list only needs to track its `head` - the first node. All other nodes are reached by traversing from there.
 
 ```java
 class LinkedList {
@@ -945,7 +945,7 @@ class LinkedList {
 }
 ```
 
-##### 1. `append()` — Add a node to the end
+##### 1. `append()` - Add a node to the end
 Creates a new node and links it after the last node in the list.
 
 ```java
@@ -963,7 +963,7 @@ public void append(int data) {
 }
 ```
 
-##### 2. `prepend()` — Add a node to the beginning
+##### 2. `prepend()` - Add a node to the beginning
 Creates a new node and places it before the current head.
 
 ```java
@@ -974,7 +974,7 @@ public void prepend(int data) {
 }
 ```
 
-##### 3. `delete()` — Remove a node by value
+##### 3. `delete()` - Remove a node by value
 Traverses the list and rewires the references to skip over the target node.
 
 ```java
@@ -997,7 +997,7 @@ public void delete(int data) {
 }
 ```
 
-##### 4. `search()` — Find a node by value
+##### 4. `search()` - Find a node by value
 Traverses the list and returns `true` if the value exists, `false` if not.
 
 ```java
@@ -1013,7 +1013,7 @@ public boolean search(int data) {
 }
 ```
 
-##### 5. `display()` — Print all nodes
+##### 5. `display()` - Print all nodes
 Traverses the full list and prints each node's data in order.
 
 ```java
@@ -1031,7 +1031,7 @@ public void display() {
 }
 ```
 
-##### All Together — Full Example
+##### All Together - Full Example
 
 ```java
 class Node {
@@ -1051,7 +1051,7 @@ class LinkedList {
         this.head = null;
     }
 
-    // 1. append — add a new node to the end
+    // 1. append - add a new node to the end
     public void append(int data) {
         Node newNode = new Node(data);
         if (head == null) {
@@ -1065,14 +1065,14 @@ class LinkedList {
         current.next = newNode;
     }
 
-    // 2. prepend — add a new node to the beginning
+    // 2. prepend - add a new node to the beginning
     public void prepend(int data) {
         Node newNode = new Node(data);
         newNode.next = head;
         head = newNode;
     }
 
-    // 3. delete — remove a node by value
+    // 3. delete - remove a node by value
     public void delete(int data) {
         if (head == null) return;
         if (head.data == data) {
@@ -1089,7 +1089,7 @@ class LinkedList {
         }
     }
 
-    // 4. search — find a node by value
+    // 4. search - find a node by value
     public boolean search(int data) {
         Node current = head;
         while (current != null) {
@@ -1099,7 +1099,7 @@ class LinkedList {
         return false;
     }
 
-    // 5. display — print all nodes in order
+    // 5. display - print all nodes in order
     public void display() {
         if (head == null) {
             System.out.println("List is empty.");
@@ -1118,21 +1118,21 @@ public class Main {
     public static void main(String[] args) {
         LinkedList list = new LinkedList();
 
-        // append() — add nodes to the end
+        // append() - add nodes to the end
         list.append(10);
         list.append(20);
         list.append(30);
         list.display(); // 10 -> 20 -> 30 -> null
 
-        // prepend() — add a node to the beginning
+        // prepend() - add a node to the beginning
         list.prepend(5);
         list.display(); // 5 -> 10 -> 20 -> 30 -> null
 
-        // search() — find a value
+        // search() - find a value
         System.out.println(list.search(20)); // true
         System.out.println(list.search(99)); // false
 
-        // delete() — remove a node by value
+        // delete() - remove a node by value
         list.delete(20);
         list.display(); // 5 -> 10 -> 30 -> null
 
@@ -1154,7 +1154,7 @@ public class Main {
 | `display()` | Traverses and prints all nodes in order | O(n) |
 
 > [!NOTE]
-> `prepend()` is O(1) because no traversal is needed — the new node always goes straight to the front. `append()`, `delete()`, and `search()` are all O(n) because they must traverse the list one node at a time to find their destination.
+> `prepend()` is O(1) because no traversal is needed - the new node always goes straight to the front. `append()`, `delete()`, and `search()` are all O(n) because they must traverse the list one node at a time to find their destination.
 
 ### Stacks and Queues
 
@@ -1166,11 +1166,11 @@ public class Main {
 The key concept tying all 5 operations together is **LIFO (Last In, First Out)**: the last item added is always the first one removed, like a stack of plates.
 
 > [!NOTE]
-> Basically, a stack is basically a set of cafeteria trays — you can only interact with the **top** tray.
+> Basically, a stack is basically a set of cafeteria trays - you can only interact with the **top** tray.
 >
 > You add to the top, remove from the top, and can **only peek at the top**.
 >
-> Always check `isEmpty()` before calling `pop()` or `peek()`, and always check `isFull()` before calling `push()` on a fixed-size stack — this prevents runtime exceptions and stack overflow errors.
+> Always check `isEmpty()` before calling `pop()` or `peek()`, and always check `isFull()` before calling `push()` on a fixed-size stack - this prevents runtime exceptions and stack overflow errors.
 
 
 ##### The Node Class
@@ -1191,7 +1191,7 @@ class Node {
 
 
 
-##### The Stack Class — Setup
+##### The Stack Class - Setup
 Before the 5 operations, the stack needs to track its `top`, `size`, and `capacity`.
 
 ```java
@@ -1210,7 +1210,7 @@ class Stack {
 
 
 
-##### 1. `push()` — Add to the top
+##### 1. `push()` - Add to the top
 * Creates a new node and links it on top of the current top node.
 
 ```java
@@ -1228,7 +1228,7 @@ public void push(int data) {
 
 
 
-##### 2. `pop()` — Remove from the top
+##### 2. `pop()` - Remove from the top
 * Removes AND returns the top node's data. Always check `isEmpty()` before calling this.
 
 ```java
@@ -1246,7 +1246,7 @@ public int pop() {
 
 
 
-##### 3. `peek()` — Look at the top without removing
+##### 3. `peek()` - Look at the top without removing
 * Returns the top node's data but **leaves the stack unchanged**.
 
 ```java
@@ -1259,7 +1259,7 @@ public int peek() {
 }
 ```
 
-##### 4. `isEmpty()` — Is the stack empty?
+##### 4. `isEmpty()` - Is the stack empty?
 * Checks whether the top node is `null`, meaning no nodes exist in the stack.
 
 ```java
@@ -1269,7 +1269,7 @@ public boolean isEmpty() {
 ```
 
 
-##### 5. `isFull()` — Can anything else be added?
+##### 5. `isFull()` - Can anything else be added?
 * Checks whether `size` has reached the set `capacity`.
 
 ```java
@@ -1280,7 +1280,7 @@ public boolean isFull() {
 
 
 
-##### All 5 Together — Full Example
+##### All 5 Together - Full Example
 
 ```java
 class Node {
@@ -1304,17 +1304,17 @@ class Stack {
         this.capacity = capacity;
     }
 
-    // 4. isEmpty — check if stack has no nodes
+    // 4. isEmpty - check if stack has no nodes
     public boolean isEmpty() {
         return top == null;
     }
 
-    // 5. isFull — check if stack has hit capacity
+    // 5. isFull - check if stack has hit capacity
     public boolean isFull() {
         return size == capacity;
     }
 
-    // 1. push — create a new node and place it on top
+    // 1. push - create a new node and place it on top
     public void push(int data) {
         if (isFull()) {
             System.out.println("Stack is full! Cannot push " + data);
@@ -1326,7 +1326,7 @@ class Stack {
         size++;
     }
 
-    // 2. pop — remove the top node and return its data
+    // 2. pop - remove the top node and return its data
     public int pop() {
         if (isEmpty()) {
             System.out.println("Stack is empty! Nothing to pop.");
@@ -1338,7 +1338,7 @@ class Stack {
         return data;
     }
 
-    // 3. peek — return top node's data without removing it
+    // 3. peek - return top node's data without removing it
     public int peek() {
         if (isEmpty()) {
             System.out.println("Stack is empty! Nothing to peek.");
@@ -1347,7 +1347,7 @@ class Stack {
         return top.data;
     }
 
-    // Helper — print all nodes from top to bottom
+    // Helper - print all nodes from top to bottom
     public void display() {
         if (isEmpty()) {
             System.out.println("Stack is empty.");
@@ -1366,30 +1366,30 @@ public class Main {
     public static void main(String[] args) {
         Stack stack = new Stack(5);
 
-        // isEmpty() — check before doing anything
+        // isEmpty() - check before doing anything
         System.out.println(stack.isEmpty()); // true
 
-        // push() — add nodes to the top
+        // push() - add nodes to the top
         stack.push(10);
         stack.push(20);
         stack.push(30);
         stack.display(); // 30 -> 20 -> 10 -> null
 
-        // peek() — look at top without removing
+        // peek() - look at top without removing
         System.out.println(stack.peek()); // 30
         stack.display();                  // 30 -> 20 -> 10 -> null (unchanged)
 
-        // pop() — remove from the top
+        // pop() - remove from the top
         System.out.println(stack.pop()); // 30
         stack.display();                 // 20 -> 10 -> null
 
-        // isFull() — test capacity
+        // isFull() - test capacity
         stack.push(40);
         stack.push(50);
         stack.push(60);
         stack.push(70); // Stack is full! Cannot push 70
 
-        // isEmpty() — check again after operations
+        // isEmpty() - check again after operations
         System.out.println(stack.isEmpty()); // false
     }
 }
@@ -1429,7 +1429,7 @@ class Node {
 
 
 
-##### The Queue Class — Setup
+##### The Queue Class - Setup
 Before the 5 operations, the queue needs to track its `front`, `rear`, and `size`.
 
 ```java
@@ -1448,7 +1448,7 @@ class Queue {
 
 
 
-##### 1. `enqueue()` — Add to the back
+##### 1. `enqueue()` - Add to the back
 Creates a new node and links it to the rear of the queue.
 
 ```java
@@ -1466,7 +1466,7 @@ public void enqueue(int data) {
 }
 ```
 
-##### 2. `dequeue()` — Remove from the front
+##### 2. `dequeue()` - Remove from the front
 Removes the front node and returns its data. Always check `isEmpty()` before calling this.
 
 ```java
@@ -1486,7 +1486,7 @@ public int dequeue() {
 }
 ```
 
-##### 3. `peek()` — Look at the front without removing
+##### 3. `peek()` - Look at the front without removing
 Returns the front node's data but **leaves the queue unchanged**.
 
 ```java
@@ -1499,7 +1499,7 @@ public int peek() {
 }
 ```
 
-##### 4. `isEmpty()` — Is the queue empty?
+##### 4. `isEmpty()` - Is the queue empty?
 Checks whether the front node is `null`, meaning no nodes exist in the queue.
 
 ```java
@@ -1508,7 +1508,7 @@ public boolean isEmpty() {
 }
 ```
 
-##### 5. `isFull()` — Can anything else be added?
+##### 5. `isFull()` - Can anything else be added?
 Since this is a node-based queue with no fixed array size, `isFull()` tracks against a manually set capacity.
 
 ```java
@@ -1520,7 +1520,7 @@ public boolean isFull() {
 ```
 
 
-#### All 5 Together — Full Node-Based Queue
+#### All 5 Together - Full Node-Based Queue
 
 ```java
 class Node {
@@ -1546,17 +1546,17 @@ class Queue {
         this.capacity = capacity;
     }
 
-    // 4. isEmpty — check if queue has no nodes
+    // 4. isEmpty - check if queue has no nodes
     public boolean isEmpty() {
         return front == null;
     }
 
-    // 5. isFull — check if queue has hit capacity
+    // 5. isFull - check if queue has hit capacity
     public boolean isFull() {
         return size == capacity;
     }
 
-    // 1. enqueue — add a new node to the rear
+    // 1. enqueue - add a new node to the rear
     public void enqueue(int data) {
         if (isFull()) {
             System.out.println("Queue is full! Cannot enqueue " + data);
@@ -1573,7 +1573,7 @@ class Queue {
         size++;
     }
 
-    // 2. dequeue — remove the front node
+    // 2. dequeue - remove the front node
     public int dequeue() {
         if (isEmpty()) {
             System.out.println("Queue is empty! Nothing to dequeue.");
@@ -1588,7 +1588,7 @@ class Queue {
         return data;
     }
 
-    // 3. peek — look at front node without removing
+    // 3. peek - look at front node without removing
     public int peek() {
         if (isEmpty()) {
             System.out.println("Queue is empty! Nothing to peek.");
@@ -1597,7 +1597,7 @@ class Queue {
         return front.data;
     }
 
-    // Helper — print all nodes in order
+    // Helper - print all nodes in order
     public void display() {
         if (isEmpty()) {
             System.out.println("Queue is empty.");
@@ -1616,30 +1616,30 @@ public class Main {
     public static void main(String[] args) {
         Queue queue = new Queue(5);
 
-        // isEmpty() — check before doing anything
+        // isEmpty() - check before doing anything
         System.out.println(queue.isEmpty()); // true
 
-        // enqueue() — add nodes to the rear
+        // enqueue() - add nodes to the rear
         queue.enqueue(10);
         queue.enqueue(20);
         queue.enqueue(30);
         queue.display(); // 10 -> 20 -> 30 -> null
 
-        // peek() — look at front without removing
+        // peek() - look at front without removing
         System.out.println(queue.peek()); // 10
         queue.display();                  // 10 -> 20 -> 30 -> null (unchanged)
 
-        // dequeue() — remove from the front
+        // dequeue() - remove from the front
         System.out.println(queue.dequeue()); // 10
         queue.display();                     // 20 -> 30 -> null
 
-        // isFull() — test capacity
+        // isFull() - test capacity
         queue.enqueue(40);
         queue.enqueue(50);
         queue.enqueue(60);
         queue.enqueue(70); // Queue is full! Cannot enqueue 70
 
-        // isEmpty() — check again after operations
+        // isEmpty() - check again after operations
         System.out.println(queue.isEmpty()); // false
     }
 }
@@ -1658,14 +1658,14 @@ public class Main {
 | `isFull()` | Checks if size has reached capacity | boolean | O(1) |
 
 #### Golden Rule
-Always check `isEmpty()` before calling `dequeue()` or `peek()`, and always check `isFull()` before calling `enqueue()` — this prevents null pointer errors and overflow issues when navigating nodes manually.
+Always check `isEmpty()` before calling `dequeue()` or `peek()`, and always check `isFull()` before calling `enqueue()` - this prevents null pointer errors and overflow issues when navigating nodes manually.
 
 ### Trees
-* Trees are one of the most important **non-linear** data structures in computer science — unlike Linked Lists, Stacks, and Queues where data flows in a single line, a tree **branches out in multiple directions**.
+* Trees are one of the most important **non-linear** data structures in computer science - unlike Linked Lists, Stacks, and Queues where data flows in a single line, a tree **branches out in multiple directions**.
 * Trees organize data **hierarchically**, meaning every piece of data has a parent-child relationship with the data around it.
 
 > [!NOTE]
-> Everything we have covered so far — Linked Lists, Stacks, and Queues — are **linear** structures. Each node has at most one successor. A tree breaks that rule: a single node can point to **multiple** children, which is what makes it non-linear and hierarchical.
+> Everything we have covered so far - Linked Lists, Stacks, and Queues - are **linear** structures. Each node has at most one successor. A tree breaks that rule: a single node can point to **multiple** children, which is what makes it non-linear and hierarchical.
 
 
 #### How Trees Connect Back to Nodes
@@ -1676,12 +1676,12 @@ Just like Linked Lists, Stacks, and Queues, trees are still built from **Nodes**
 // The hierarchy we already know, extended:
 
 Node
- └── Linked List  (one next reference — linear)
+ └── Linked List  (one next reference - linear)
       ├── Stack   (LIFO rule applied)
       └── Queue   (FIFO rule applied)
 
 Node
- └── Tree         (multiple child references — non-linear, hierarchical)
+ └── Tree         (multiple child references - non-linear, hierarchical)
 ```
 
 
@@ -1692,12 +1692,12 @@ Before the operations, the vocabulary matters. Every term below maps to a specif
 
 | Term | Definition |
 |---|---|
-| **Root** | The top node of the tree — has no parent |
+| **Root** | The top node of the tree - has no parent |
 | **Node** | Any element in the tree holding data and child references |
 | **Edge** | The link/reference connecting a parent node to a child node |
 | **Parent** | A node that has one or more children |
 | **Child** | A node that has a parent above it |
-| **Leaf** | A node with no children — the end of a branch |
+| **Leaf** | A node with no children - the end of a branch |
 | **Subtree** | Any node and all of its descendants treated as its own tree |
 | **Height** | The number of edges from the root down to the deepest leaf |
 | **Depth** | The number of edges from the root to a specific node |
@@ -1709,12 +1709,12 @@ Before the operations, the vocabulary matters. Every term below maps to a specif
 
 #### Types of Trees
 
-* **General Tree** — no restriction on the number of children a node can have; it is the superset of all other tree types
-* **Binary Tree** — each node can have **at most two children**: a left child and a right child; this is the most common and the foundation for more complex types
-* **Binary Search Tree (BST)** — a Binary Tree with a rule: left child is always **less than** the parent, right child is always **greater than** the parent
-* **AVL Tree** — a self-balancing BST that automatically keeps the height difference between left and right subtrees at most 1 through rotations
-* **Full Binary Tree** — every node has either 0 or 2 children, never just 1
-* **Complete Binary Tree** — all levels fully filled except possibly the last, which fills left to right
+* **General Tree** - no restriction on the number of children a node can have; it is the superset of all other tree types
+* **Binary Tree** - each node can have **at most two children**: a left child and a right child; this is the most common and the foundation for more complex types
+* **Binary Search Tree (BST)** - a Binary Tree with a rule: left child is always **less than** the parent, right child is always **greater than** the parent
+* **AVL Tree** - a self-balancing BST that automatically keeps the height difference between left and right subtrees at most 1 through rotations
+* **Full Binary Tree** - every node has either 0 or 2 children, never just 1
+* **Complete Binary Tree** - all levels fully filled except possibly the last, which fills left to right
 
 
 
@@ -1738,13 +1738,13 @@ class Node {
 
 
 
-#### The Tree Class — Setup
+#### The Tree Class - Setup
 
-The tree only needs to track its `root` — everything else is reached by traversing from there.
+The tree only needs to track its `root` - everything else is reached by traversing from there.
 
 ```java
 class BinaryTree {
-    Node root; // the top of the tree — the entry point
+    Node root; // the top of the tree - the entry point
 
     BinaryTree() {
         this.root = null;
@@ -1758,14 +1758,14 @@ class BinaryTree {
 
 Trees support four core operations:
 
-* **Insert** — add a new node into the tree
-* **Search** — find whether a value exists in the tree
-* **Delete** — remove a node and rewire the tree
-* **Traversal** — visit every node in a defined order
+* **Insert** - add a new node into the tree
+* **Search** - find whether a value exists in the tree
+* **Delete** - remove a node and rewire the tree
+* **Traversal** - visit every node in a defined order
 
 
 
-#### Traversal — The Most Important Concept
+#### Traversal - The Most Important Concept
 
 Traversal is how you **visit every node** in a tree. Unlike a Linked List where you always go front to back, trees have multiple valid traversal orders. The three most essential are all forms of **Depth-First Search (DFS)**:
 
@@ -1784,13 +1784,13 @@ Example Tree:
     3   7
 
 In-Order   → 3, 5, 7, 10, 20  (sorted order for a BST)
-Pre-Order  → 10, 5, 3, 7, 20  (root first — good for copying a tree)
-Post-Order → 3, 7, 5, 20, 10  (root last — good for deleting a tree)
+Pre-Order  → 10, 5, 3, 7, 20  (root first - good for copying a tree)
+Post-Order → 3, 7, 5, 20, 10  (root last - good for deleting a tree)
 ```
 
 
 
-#### All Together — Full Binary Tree in Java
+#### All Together - Full Binary Tree in Java
 
 ```java
 class Node {
@@ -1873,20 +1873,20 @@ public class Main {
 
 | Concept | Key point |
 |---|---|
-| Structure | Non-linear, hierarchical — branches in multiple directions |
+| Structure | Non-linear, hierarchical - branches in multiple directions |
 | Built from | Nodes with `left` and `right` child references |
 | Entry point | Always the `root` node |
 | Leaf node | A node where both `left` and `right` are `null` |
 | N nodes → edges | Always exactly N - 1 edges |
 | In-Order traversal | Visits nodes in sorted order for a BST |
-| Pre-Order traversal | Root visited first — useful for copying a tree |
-| Post-Order traversal | Root visited last — useful for deleting a tree |
+| Pre-Order traversal | Root visited first - useful for copying a tree |
+| Post-Order traversal | Root visited last - useful for deleting a tree |
 
 > [!NOTE]
 > 
-> Trees are the foundation for some of the most powerful structures in DSA — Binary Search Trees, AVL Trees, and Heaps all build directly on top of the Binary Tree pattern you just learned. The traversal logic covered here carries forward into all of them.
+> Trees are the foundation for some of the most powerful structures in DSA - Binary Search Trees, AVL Trees, and Heaps all build directly on top of the Binary Tree pattern you just learned. The traversal logic covered here carries forward into all of them.
 
-#### Tree Deletion — The 3 Cases
+#### Tree Deletion - The 3 Cases
 * [GFG Implementation](https://www.geeksforgeeks.org/dsa/deletion-in-binary-search-tree/)
 
 Before deleting any node, the BST must first **search for the target node** by traversing left if the value is less than the current node, or right if greater. Once found, one of three cases applies based on how many children that node has.
@@ -1902,7 +1902,7 @@ Before deleting any node, the BST must first **search for the target node** by t
 > [!NOTE]
 > Deletion is the trickiest BST operation because after removing a node you must ensure the **BST property is preserved**: left child is always less than parent, right child is always greater. The three cases below are how you guarantee that.
 
-##### Case 1 — Node has NO children (Leaf Node)
+##### Case 1 - Node has NO children (Leaf Node)
 The simplest case. Since the node has no children, simply remove it. Nothing needs to be rewired.
 
 ```
@@ -1921,7 +1921,7 @@ if (node.left == null && node.right == null) {
 }
 ```
 
-##### Case 2 — Node has ONE child
+##### Case 2 - Node has ONE child
 Bypass the node being deleted by linking its **parent directly to its one child**. The child takes the deleted node's place.
 
 ```
@@ -1944,7 +1944,7 @@ if (node.right == null) {
 }
 ```
 
-##### Case 3 — Node has TWO children
+##### Case 3 - Node has TWO children
 The most complex case. You cannot simply remove the node because two subtrees would be left disconnected. The solution is to replace the deleted node's value with its **in-order successor** (the smallest value in its right subtree), then delete the successor.
 
 ```
@@ -1961,7 +1961,7 @@ Step 2: Delete 12 from its original position
 ```
 
 The three steps are always:
-1. Find the **in-order successor** — traverse to the right subtree, then go as far **left** as possible to find the smallest value there
+1. Find the **in-order successor** - traverse to the right subtree, then go as far **left** as possible to find the smallest value there
 2. **Replace** the target node's value with the successor's value
 3. **Delete the successor** from its original position (it will always be Case 1 or Case 2)
 
@@ -1975,7 +1975,7 @@ public Node findMin(Node node) {
 }
 ```
 
-##### All 3 Cases Together — Full Delete Implementation
+##### All 3 Cases Together - Full Delete Implementation
 
 ```java
 class Node {
@@ -1993,7 +1993,7 @@ class Node {
 class BinarySearchTree {
     Node root;
 
-    // Helper — find the smallest node in a subtree (in-order successor)
+    // Helper - find the smallest node in a subtree (in-order successor)
     private Node findMin(Node node) {
         while (node.left != null) {
             node = node.left;
@@ -2014,18 +2014,18 @@ class BinarySearchTree {
             node.right = delete(node.right, data);
 
         } else {
-            // target node found — apply the correct case
+            // target node found - apply the correct case
 
-            // CASE 1: Leaf node — no children
+            // CASE 1: Leaf node - no children
             if (node.left == null && node.right == null) {
                 return null;
             }
 
-            // CASE 2: One child — bypass the deleted node
+            // CASE 2: One child - bypass the deleted node
             if (node.left == null) return node.right;
             if (node.right == null) return node.left;
 
-            // CASE 3: Two children — replace with in-order successor
+            // CASE 3: Two children - replace with in-order successor
             Node successor = findMin(node.right);            // find smallest in right subtree
             node.data = successor.data;                      // replace value with successor
             node.right = delete(node.right, successor.data); // delete the successor
@@ -2067,17 +2067,17 @@ public class Main {
         System.out.print("Before: ");
         bst.inOrder(bst.root);     // 3 5 7 10 12 20 25
 
-        // Case 1 — delete leaf node 7
+        // Case 1 - delete leaf node 7
         bst.root = bst.delete(bst.root, 7);
         System.out.print("\nAfter deleting 7  (Case 1): ");
         bst.inOrder(bst.root);     // 3 5 10 12 20 25
 
-        // Case 2 — delete node 5 (now has only left child 3)
+        // Case 2 - delete node 5 (now has only left child 3)
         bst.root = bst.delete(bst.root, 5);
         System.out.print("\nAfter deleting 5  (Case 2): ");
         bst.inOrder(bst.root);     // 3 10 12 20 25
 
-        // Case 3 — delete node 20 (has two children: 12 and 25)
+        // Case 3 - delete node 20 (has two children: 12 and 25)
         bst.root = bst.delete(bst.root, 20);
         System.out.print("\nAfter deleting 20 (Case 3): ");
         bst.inOrder(bst.root);     // 3 10 12 25
@@ -2089,13 +2089,13 @@ public class Main {
 
 | Case | Condition | Action |
 |---|---|---|
-| **Case 1** | Node has no children (leaf) | Remove it directly — return `null` to parent |
-| **Case 2** | Node has one child | Bypass deleted node — link parent to its one child |
+| **Case 1** | Node has no children (leaf) | Remove it directly - return `null` to parent |
+| **Case 2** | Node has one child | Bypass deleted node - link parent to its one child |
 | **Case 3** | Node has two children | Replace value with in-order successor, then delete successor |
 
 > [!NOTE]
 > 
-> The **in-order successor** is always the **leftmost node in the right subtree** — the smallest value that is still greater than the deleted node. This guarantees the BST property is preserved after every deletion. In-order traversal after any deletion should always return values in sorted ascending order — use that as your verification check.
+> The **in-order successor** is always the **leftmost node in the right subtree** - the smallest value that is still greater than the deleted node. This guarantees the BST property is preserved after every deletion. In-order traversal after any deletion should always return values in sorted ascending order - use that as your verification check.
 
 ## Debugging Process
 
