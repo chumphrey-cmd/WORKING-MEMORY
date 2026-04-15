@@ -377,9 +377,9 @@ public void printFirstLine(Path path) {
 | Access modifiers | Members can be `private`, `protected`, `public` | Methods are `public` by default |
 
 **The Golden Rule**
-* **Shared code + shared state among related classes** → Abstract class
-* **Shared behavior contract across unrelated classes** → Interface
-* **Both needed** → Abstract class + one or more interfaces (Java allows this)
+* **Shared code + shared state among related classes** > Abstract class
+* **Shared behavior contract across unrelated classes** > Interface
+* **Both needed** > Abstract class + one or more interfaces (Java allows this)
 
 #### Interfaces
 
@@ -727,8 +727,8 @@ public class Main {
 }
 ```
 
-- `Box<String>` → `T` becomes `String` throughout the class
-- `Box<Integer>` → `T` becomes `Integer` throughout the class
+- `Box<String>` > `T` becomes `String` throughout the class
+- `Box<Integer>` > `T` becomes `Integer` throughout the class
 - Same class, different types - zero code duplication
 
 
@@ -848,10 +848,10 @@ Node
 
 * A **specialized Linked List** that only ever touches the **head** end. 
 * Operations are extremely simple because of the restriction:
-  * `push(item)` → add a new Node at the head (exactly the pointer dance we practiced)
-  * `pop()` → remove and return the Node at the head
-  * `peek()` → look at the head without removing it
-  * `isEmpty()` → check if `head == null`
+  * `push(item)` > add a new Node at the head (exactly the pointer dance we practiced)
+  * `pop()` > remove and return the Node at the head
+  * `peek()` > look at the head without removing it
+  * `isEmpty()` > check if `head == null`
 
 > [!TIP]
 > Basically a vertical stack of plates where only the top plate is accessible.
@@ -865,10 +865,10 @@ Node
   * `tail` (back of the line - where you add)
 
 * Operations:
-  * `enqueue(item)` → add a new Node at the tail (update `tail.getNext` and move `tail`)
-  * `dequeue()` → remove and return the Node at the head (move `head` forward)
-  * `peek()` → look at the front without removing
-  * `isEmpty()` → check if `head == null`
+  * `enqueue(item)` > add a new Node at the tail (update `tail.getNext` and move `tail`)
+  * `dequeue()` > remove and return the Node at the head (move `head` forward)
+  * `peek()` > look at the front without removing
+  * `isEmpty()` > check if `head == null`
 
 ### Behavior Rules
 
@@ -1771,9 +1771,9 @@ Traversal is how you **visit every node** in a tree. Unlike a Linked List where 
 
 | Traversal | Order | Visits root... |
 |---|---|---|
-| **In-Order** | Left → Root → Right | In the middle |
-| **Pre-Order** | Root → Left → Right | First |
-| **Post-Order** | Left → Right → Root | Last |
+| **In-Order** | Left > Root > Right | In the middle |
+| **Pre-Order** | Root > Left > Right | First |
+| **Post-Order** | Left > Right > Root | Last |
 
 ```
 Example Tree:
@@ -1783,9 +1783,9 @@ Example Tree:
      / \
     3   7
 
-In-Order   → 3, 5, 7, 10, 20  (sorted order for a BST)
-Pre-Order  → 10, 5, 3, 7, 20  (root first - good for copying a tree)
-Post-Order → 3, 7, 5, 20, 10  (root last - good for deleting a tree)
+In-Order   > 3, 5, 7, 10, 20  (sorted order for a BST)
+Pre-Order  > 10, 5, 3, 7, 20  (root first - good for copying a tree)
+Post-Order > 3, 7, 5, 20, 10  (root last - good for deleting a tree)
 ```
 
 
@@ -1877,7 +1877,7 @@ public class Main {
 | Built from | Nodes with `left` and `right` child references |
 | Entry point | Always the `root` node |
 | Leaf node | A node where both `left` and `right` are `null` |
-| N nodes → edges | Always exactly N - 1 edges |
+| N nodes > edges | Always exactly N - 1 edges |
 | In-Order traversal | Visits nodes in sorted order for a BST |
 | Pre-Order traversal | Root visited first - useful for copying a tree |
 | Post-Order traversal | Root visited last - useful for deleting a tree |
@@ -1895,9 +1895,9 @@ Before deleting any node, the BST must first **search for the target node** by t
 > 
 > **BST deletion depends entirely on how many children the target node has:**
 >
-> - **0 children** → remove the node
-> - **1 child** → remove the node and connect its parent to the node's only child
-> - **2 children** → replace the node with its inorder successor/predecessor, then delete that replacement node
+> - **0 children** > remove the node
+> - **1 child** > remove the node and connect its parent to the node's only child
+> - **2 children** > replace the node with its inorder successor/predecessor, then delete that replacement node
 
 > [!NOTE]
 > Deletion is the trickiest BST operation because after removing a node you must ensure the **BST property is preserved**: left child is always less than parent, right child is always greater. The three cases below are how you guarantee that.
@@ -2096,6 +2096,256 @@ public class Main {
 > [!NOTE]
 > 
 > The **in-order successor** is always the **leftmost node in the right subtree** - the smallest value that is still greater than the deleted node. This guarantees the BST property is preserved after every deletion. In-order traversal after any deletion should always return values in sorted ascending order - use that as your verification check.
+
+### Java Collections Framework
+
+* [Collections Guide + Examples](https://medium.com/@cibofdevs/collections-in-java-a-comprehensive-guide-1d63f8cd5c05)
+
+* The Java Collections Framework (JCF) is a unified set of interfaces and classes that provide **ready-made data structures** to store and manage groups of objects efficiently.
+* Before the Collections Framework, developers had to build their own data structures from scratch - JCF standardized this into a consistent, reusable architecture.
+* Think of it as a toolbox: instead of building an `ArrayList` or `HashMap` yourself, Java provides them ready to use out of the box.
+
+> [!NOTE]
+> Everything we have built manually - Linked Lists, Stacks, Queues, and Trees - is the **foundation** that the Collections Framework abstracts on top of. The JCF gives you those structures pre-built and optimized. Understanding the manual implementation first means you know exactly what is happening under the hood.
+
+
+#### The Two Root Hierarchies
+
+The entire Collections Framework splits into **two separate hierarchies** at the top level:
+
+```
+Iterable
+ └── Collection    ← stores individual values
+      ├── List
+      ├── Set
+      └── Queue / Deque
+
+Map            ← stores key-value pairs (separate hierarchy)
+ ├── HashMap
+ ├── TreeMap
+ └── LinkedHashMap
+```
+
+* **`Collection`** - for data structures that store individual values (Lists, Sets, Queues)
+* **`Map`** - for data structures that store **key-value pairs**; it does NOT extend `Collection` - it is its own separate root
+
+#### Core Interfaces
+
+These are the building blocks of the entire framework. Every class in the JCF implements one of these:
+
+| Interface | Purpose | Key Characteristic |
+|---|---|---|
+| `Collection` | Root of the collection hierarchy | Defines basic operations: add, remove, size, contains |
+| `List` | Ordered sequence of elements | Allows duplicates; supports index-based access |
+| `Set` | Collection of unique elements | No duplicates allowed |
+| `Queue` | FIFO - First In, First Out | Designed for holding elements before processing |
+| `Deque` | Double-ended queue | Elements can be added/removed from both ends |
+| `Map` | Key-value pair storage | Keys must be unique; values can repeat |
+
+
+
+#### The Full Hierarchy - Interfaces to Implementing Classes
+
+```
+Collection (interface)
+ ├── List (interface)
+ │    ├── ArrayList
+ │    ├── LinkedList
+ │    ├── Vector
+ │    └── Stack
+ │
+ ├── Set (interface)
+ │    ├── HashSet
+ │    ├── LinkedHashSet
+ │    └── TreeSet
+ │
+ └── Queue (interface)
+      ├── PriorityQueue
+      ├── LinkedList
+      └── Deque (interface)
+           ├── ArrayDeque
+           └── LinkedList
+
+Map (interface - separate hierarchy)
+ ├── HashMap
+ ├── LinkedHashMap
+ ├── TreeMap
+ └── Hashtable
+```
+
+
+
+##### The Three Main Collection Types - Conceptual Breakdown
+
+###### List
+* Ordered collection - elements maintain **insertion order**
+* Allows **duplicate** values
+* Supports **index-based access** - you can get element at position 0, 1, 2, etc.
+* Best used when **order and position matter**
+
+Common implementations:
+* `ArrayList` - backed by a dynamic array; fast random access, slow insert/delete in middle
+* `LinkedList` - backed by a doubly linked list; fast insert/delete, slow random access
+
+###### Set
+* **No duplicate elements** - adding a value that already exists does nothing
+* May or may not maintain order depending on implementation
+* Best used when **uniqueness matters** and you do not need index-based access
+
+Common implementations:
+* `HashSet` - fastest; unordered; uses hashing to store elements
+* `LinkedHashSet` - maintains insertion order
+* `TreeSet` - sorted in natural ascending order; slower than HashSet
+
+###### Queue / Deque
+* `Queue` follows **FIFO** - first element added is first removed
+* `Deque` (Double-Ended Queue) allows adding and removing from **both ends**, making it usable as both a Stack and a Queue
+* Best used when **processing order matters**
+
+Common implementations:
+* `PriorityQueue` - elements are ordered by priority, not insertion order
+* `ArrayDeque` - fast double-ended queue; preferred over `Stack` for stack behavior in modern Java
+* `LinkedList` - also implements `Queue` and `Deque`
+
+
+
+##### Map - The Separate Hierarchy
+
+`Map` is **not** a subtype of `Collection` - it is its own independent hierarchy. A Map stores data as **key-value pairs**, where every key is unique but values can repeat.
+
+Common implementations:
+* `HashMap` - fastest; unordered key-value pairs
+* `LinkedHashMap` - maintains insertion order of keys
+* `TreeMap` - keys sorted in natural ascending order
+
+> [!NOTE]
+> Think of a `Map` like a dictionary - each word (key) maps to exactly one definition (value). You look things up by key, not by index or position.
+
+#### Key Conceptual Rules
+
+* **`List`** > use when order and duplicates matter
+* **`Set`** > use when uniqueness is required
+* **`Queue` / `Deque`** > use when processing order matters (FIFO or both ends)
+* **`Map`** > use when you need to look something up by a key
+* **Interfaces define the contract** - the implementing class defines the performance characteristics
+* **`Map` is not a `Collection`** - it lives in its own separate hierarchy
+
+> [!NOTE]
+> The single most important distinction to internalize is **interface vs. implementation**. `List` is the contract - it defines what behavior is guaranteed. `ArrayList` and `LinkedList` are the implementations - they define *how* that behavior is delivered and at what performance cost. You write code against the interface, and swap implementations when performance needs change.
+
+#### When to Use Each Collection
+
+The fastest way to pick the right collection is to answer these questions in order:
+
+```
+1. Am I storing key-value pairs?
+   YES → use a Map
+   NO  → go to question 2
+
+2. Do I need to allow duplicates?
+   YES → use a List
+   NO  → use a Set
+
+3. Does processing order matter (FIFO/both ends)?
+   YES → use a Queue or Deque
+```
+
+
+
+##### List - "I need an ordered, indexed sequence"
+
+Use a `List` when:
+- Order of insertion matters
+- Duplicates are allowed and expected
+- You need to access elements by position (index)
+
+| Implementation | Mental Model | Use When |
+|---|---|---|
+| `ArrayList` | A numbered shelf - fast to grab by position | You read/access more than you insert or delete |
+| `LinkedList` | A chain - fast to add/remove links | You insert or delete frequently, especially at the front |
+
+**Real-world example:** A playlist of songs, a list of quiz questions in order, a shopping cart where the same item can appear twice.
+
+
+
+##### Set - "I need a bag of unique items"
+
+Use a `Set` when:
+- Duplicates must not exist
+- Position and index do not matter
+- You just need to know if something is present or not
+
+| Implementation | Mental Model | Use When |
+|---|---|---|
+| `HashSet` | An unordered bag - fastest lookup | You only care about membership, not order |
+| `LinkedHashSet` | An unordered bag that remembers arrival order | You need uniqueness AND insertion order |
+| `TreeSet` | A sorted filing cabinet | You need unique items in alphabetical/natural order |
+
+**Real-world example:** A set of unique usernames, a list of visited URLs in a browser (no duplicates), tags on a blog post.
+
+
+
+##### Queue / Deque - "I need to process things in order"
+
+Use a `Queue` or `Deque` when:
+- Items need to be processed in a specific sequence
+- You are modeling a waiting line, task scheduler, or undo/redo system
+
+| Implementation | Mental Model | Use When |
+|---|---|---|
+| `PriorityQueue` | A hospital triage line - most urgent first | Order by priority, not insertion |
+| `ArrayDeque` | A double-sided deck of cards | You need fast Stack or Queue behavior - preferred over legacy `Stack` class |
+| `LinkedList` | A flexible chain | You need Queue or Deque with frequent inserts/removals |
+
+**Real-world example:** A print queue, a task scheduler, browser back/forward history (Deque), undo/redo in a text editor.
+
+
+
+##### Map - "I need to look something up by a key"
+
+This is the one you already have hands-on experience with from Spring Boot. A `Map` is not about storing a list of things - it is about **associating one thing with another**. Every key is unique, but values can repeat.
+
+| Implementation | Mental Model | Use When |
+|---|---|---|
+| `HashMap` | An unordered dictionary - fastest lookup | Order does not matter; you just need fast key-to-value retrieval |
+| `LinkedHashMap` | An ordered dictionary - remembers insertion order | You need fast lookup AND the order keys were added matters |
+| `TreeMap` | A sorted dictionary - keys in alphabetical/natural order | You need keys sorted automatically |
+
+**Your Spring Boot quiz example explained:**
+- If you used `HashMap` - quiz questions were stored with a key (question ID or number) mapped to the question object, and order did not matter
+- If you used `LinkedHashMap` - questions were stored in the same order they were inserted, which matters when you want question 1 to appear before question 2 when iterating
+
+> [!NOTE]
+> `LinkedHashMap` is backed by a **hash table + doubly linked list** internally - which is exactly the circular/linked list patterns you already understand from your manual DSA work. The linked list is what preserves the insertion order on top of the hash table's fast lookup.
+
+
+
+##### The Full Decision Cheat Sheet
+
+```
+Need key-value pairs?
+ ├── YES → Map
+ │    ├── Order doesn't matter       → HashMap     (fastest)
+ │    ├── Need insertion order       → LinkedHashMap
+ │    └── Need sorted keys           → TreeMap
+ │
+ └── NO → Collection
+      ├── Need duplicates + order    → List
+      │    ├── Mostly reading        → ArrayList
+      │    └── Mostly inserting      → LinkedList
+      │
+      ├── Need uniqueness only       → Set
+      │    ├── Order doesn't matter  → HashSet      (fastest)
+      │    ├── Need insertion order  → LinkedHashSet
+      │    └── Need sorted order     → TreeSet
+      │
+      └── Need processing order      → Queue / Deque
+           ├── Priority-based        → PriorityQueue
+           └── Stack or Queue        → ArrayDeque   (preferred)
+```
+
+> [!NOTE]
+> The default starting point for most developers is: **`ArrayList`** for lists, **`HashSet`** for sets, and **`HashMap`** for maps - then you swap to a more specific implementation only when order, sorting, or performance requirements demand it. That is the practical 80/20 rule for Collections in Java.
 
 ## Debugging Process
 
