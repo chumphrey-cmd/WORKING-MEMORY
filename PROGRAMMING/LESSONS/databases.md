@@ -778,3 +778,58 @@ CREATE TABLE employees (
   salary numeric CHECK(salary > 0) -- Check constraint here!
 );
 ```
+
+### Database Markup Language
+
+* [DBML](https://dbml.dbdiagram.io/home/)
+  * Database Markup Language used to visualize and create interactive and robust database tables to display relationships.
+
+```dbml
+Project New_Avengers_Job_Application {
+  database_type: 'PostgreSQL'
+}
+ 
+ 
+// LOOKUP TABLES
+Table roles {
+  id integer [primary key, increment]
+  name varchar(50) [not null, unique]
+}
+ 
+ 
+Table power_levels {
+  id integer [primary key, increment]
+  label varchar(50) [not null, unique]
+}
+ 
+ 
+// APPLICANTS TABLE
+Table applicants {
+  id integer [primary key, increment]
+  full_name varchar(255) [not null]
+  email citext [not null, unique, note: 'Case-insensitive email storage']
+  phone varchar(20) [not null, note: 'Supports international formats']
+  dob date [not null, note: 'Constraint: <= 2007-12-31']
+  alias varchar(255) [not null]
+  power_level_id integer [not null]
+  powers_description text [not null, note: 'Constraint: Length between 10 and 500 chars']
+}
+ 
+ 
+// APPLICATIONS TABLE
+Table applications {
+  id integer [primary key, increment]
+  applicant_id integer [not null]
+  role_id integer [not null]
+  resume_path text [not null]
+  availability date [not null]
+  relocate boolean [not null]
+  submitted_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+ 
+ 
+// 4. RELATIONSHIPS
+Ref: applicants.power_level_id > power_levels.id
+Ref: applications.applicant_id > applicants.id [delete: cascade]
+Ref: applications.role_id > roles.id
+```
