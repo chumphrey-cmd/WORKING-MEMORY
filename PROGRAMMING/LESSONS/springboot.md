@@ -713,7 +713,7 @@ Queries are the methods Testing Library gives you to find elements on the page. 
 | `queryAllBy...` | Return `[]` | Return array | No |
 | `findAllBy...` | Throw error | Return array | **Yes** |
 
-* **`getBy`**: Use when the element is **static** and should already be in the DOM — it returns the element immediately or throws if not found.
+* **`getBy`**: Use when the element is **static** and should **already be in the DOM** — it returns the element immediately or throws if not found.
 * **`queryBy`**: Use when you want to assert an element is **not present** — it returns `null` instead of throwing when nothing matches, making it safe for negative assertions.
 * **`find`**: Use when you're expecting to retrieve something **asynchronously** (e.g. after a fetch or state update). Returns a `Promise` and retries until the element appears or times out (default: 1000ms). Always pair with `async/await`.
   * `findBy` is a combination of `getBy` + `waitFor` under the hood.
