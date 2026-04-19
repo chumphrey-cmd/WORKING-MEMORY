@@ -149,3 +149,61 @@ cd ~/personal-projects
 git config user.email
 # Expected Output: personal@email.com
 ```
+
+
+## Handling Pull Requests
+
+> [!NOTE]
+> Using the GitHub UI for the final "Squash and Merge" is the preferred industry standard over using `git merge` in the CLI. It keeps the repository history much cleaner!
+
+### Phase 1: The Visual "Smell Test" (On GitHub)
+Before touching your terminal, review the code in the browser to ensure it is safe.
+
+1. Go to the **Files changed** tab on the Pull Request.
+2. **Check scripts (`.sh`, `.ps1`, `.bat`):** Look for destructive commands (like `rm -rf /`), hidden `sudo` requests, or suspicious network calls (`curl http://sketchy-site.com`).
+3. **Check dependencies (`requirements.txt`):** Ensure there are no maliciously misspelled packages (e.g., `reqeusts` instead of `requests`).
+4. **Read the logic:** Does the code actually do what the PR description claims?
+
+### Phase 2: The Safe Local Checkout (In Terminal)
+Bring the code to your machine without risking your `main` branch.
+1. **Deactivate your virtual environment** (so Windows doesn't lock the files):
+```bash
+deactivate
+```
+2. **Fetch the Pull Request** (Replace `ID` with the PR number, and name the test branch something obvious):
+```bash
+git fetch origin pull/ID/head:test-pr-branch
+```
+3. **Switch to the test branch:**
+```bash
+git checkout test-pr-branch
+```
+
+### Phase 3: The Regression Test (In Terminal)
+Prove that their new code doesn't break the existing features.
+1. **Delete the old virtual environment** to ensure a totally clean test:
+   * *Windows PowerShell:* `Remove-Item -Recurse -Force venv`
+   * *Linux/Mac:* `rm -rf venv`
+2. **Run your setup/installation scripts** to rebuild the environment with their new code.
+3. **Run your application** (`python main.py ...`) and test the core functionality. Ensure it executes perfectly from start to finish.
+
+### Phase 4: The Merge & The Reply (On GitHub)
+Once the local test passes, make it official in the browser.
+1. **Leave a comment:** Always thank the contributor, explicitly state that you tested it on your OS, and confirm it works. 
+2. **Squash and Merge:** Click the dropdown arrow on the green Merge button and select **Squash and merge**. This condenses all their messy, incremental commits into one clean, professional commit for your project history.
+3. **Delete the branch:** Click the prompt on GitHub to delete the PR branch from the remote server.
+
+### Phase 5: Local Cleanup (In Terminal)
+Sync your local machine with the newly updated GitHub repository and sweep away the testing clutter.
+1. **Step off the test branch** and back to your main code:
+```bash
+git checkout main
+```
+2. **Download the newly merged code** from GitHub:
+```bash
+git pull origin main
+```
+3. **Delete the local test branch** (using the capital `-D` to force delete, since GitHub squashed the history):
+```bash
+git branch -D test-pr-branch
+```
