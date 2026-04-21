@@ -36,8 +36,6 @@ Once you have reviewed the changes and everything looks good, bring it into your
 Delete the feature branch to keep your workspace tidy once the merge is successful.
 * `git branch -d your-branch-name` - Deletes the finished branch.
 
----
-
 ### Advanced Scenario A: Returning to an Existing Branch
 If you stepped away from a branch or need to go back and make more edits before merging:
 * `git switch your-branch-name` - Moves you back into your existing feature branch.
@@ -206,4 +204,45 @@ git pull origin main
 3. **Delete the local test branch** (using the capital `-D` to force delete, since GitHub squashed the history):
 ```bash
 git branch -D test-pr-branch
+```
+## Git Workflow Scenarios and Commands
+
+### Start of Work Session
+Always pull before touching anything.
+```bash
+git pull origin <branch>
+```
+
+### Ready to Commit Your Work
+Stage, commit, pull to absorb other team's changes, then push.
+```bash
+git add <your files>
+git commit -m "your message"
+git pull origin <branch>
+git push origin <branch>
+```
+
+### Pull Blocked — Unstaged Changes (Not Ready to Commit)
+Stash your work, pull, then restore.
+```bash
+git stash
+git pull origin <branch>
+git stash pop
+```
+
+### Merge Conflict After Pull
+Identify, resolve, then complete the merge.
+```bash
+git status # see conflicted files
+# open conflicted files, resolve <<<< / ==== / >>>>
+git add <resolved files>
+git commit
+git push origin <branch>
+```
+
+### Inspect Other Team's Changes Before Merging
+Fetch without merging, review, then decide.
+```bash
+git fetch origin <branch>
+git log HEAD..origin/<branch> --oneline
 ```
