@@ -50,4 +50,20 @@ for i in {1..254} ;do (ping -c 1 192.168.1.$i | grep "bytes from" &) ;done
 
 - Simple bash ping sweep that I used to use to scan a subnet for connectivity and basic troubleshooting with hardware.
 
+```bash
+# Find port that's being used
+lsof -i tcp:PORT
+
+# Kill port being used
+kill -9 PID
+```
+
+* Quick way to locate and kill used ports
+
+```bash
+openssl rand -base64 32
+```
+
+* Quick way to generate a 64 character SecretKey, but Bitwarden also works too.
+
 ## Windows
