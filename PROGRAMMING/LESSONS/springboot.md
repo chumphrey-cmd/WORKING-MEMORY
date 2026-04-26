@@ -771,6 +771,106 @@ it('should count button increment', async () => {
 });
 ```
 
+## Troubleshooting Basic Vite Testing
+
+You need to check the following files if you run into trouble during testing [reference](https://stackoverflow.com/questions/75482384/vitest-config-doesnt-detect-jsdom-environment):
+
+> [!NOTE]
+> ENSURE THAT YOU DON'T MIX PACKAGE MANAGERS TOGEHTER!!!
+> If all else fails, delete your `package.json`, `yarn.lock`, and then `yarn`/`npm` install.
+ 
+* `package.json`: import the following under the `package.json` section
+
+```json
+  "scripts": {
+"start": "vite",
+"build": "vite build",
+"compile": "tsc",
+"preview": "vite preview",
+"test": "vitest run",
+"test:watch": "vitest --watch",
+"watch": "vitest",
+"test:coverage": "vitest --coverage",
+"serve": "vite preview",
+"test:ui": "vitest --ui",
+"prep": "yarn test",
+"lint": "biome lint",
+"lint:fix": "biome lint --write",
+"format": "biome format --write",
+"check": "biome check",
+"check:fix": "biome check --write"
+}
+```
+
+* `vite.config.ts`: add the following imports
+
+```ts
+import babel from '@rolldown/plugin-babel';
+import tailwindcss from '@tailwindcss/vite';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import { defineConfig } from 'vitest/config';
+
+// https://vite.dev/config/
+export default defineConfig({
+  server: {
+    port: 3000,
+    strictPort: true,
+    hmr: {
+      clientPort: 3000,
+    },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
+  },
+  plugins: [
+    react(),
+    tailwindcss(),
+    babel({ presets: [reactCompilerPreset()] }),
+  ],
+  build: {
+    outDir: 'build',
+  },
+  test: {
+    globals: true, // Allows using `describe`, `it`, `expect` without imports
+    environment: 'jsdom', // Simulates a browser environment
+    setupFiles: './src/setupTests.ts', // File for test setup (see below)
+    css: false, // Optional: Include CSS in tests if needed
+  },
+});
+```
+
+* `tsconfig.json`
+
+```json
+{
+  "compilerOptions": {
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
+```
+
+* Create `setupTests.ts` file:
+
+```ts
+import * as matchers from '@testing-library/jest-dom/matchers';
+import { expect } from 'vitest';
+import '@testing-library/jest-dom';
+import '@testing-library/dom';
+
+expect.extend(matchers);
+```
+
 ## TDD Procedure - Building a TaskItem Component
 
 > **OVERVIEW**
