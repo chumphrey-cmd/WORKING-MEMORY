@@ -2585,6 +2585,27 @@ if (true) {
 console.log(i); // 42, scoped beyond the if-block or "globally" (NO GOOD!)
 ```
 
+> [!NOTE]
+> The `const` keyword doesn't stop you from changing the properties of an object... it only stops you from reassigning the variable. **Do not trust `const` objects to have constant contents!**
+
+```javascript
+const tree = {
+  height: 256,
+  color: "green",
+  cut() {
+    this.height /= 2;
+  },
+};
+
+tree.cut();
+console.log(tree.height);
+// prints 128
+
+tree.cut();
+console.log(tree.height);
+// prints 64
+```
+
 ### `null` vs `undefined`
 
 * `undefined` almost everywhere I would use None in Python.
@@ -2670,6 +2691,58 @@ function getMonthlyPrice(tier) {
 #### 4. Block Scope:
 * ES6 introduced block scope with the `let` and `const` keywords. A block is typically defined by curly braces `{}`, like in `if` statements, loops, and other blocks of code.
 * Variables declared with `let` and `const` are confined to their block, making them more predictable and reducing the chances of accidental variable hoisting.
+
+### Anonymous Functions
+
+* Basically, they're useful when defining a function that will only be used once or to create a quick closure.
+
+```javascript
+// using an anonymous function
+conversions(
+  function (a) {
+    return a + a;
+  },
+  1,
+  2,
+  3,
+);
+// 2 4 6
+```
+
+## Objects
+
+### Optional Chaining
+
+* A really neat feature that allows you to access nested JavaScript entities that may or may not be present using `?`.
+
+```javascript
+const tournament = {
+  prize: {
+    units: "dollars",
+    value: 100,
+  },
+};
+
+const h = tournament.referee.height;
+// TypeError: Cannot read properties of undefined (reading 'height')
+```
+
+> [!NOTE]
+> Here the property of "height" within the referee property doesn't exist within all parent for all objects. SO we use the `?` to avoid the error...
+
+```javascript
+const tournament = {
+  prize: {
+    units: "dollars",
+    value: 100,
+  },
+};
+
+const h = tournament.referee?.height;
+// h is simply undefined, no error is thrown
+```
+
+* You should only use `?.` chains when you expect an object may not exist. For example, if according to our business logic, a `user` must have an `address` object, but the `address` object may not have a `street` property, we wouldn't use the optional chaining operator because we expect `user.address` to never be undefined.
 
 # TypeScript
 
