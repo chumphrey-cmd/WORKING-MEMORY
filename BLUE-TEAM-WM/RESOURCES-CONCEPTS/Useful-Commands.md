@@ -27,8 +27,7 @@ touch test{1..100}.txt
 tail -f error_file.log | grep "ERROR"
 ```
 
-- Follows a log file in real-time and filters for specific content.
-- **Bonus:** Combine `tail -f` with `grep` to filter log output.
+- Follows a log file in real-time and filters for specific content and used with `grep` to filter log output.
 
 ```bash
 history 5
