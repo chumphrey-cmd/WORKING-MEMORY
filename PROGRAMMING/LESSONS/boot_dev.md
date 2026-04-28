@@ -2744,6 +2744,76 @@ const h = tournament.referee?.height;
 
 * You should only use `?.` chains when you expect an object may not exist. For example, if according to our business logic, a `user` must have an `address` object, but the `address` object may not have a `street` property, we wouldn't use the optional chaining operator because we expect `user.address` to never be undefined.
 
+### Short-circuiting
+
+* the logical OR operator (`||`) doesn't just return `true` or `false`. It returns the first "truthy" value it encounters. 
+* If the first value is "falsy" (like `undefined`, `null`, `0`, or `false`), it moves to the second value and returns that instead.
+
+```javascript
+function welcomeUser(name) {
+  // If name is undefined or an empty string, use "Guest"
+  const displayName = name || "Guest";
+  console.log("Welcome, " + displayName);
+}
+
+welcomeUser("Alice"); // Welcome, Alice
+welcomeUser();        // Welcome, Guest
+```
+
+### Arrow Functions
+
+```javascript
+// declaring a function without a variable
+function add(x, y) {
+  return x + y;
+}
+```
+```javascript
+// declaring a function with a variable
+const add = function (x, y) {
+  return x + y;
+};
+```
+
+```javascript
+// using the fat arrow syntax
+const add = (x, y) => {
+  return x + y;
+};
+```
+
+#### Uses
+
+* Fat arrow functions are usually declared as variables, while the function keyword may or may not be declared as a variable. 
+* Fat arrow functions handle object scoping in a more intuitive way
+* Fat arrow functions don't work as constructors
+* Other minor [differences](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions#description)
+
+### Shallow Copies
+
+* The spread syntax [shallow-copies](https://developer.mozilla.org/en-US/docs/Glossary/Shallow_copy) the properties of the objects you're spreading. If properties have the same name, the last (right-most) object's property will overwrite the previous ones.
+
+```javascript
+const team_1 = {
+  john: "male",
+  jane: "female",
+};
+
+const team_2 = {
+  john: "sigma male",
+  sarah: "female",
+};
+
+const all_teams = { ...team_1, ...team_2 };
+/*
+{
+  john: 'sigma male',
+  jane: 'female',
+  sarah: 'female'
+}
+*/
+```
+
 # TypeScript
 
 * [TypeScript](https://www.typescriptlang.org/) is a typed superset of JavaScript that transpiles to plain JavaScript.
