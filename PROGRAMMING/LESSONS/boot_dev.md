@@ -2553,6 +2553,11 @@ class Card:
 
 # JavaScript
 
+## Basics to Know
+
+* JS is Typically **ONLY** used to run within the browser (at runtime)! **Node.js** is the environment that allows JavaScript to run "server-side" (outside the browser).
+* **Asynchronous (The "Non-Blocking" Nature):** JS is single-threaded, meaning it executes one command at a time. However, it is asynchronous because it uses an **Event Loop**. This allows JS to start a "slow" task (like fetching data) and move on to other code without freezing the browser, "jumping back" once the task is finished.
+
 ## Variables
 
 ### `let` vs `const` vs `var`
@@ -2812,6 +2817,70 @@ const all_teams = { ...team_1, ...team_2 };
   sarah: 'female'
 }
 */
+```
+
+### Destructuring
+
+* Used to avoid having to get return values from an object by using the `.` operator. 
+* The destructuring assignment lets us unpack object properties easily.
+
+```javascript
+function getApple() {
+  const apple = {
+    radius: 2,
+    color: "red",
+  };
+  return apple;
+}
+
+const { radius, color } = getApple();
+console.log(radius); // 2
+console.log(color); // red
+```
+
+**No Destructuring**
+```javascript
+function eatApple(apple) {
+  console.log(`ate a ${apple.color} apple with a radius of ${apple.radius}`);
+}
+```
+
+**Destructuring**
+```javascript
+function eatApple({ radius, color }) {
+  console.log(`ate a ${color} apple with a radius of ${radius}`);
+}
+```
+
+## Classes
+
+### Static Methods
+
+* In JavaScript, a class is just an object template, so when we create a static method or property the object instances can't access it. So, `static` members are often used for utility functions for the class itself.
+
+```javascript
+class User {
+  static numUsers = 0;
+
+  constructor(name, age) {
+    this.name = name;
+    this.age = age;
+    User.numUsers++;
+  }
+
+  static getNumUsers() {
+    return User.numUsers;
+  }
+}
+
+const user1 = new User("User 1", 25);
+console.log(User.getNumUsers()); // 1
+const user2 = new User("User 2", 35);
+console.log(User.getNumUsers()); // 2
+
+// This doesn't work because its not a method on the object
+console.log(user1.getNumUsers());
+// TypeError: user1.getNumUsers is not a function at main.js:20:18
 ```
 
 # TypeScript

@@ -1,45 +1,17 @@
 # Web Dev Basics
 
-* Commit frequently, ensure that you're making incremental commits to gradually mark your progress and create a history of the progress you've made on a project!
-
+## Front End Basics
 * `HTML`: blueprints for the home
 * `CSS`: design and explict/asthetic details that color and detail the blueprint
 * `JavaScript`: what's used to make the house interactive (e.g., automated floodlights, motion sensing cameras, garage, etc.)
-
-* **Dark Pattern**
-  * Recommends, Doom scrolling, white background with white X.
-  * Overall things that impact usage time of your application.
-
 * Inline Element: only as much as much space as it needs.
 * Block Element: all the space is used
-
-## Front End Basics
-* `rem (short for "root em")` is a relative unit of measurement in CSS that defines sizes based on the font size of the website's root element. It allows for entire layouts and components to scale proportionally across different sizes.
-* Data Transfer Objects (DTOs): https://stackoverflow.com/questions/1051182/what-is-a-data-transfer-object-dto
-
-### JavaScript (JS)
-* **Runtime Environment:** Typically **ONLY** used to run within the browser! **Node.js** is the environment that allows JavaScript to run "server-side" (outside the browser).
-* **Asynchronous (The "Non-Blocking" Nature):** JS is single-threaded, meaning it executes one command at a time. However, it is asynchronous because it uses an **Event Loop**. This allows JS to start a "slow" task (like fetching data) and move on to other code without freezing the browser, "jumping back" once the task is finished.
-* **Associativity:** The order in which operators of the same precedence are evaluated.
-  * Most are **Left-to-Right** (e.g., arithmetic).
-  * **Assignment (`=`)** and **Exponentiation (`**`)** are **Right-to-Left**.
-* **Precedence:** Determines the priority of operations (similar to **PEMDAS** in math). Use parentheses `()` to explicitly override precedence.
-* **Variable Scoping:** * `const`: For values that remain constant.
-  * `let`: For values that will be reassigned.
-  * `var`: Legacy syntax; generally avoided in modern dev due to "hoisting" and scoping issues.
 
 ### Document Object Model (DOM)
 * **The Interface:** A hierarchical, tree-like representation of your HTML. It acts as the bridge that allows JavaScript to "talk to," manipulate, and style HTML elements.
 * **Nodes:** Every element, attribute, and piece of text in the HTML is a "node" in the DOM tree.
 * **Interaction vs. Storage:** * **Frontend:** The DOM is used to update what the user sees on the screen (the UI).
   * **Backend:** The DOM does **NOT** interact with databases. To get data from a database, JS uses an **API** to fetch the data, then uses the **DOM** to display it.
-
-### Bootstrap
-* **Framework:** A frontend CSS framework designed to jumpstart responsive web design using pre-built components (buttons, navs, cards).
-* **Mobile-First Philosophy:** Bootstrap is built to scale up. You should design for the smallest screen first (mobile), then use breakpoints to adjust spacing and layout for larger screens (tablets/desktops).
-* **The Grid System:** * **Container > Row > Column:** The required hierarchy for the grid to function.
-  * **12-Column Rule:** Every row is divided into 12 virtual columns. Your column classes (e.g., `col-6`, `col-md-4`) should always add up to 12 per row.
-* **Utility Classes:** Use shorthand classes like `mt-3` (margin-top) or `p-2` (padding) to style elements without writing custom CSS.
 
 ### Consuming APIs
 * **The Language (JSON):** Most APIs communicate using **JSON** (JavaScript Object Notation), which organizes data into key-value pairs.
@@ -147,6 +119,96 @@ test('Jest is working', () => { expect(1 + 1).toBe(2); });
 ```bash
 npm test
 ```
+
+## React Basics
+
+### useState vs useEffect
+
+* [Explained](https://www.geeksforgeeks.org/reactjs/difference-between-usestate-and-useeffect-hook-in-reactjs/)
+* `useState`: lets you manage and update the component state
+* `userEffect`: allows you to handle side effects like the data fetching, DOM manipulation and cleanup.
+
+#### 1. `useState` (The Component's Memory)
+* `useState` allows a component to remember a value across multiple renders. When you update this value, React automatically re-renders the component so the UI reflects the new data.
+
+* Returns an array with two values:
+  * `useState` hook gives us a **state variable** and the **function** to update it.
+
+```javascript
+// App.js
+import React, { useState } from 'react';
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>Increase</button>
+    </div>
+  );
+}
+
+export default Counter;
+```
+* Use this for any data that changes based on user interaction and needs to be visible on the screen. Examples include tracking whether a modal is open (`true`/`false`), holding text typed into an input field, or keeping track of a shopping cart's total.
+
+#### 2. `useEffect` (The Component's Actions / Side Effects)
+* `useEffect` allows a component to perform "side effects"—actions that reach *outside* the React component itself. Crucially, the code inside a `useEffect` runs **after** the component has rendered to the screen.
+* It takes two arguments: 
+  * **1st** argument to `useEffect` is function that contains side effect code. 
+  * **2nd** argument is an array of dependencies. The effect runs only when one of these dependencies changes. If array is empty then effect runs only once when component mounts.
+
+```javascript
+// App.js
+import React, { useState, useEffect } from 'react';
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    document.title = `You clicked ${count} times`;
+  }, [count]);  // This effect runs only when 'count' changes
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>Increase</button>
+    </div>
+  );
+}
+
+export default Counter;
+```
+* Use this for fetching data from an API (like your Axios `getReviews` example!), setting up subscriptions (like a WebSocket), manually changing the DOM, or setting up timers (`setTimeout`).
+
+### Differences
+
+| Feature | `useState` | `useEffect` |
+| :--- | :--- | :--- |
+| **Primary Purpose** | Manages and stores local data/state. | Handles side effects and external interactions. |
+| **Execution Timing** | Triggers a re-render *immediately* when the state setter is called. | Runs *after* the render is complete. |
+| **Return Value** | Returns an array `[state, setState]`. | Returns nothing (or a cleanup function to prevent memory leaks). |
+| **Analogy** | It is the brain remembering a thought. | It is the hands doing a physical task based on that thought. |
+
+
+### useContext
+ 
+* [Use Context](https://react.dev/reference/react/useContext)
+
+React's useContext has three main parts designed to share data without prop drilling: createContext (creates the container, maybe at your  page level), Context.Provider (supplies the data, wrapper), and useContext(Context) (consumes the data, inside your component).
+1. createContext (The Object/Context): Creates the context object, usually with a default value, that allows components to subscribe to data changes.
+
+const MyContext = createContext(defaultValue);
+
+2. Context.Provider (The Provider): A component that wraps the child components, supplying them with a specific value via the value prop. Note the name of the wrapper is what you defined in the 1st part as the context object.
+
+<MyContext.Provider value={sharedValue}>
+<App />
+</MyContext.Provider>
+
+3. useContext Hook (The Consumer): A hook called within a child component to read and subscribe to the closest provider's value. Closest can be all the way up to the level  that the object is declared.
+   const value = useContext(MyContext);
 
 ## TypeScript Setup Basics
 
