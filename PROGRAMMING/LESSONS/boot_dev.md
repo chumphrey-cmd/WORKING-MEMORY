@@ -2883,6 +2883,114 @@ console.log(user1.getNumUsers());
 // TypeError: user1.getNumUsers is not a function at main.js:20:18
 ```
 
+### Basic Inheritance
+
+```javascript
+class Titan {
+  constructor(name) {
+    this.name = name;
+  }
+}
+
+class BeastTitan extends Titan {
+  speak(msg) {
+    console.log(`${this.name} says, "${msg}"`);
+  }
+}
+
+const beast = new BeastTitan("Zeke");
+beast.speak("You know, it's almost like throwing a baseball");
+// Zeke says, "You know, it's almost like throwing a baseball"
+```
+
+```javascript
+class Titan {
+  constructor(name) {
+    this.name = name;
+  }
+
+  speak() {
+    // this gets overridden in the BeastTitan class
+    console.log("*titan noises*");
+  }
+}
+
+class BeastTitan extends Titan {
+  speak() {
+    console.log(`${this.name} says, "I'm the Beast Titan"`);
+  }
+}
+
+const pureTitan = new Titan("Eren's mom");
+pureTitan.speak();
+// *titan noises*
+
+const beast = new BeastTitan("Zeke");
+beast.speak();
+// Zeke says, "I'm the Beast Titan"
+```
+
+### Super Keyword
+
+```javascript
+class Titan {
+  constructor(name) {
+    this.name = name;
+  }
+
+  toString() {
+    return `Titan - Name: ${this.name}`;
+  }
+}
+
+class BeastTitan extends Titan {
+  constructor(name, power) {
+    // call the parent's constructor
+    super(name);
+    this.power = power;
+  }
+
+  toString() {
+    // call the parent's `toString` method
+    return `${super.toString()}, Power: ${this.power}`;
+  }
+}
+
+const beast = new BeastTitan("Zeke", 9000);
+console.log(beast.toString());
+// Titan - Name: Zeke, Power: 9000
+```
+
+### Prototypal Inheritance
+
+* Every object in JavaScript has a prototype. When an object "inherits" from another object, it's really that its parent is marked as its "prototype". It's called **prototypal inheritance**. The built-in `Object.create()` method creates a new object with its prototype set to the given object.
+* It's basically the original mechanism for the creation of `Classes`. 
+
+```javascript
+const pureTitan = {
+  // (define a parent object / prototype)
+  name: "Eren's mom",
+  speak(msg) {
+    console.log("*titan noises*");
+  },
+};
+pureTitan.speak();
+// *titan noises*
+
+const beastTitan = Object.create(pureTitan); // (define a child)
+
+console.log(beastTitan.name); // (accessing .name from pureTitan)
+// Eren's mom
+
+beastTitan.name = "Zeke";
+beastTitan.speak = function () {
+  console.log(`${this.name} says, "I'm the Beast Titan"`);
+};
+
+beastTitan.speak();
+// Zeke says, "I'm the Beast Titan"
+```
+
 # TypeScript
 
 * [TypeScript](https://www.typescriptlang.org/) is a typed superset of JavaScript that transpiles to plain JavaScript.
