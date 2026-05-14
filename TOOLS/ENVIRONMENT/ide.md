@@ -217,6 +217,10 @@ This file must be created manually at the repo root. It does **not** contain any
         <module>backend-folder</module>
         <module>frontend-folder</module>
     </modules>
+   
+   <dependencies>
+      ...
+   </dependencies>
 
 </project>
 ```
