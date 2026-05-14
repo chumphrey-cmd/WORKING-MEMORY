@@ -1,12 +1,5 @@
 # Java Specific Fundamental Concepts
 
-## Background About Java and IntelliJ Shortcuts
-
-> A pure OOP language, EVERYTHING must live inside a class...
->
-> Java data types: be sure to understand the data types that you are working with. Choosing the wrong data type can lead to large memory usage in large systems.
-* `JVM` - Utilizes the JVM which is hardware-agnostic and uses the Java Virtual Machine (JVM) making it cross compatible.
-
 ## Java Programming Concepts and Terminology
 
 ### Terminology
