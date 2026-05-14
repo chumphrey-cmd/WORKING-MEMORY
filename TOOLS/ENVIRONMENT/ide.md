@@ -1,4 +1,4 @@
-# Setting Up IDE
+# Setting Up IDE (VSCode)
 
 ## Add Cmder Terminal Interface to VSCode
 
@@ -169,73 +169,73 @@ git config --global gpg.format ssh
 ```bash
 # Assign public SSH key as a global variable
 git config --global user.signingkey /PATH/TO/.SSH/KEY.PUB
-``` 
-
-# Troubleshooting IDE
-
-## Re-signing Unverified Commits via Interactive Rebase
-
-> This process amends the existing commit history to add an SSH signature. This should only be done on branches **you** own exclusively.
-
-Prerequisites
-* Your public SSH key is added as a "Signing Key" in GitHub Settings.
-
-Your local Git config is set for SSH signing:
-
-```bash
-git config --global gpg.format ssh
-git config --global user.signingkey ~/.ssh/id_ed25519 # (Use your key path)
-git config --global commit.gpgsign true
 ```
 
-**Step 1: Start the Interactive Rebase**
+# IntelliJ Troubleshooting
 
-* Navigate to your repository and initiate an interactive rebase. Replace `N` with the number of unverified commits you need to fix.
+* I ran into a problem where I was trying to coordinate the dependencies within the front and backend `pom.xml` files so that whenever you migrate to a new workspace, you can initiate a new project.
+* Whenever I opened or cloned a new project, none of files were being recognized due to maven dependencies not initializing.
 
-```bash
-git rebase -i HEAD~N
+## 1. Set Up the Correct Repository Structure
+
+```
+root/
+├── pom.xml                      ← root aggregator (coordinates between front and backend)
+├── backend/
+│   └── pom.xml                  ← backend module (backend dependencies)
+└── frontend/
+    └── pom.xml                  ← frontend module
 ```
 
-**Step 2: Mark Commits for Editing**
+## 2. Create Root `pom.xml` (Aggregator)
 
-A text editor will open. Change the command `pick` to `edit` for every commit you wish to re-sign. Commits are listed from **oldest (top) to newest (bottom)**.
+This file must be created manually at the repo root. It does **not** contain any dependencies — its only job is to declare the child modules.
 
-```bash
-edit 8a2b3c4 chore: update file A # Oldest
-edit 5d6e7f8 feat: add feature B
-pick f1a2b3c # (Already verified, leave as pick)
-# ...
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.0.5</version>
+    </parent>
+
+    <groupId>io.chumahumphrey.qagen</groupId>
+    <artifactId>qa-gen-backend</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>qa-gen-root</name>
+    <description>qa-gen-backend</description>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>backend-folder</module>
+        <module>frontend-folder</module>
+    </modules>
+
+</project>
 ```
 
-Save and close the editor (`wq!`)
+> [!NOTE]
+> `<packaging>pom</packaging>` is mandatory. Without it, Maven treats the root as a compiled artifact and the module import fails.
 
-**Step 3: Sign Each Commit Manually**
+## 3. Backend `pom.xml` (Child Module)
 
-* Git will pause at the first commit marked edit. You are now in an (interactive) rebase state. For each paused commit, run these two commands:
+The backend **`pom.xml`** stays in the **`backend/`** folder. We only need to add a **`<parent>`** block pointing up to the root aggregator via a relative path.
 
-```bash
-git commit --amend --no-edit -S
+```xml
+<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.0.5</version>
+    <relativePath>../pom.xml</relativePath>
+</parent>
 ```
-
-```bash
-git rebase --continue
-```
-* `--no-edit -S`: Amends the commit with a signature without changing the message.
-* `git rebase --continue`: Moves the process to the next edit commit or finishes the rebase.
-
-Repeat these two commands until the rebase is complete and your terminal prompt returns to normal.
-
-**Step 4: Force-Push to GitHub**
-
-Rewrite the commit history to overwrite the remote branch on GitHub:
-
-```bash
-git push --force-with-lease origin HEAD
-```
-
-**Step 5: Verify Contributions**
-
-Check your GitHub repository/profile page. Commits should now show as "**Verified**" and appear on your contribution graph.
-
-
+> [!NOTE]
+> The `<relativePath>../pom.xml</relativePath>` tells Maven to look one directory up for the parent.
 
