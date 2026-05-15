@@ -12,8 +12,6 @@ Currently, I'm reading *XP Explained* by Kent Beck. The basic tenets are as foll
 * Other elements of XP include: programming in pairs, extensive code review (pairing is essentially continuous code review), not programming features until they are actually needed, a flat management structure, code simplicity and clarity, and frequent communication with the customer.
 * The methodology takes its name from the idea that the beneficial elements of traditional software engineering practices are taken to "extreme" levels.
 
-
-
 ### Development Principles
 
 #### Don't Repeat Yourself (DRY)
@@ -66,3 +64,78 @@ Currently, I'm reading *XP Explained* by Kent Beck. The basic tenets are as foll
 > [!NOTE]
 > The best process is the process that works for your team!
 > The best technique is the one that works for you and your pair. Communicate early and often about what is and isn't working.
+
+**__START HERE__**
+
+(#Facilitation, #Pairing, #Metrics)
+
+# User Stories
+
+> [!NOTE]
+> Basically this serves as a way to focus on what ACTUALLY produces value.
+> From the Lean Start Up it's used to focus developer time (the most precious resource),
+> It's no longer a question of can it be built, it's a question of SHOULD IT BE BUILT.
+> It's like TDD for the meta-view of features.
+
+* Used to narrow and determine what actually needs to be accomplished.
+
+* Technical Stories
+* Chores: Task that are necessary, but provide no direct or obvious value to the user (e.g., logging, authentication)
+  * Spikes: area of technical investigation, not sure how we're going to implement it, but we're going to play with it. **Feature-find** (similar to Blue-Green testing)
+
+* **Bugs**
+  * Where found
+  * How found
+  * What was the expected behavior
+  * What I observed
+  * Can you reproduce it/verifiable
+
+## Gherkin Modeling
+* [Gherkin Modeling](https://medium.com/@nic/writing-user-stories-with-gherkin-dda63461b1d2)
+
+* User Story (Why we are building the thing??)
+  * The Why - user action
+  * As a "user/persona" - persona name
+  * I want "action" - to accomplish a task using this product/soltion
+  * So that "outcome" - something about the users life outside the product/solution changes for the better.
+
+* Acceptance Criteria (The How and Acceptance Criteria):
+  * **Given** (how things begin)
+  * **When** (action taken)
+  * **Then** (outcome of taking action)
+  * **And** (can be used at any stage to ensure that you are building and designing the right feature)**
+
+* The who, what, and why of a feature. Intentionality of your choices!
+
+### Instrumentation
+* What is the thing that we are trying to implement SO THAT we learn if its  being used in teh way we assume?
+  * Here we link to design files
+  * Decisions the team has made related to the story
+  * Outstanding questions that team needs to answer
+  * Anything else the team finds noteworthy
+
+> [!NOTE]
+> Don't immediately look to build a software solution when a simple process update is much more efficient!
+
+# Balanced Team
+
+## Designers
+
+## PMs
+
+## Devs
+* Sanity check, provide feasibility and technical ability and feasibility.
+* How to extract the essence and basics of implementation.
+* Identify the need for more technical research.
+
+# Standup Basic Elements
+
+## "3" Qs
+* What did I do yesterday?
+* What am I doing today?
+* What blockers do I have?
+
+## Alt. as Pairs
+* What did the pair accomplish yesterday?
+* What blockers did the pair have?
+* What is the pair planning to do today?
