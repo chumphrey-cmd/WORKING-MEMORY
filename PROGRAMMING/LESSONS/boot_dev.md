@@ -2991,6 +2991,33 @@ beastTitan.speak();
 // Zeke says, "I'm the Beast Titan"
 ```
 
+## Loops
+
+### Break with Loops
+
+```javascript
+function maxMessagesWithinBudget(budget) {
+
+let totalCost = 0;
+let count = 0;
+  
+  for (let i = 0; ; i++) {
+    
+    let cost = 1.0 + i * 0.01;
+    
+    if (totalCost + cost > budget){
+      break;
+    } else {
+      totalCost+=cost;
+      count++
+    }
+  }
+  return count;
+}
+
+export { maxMessagesWithinBudget };
+```
+
 # TypeScript
 
 * [TypeScript](https://www.typescriptlang.org/) is a typed superset of JavaScript that transpiles to plain JavaScript.
