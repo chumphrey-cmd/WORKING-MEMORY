@@ -1,9 +1,11 @@
+# Wire Mythos Overview
 [Wired Mythos Overview](https://www.wired.com/story/anthropics-mythos-will-force-a-cybersecurity-reckoning-just-not-the-one-you-think/)
 
 * Many companies are not capable of securing their infrastructure—that hasn’t really changed from yesterday to today,” says longtime security engineer and researcher Niels Provos. “But from what I understand, Mythos is really good at coming up with multistage vulnerabilities, and then also provides the proof of exploitation. **I don’t think it intrinsically changes the problem space, but it changes the required skill level to find these vulnerabilities and exploit them.**”
 * “In the long run, you want to make sure that your defenses are machine-scale, because the attacks are machine-scale,” Patel said. “If I have billions of agents that are going to be attacking my infrastructure, I need to make sure that I can defend it effectively. What Anthropic did here is a fantastic thing, because it just creates a level of asymmetry against the bad actors.”
 * “If you get a million vulnerability researchers, they can find a huge number of bugs. But humans are not very good at holding lots of contextual information in their minds for long periods of time, so finding very long chains of vulnerabilities that are actually exploitable together has been rare," she says.
 
+# MOAK 
 [Mother of All KEVs](https://moak.ai/#how-it-works)
 * This is a first-of-its-kind automatic predictor of whether a CVE will be exploited in the wild within hours.
 * MOAK is a defensive security research system, not an attack tool. It operates exclusively in controlled, isolated environments to help defenders understand and assess the real-world exploitability of vulnerabilities.
@@ -71,6 +73,7 @@
 
 ---
 
+# Red Team Anthropic
 [Red Team Anthropic](https://red.anthropic.com/2026/mythos-preview/)
 * The best way to be ready for the future is to make the best use of the present, even when the results aren't perfect.
 * Gaining practice with using language models for bugfinding is worthwhile, whether it’s with Opus 4.6 or another frontier model. We believe that language models will be an important defensive tool, and that Mythos Preview shows the value of understanding how to use them effectively for cyber defense is only going to increase—markedly.
@@ -85,17 +88,20 @@
 * **To summarize:** it is worth experimenting with language models for all security tasks you are doing manually today. As models get better, the volume of security work is going to drastically increase, so everything that requires manual triage is likely to benefit from scaled model usage.
 * Automate your technical incident response pipeline. As vulnerability discovery accelerates, detection and response teams should expect a matching rise in incidents: more disclosures mean more attacker attempts against the window between disclosure and patch. Most incident response programs cannot staff their way through that volume. Models should be carrying much of the technical work: triaging alerts, summarizing events, prioritizing what a human needs to look at, and running proactive hunts in parallel with active investigations. During an incident itself, models can help take notes, capture artifacts, pursue investigation tracks, and draft the preliminary postmortem and root-cause analysis as the basis for further validation.
 
+# Linus's Law
 [Linus's Law](https://en.wikipedia.org/wiki/Linus%27s_law)
 * Given enough eyeballs all bugs are shallow...
 * Given a large enough beta-tester and co-developer base, almost every problem will be characterized quickly and the fix obvious to someone." Presenting the code to multiple developers with the purpose of reaching consensus about its acceptance is a simple form of software reviewing. Researchers and practitioners have repeatedly shown the effectiveness of reviewing processes in finding bugs and security issues.
 
 
+# Anthropic Bug Finding
 [Anthropic Bug Finding](https://www.anthropic.com/news/mozilla-firefox-security)
 * We ran this test several hundred times with different starting points, spending approximately $4,000 in API credits. Despite this, Opus 4.6 was only able to actually turn the vulnerability into an exploit in two cases. This tells us two things. 
 * One, **Claude is much better at finding these bugs than it is at exploiting them. Two, the cost of identifying vulnerabilities is an order of magnitude cheaper than creating an exploit for them**. However, the fact that Claude could succeed at automatically developing a crude browser exploit, even if only in a few cases, is concerning.
 * First, when researching “patching agents,” which use LLMs to develop and validate bug fixes, we have developed a few methods we hope will help maintainers use LLMs like Claude to triage and address security reports faster.
 * Claude works best when it's able to check its own work with another tool. We refer to this class of tool as a “task verifier”: a trusted method of confirming whether an AI agent’s output actually achieves its goal. Task verifiers give the agent real-time feedback as it explores a codebase, allowing it to iterate deeply until it succeeds.
 
+# Hunted Lab Dependency Vulnerability Scanning
 [Hunted Lab Dependency Vulnerability Scanning](https://huntedlabs.com/research/popping-fast-globs-hood)
 (#Security, #DeployingApplications, #RiskManagment)
 * There's a popular package called **Fast-glob** that's a widely used Node.js utility designed to quickly find files and folders that match specific patterns, is maintained by a single developer working for Yandex, a Russian tech company that cooperates with requests from the Federal Security Service (FSB), Russia’s security and counterintelligence agency.
@@ -115,7 +121,7 @@
 (#Pairing, #Metrics, #Prioritization, #BalancedTeam)
 
 
-# Dora Development Metrics
+# DORA Development Metrics
 [DORA Development Metrics](https://dora.dev/guides/dora-metrics/)
 (#Metrics, #Prioritization, #DeployingSoftware)
 
@@ -127,8 +133,6 @@
 
 * The set of DORA metrics are grouped into **`Throughput`** and **`Instability`**
 * Basically, **throughput** and **instability** are used to give teams a high-level understanding of their software delivery performance.
-
-**BEGIN HERE**
 
 **Throughput:**
 Throughput is a measure of how many changes can move through the system over a period of time. Higher throughput means that the system can move more changes through to the production environment. DORA uses three factors to measure software delivery throughput:
@@ -158,8 +162,16 @@ Instability is a measure of how well the software deployments go. When deploymen
 
 **Competing**. The goal is to [improve your team’s performance over time](https://dora.dev/guides/how-to-empower-software-delivery-teams/), not to compete against other teams or organizations. Use the metrics as a guide for identifying areas for growth and celebrating progress. Often times, teams may forget what they are... a TEAM. The goal is to improve the entire organization and the products that it creates!
 
-**Focusing on measurement at the expense of improvement.** To me this means that a manager or technical lead may overfit or over emphasize the goal of getting the most real-time and purest measurement metrics rather than opting for a simpler discussion with less technical overhead (e.g., building integrations to multiple systems to get precise data about your software delivery performance rather than simply having a discussion about the metrics using something like [DORA Quick Check](https://dora.dev/quickcheck) or other [available products](https://dora.dev/resources/#source-available-tools)).
+**Focusing on measurement at the expense of improvement.** To me this means that a manager or technical lead may overfit or overemphasize the goal of getting the most real-time and purest measurement metrics rather than opting for a simpler discussion with less technical overhead (e.g., building integrations to multiple systems to get precise data about your software delivery performance rather than simply having a discussion about the metrics using something like [DORA Quick Check](https://dora.dev/quickcheck) or other [available products](https://dora.dev/resources/#source-available-tools)).
 
 # The Bitter Lesson
 
 * [Bitter Lesson](https://www.cs.utexas.edu/~eunsol/courses/data/bitter_lesson.pdf)
+
+# Extreme Programming 
+
+* I'm currently reading Extreme Programming (XP) and I've run across the idea of the "basics of software development" which are **coding**, **testing**, **listening**, and **designing**. Coding, testing, and designing seem immediately apparent. After some thinking I found that #Feedback and #Facilitation fit quite nicely into this XP idea. Before encountering the idea, I interpreted feedback specifically as **ONLY** the response that a mentor or potential pair would give you on how you were performing while building an application. But I've discovered that it also represents the response and commentary from the end user and stakeholder about applications/features that you are building as well. In XP, #Feedback directly informs what exact feature you build, iterate, or discard next. The book also explains that #Feedback is also a part of the **listening** basics where, as a developer you pay very close attention to what your core customer/audience demand from you.
+* I've noticed that I, as a developer, should also find way to use #Facilitation to create a productive and open discussion with my end-user and the rest of the #BalancedTeam to actually address and accomplish the goal/target of value. 
+* I used to believe that the engineers' sole job was only focusing on building the highest quality thing. But I've learned that it's a much more collaborative process to ensure that you don't waste time building what the customer doesn't want. 
+* For example, if the user story for a local quiz tool states that the user wants a feature to modify the settings of their current quiz session so that, when using a quiz tool, they can adjust configurations of the quiz in real time. The developer, PM, designer, and PE need to accommodate that concern and make a focused and concerted effort to bring that setting feature to life (assuming that this feature would add significant value for that customer).
+* The developer can then receive #Feedback both in the initial feature addition that they create and while discussing with the customer and rest of the #BalancedTeam on feasibility of what they want to ship to ensure that the customer vision aligns with what will be built.
