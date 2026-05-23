@@ -493,7 +493,7 @@ function App() {
 export default App;
 ```
 
-## Website Deployment
+## Website Deployment - Netlify
 
 ### 1. Project Directory Architecture
 
