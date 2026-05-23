@@ -493,6 +493,60 @@ function App() {
 export default App;
 ```
 
+## Website Deployment
+
+### 1. Project Directory Architecture
+
+For Vite to compile assets correctly, configuration files and entry points must be decoupled properly from root repository administration folders.
+
+```text
+my-repository/                  # Root Git Repository
+├── .gitignore                  # Ignores environment variables and build artifacts
+└── project-frontend/           # The Active Working Directory (Base Directory)
+    ├── package.json            # Node dependency manifest & build scripts
+    ├── vite.config.js          # Vite compilation settings
+    ├── index.html              # Core entry point (MUST be at this root level)
+    ├── public/                 # Static Assets (Served at the absolute root '/')
+    │   ├── logo.svg
+    │   └── favicon.svg
+    └── src/                    # Source Code
+        ├── main.js             # Runtime JavaScript
+        └── style.css           # Tailwind injection point
+
+```
+
+> [!NOTE]
+> * **`index.html` Placement:** Unlike legacy frameworks that hide `index.html` inside a `public` folder, Vite expects it at the root of the active frontend directory.
+> * **The `public/` Folder:** Any asset inside `public/` is copied directly to the final build output root without hashing. Example: `public/logo.svg` is referenced in code simply as `/logo.svg`.
+
+### 2. Netlify Continuous Deployment Pipeline
+
+When connecting a private GitHub repository to Netlify, the cloud build system needs explicit instructions to traverse subfolders and locate the build manifest.
+
+#### Build & Deploy Configuration settings:
+
+| Parameter | Value | Functional Purpose |
+| --- | --- | --- |
+| **Base directory** | `project-frontend` | Tells Netlify to step inside this specific subfolder *before* executing any commands. If your project sits at the absolute root of Git, leave this blank. |
+| **Build command** | `yarn run build` *or* `npm run build` | Initiates the compiler, purges unused Tailwind utility classes, minifies JavaScript, and outputs static bundles. |
+| **Publish directory** | `dist` | Tells Netlify which folder containing the compiled production assets to serve to the public edge network. |
+
+### 3. Production Checks
+
+Never deploy straight to production without checking the compiled build locally. Local development environments utilize instant JavaScript injection which behaves differently than static hosting.
+
+Execute these commands sequentially in your local terminal to run a staging evaluation:
+
+```bash
+# 1. Compile and bundle assets into a local /dist folder
+yarn run build
+
+# 2. Boot up a local server hosting the actual production-compiled files
+yarn run preview
+```
+> [!TIP]
+> *Always audit the `localhost:4173` preview link in an Incognito browser window using Lighthouse to get an accurate representation of your live deployment scores.*
+
 # References
 
 1. [React.dev](https://react.dev/learn)
