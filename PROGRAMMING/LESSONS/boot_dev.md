@@ -3018,6 +3018,56 @@ let count = 0;
 export { maxMessagesWithinBudget };
 ```
 
+### For...of vs. For...in Loops
+
+```javascript
+
+```
+
+### Slicing Arrays
+
+```javascript
+function splitLogs(logs, word) {
+  // Default values: if no match is found, these are what we return.
+  let before = [];
+  let after = [];
+
+  // Track the index of the matching log. 
+  // -1 is common in JS meaning it's "not found yet".
+  // Declared OUTSIDE the loop so it survives after the loop ends.
+  let index = -1;
+
+  // Walk through every log, checking each one for the slug.
+  for (let i = 0; i < logs.length; i++) {
+    // .includes() returns true if the string contains the specific array of "word" anywhere.
+    if (logs[i].includes(word)) {
+      // slice(0, i) -> everything BEFORE index i (i itself is excluded because the end index of slice is non-inclusive).
+      before = logs.slice(0, i);
+
+      // slice(i + 1) -> everything AFTER index i.
+      // We skip i itself by starting at i + 1.
+      // Omitting the second argument means "go to the end of the array".
+      after = logs.slice(i + 1);
+
+      // Record the index where we found the match.
+      index = i;
+
+      // Stop searching — we only care about the FIRST match. Without break, the loop would keep running unnecessarily.
+      break;
+    }
+  }
+
+  // Return an object with all three pieces of info.
+  // If no match was found, before/after stay as empty arrays and index stays as -1.
+  return {
+    before: before,
+    i: index,       // note: the property is named "i", value comes from "index"
+    after: after,
+  };
+}
+export { splitLogs };
+```
+
 # TypeScript
 
 * [TypeScript](https://www.typescriptlang.org/) is a typed superset of JavaScript that transpiles to plain JavaScript.
