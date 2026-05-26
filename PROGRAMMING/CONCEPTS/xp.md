@@ -1,4 +1,4 @@
-## Extreme Programming (XP)
+# Extreme Programming (XP)
 
 [Extreme Programming](https://en.wikipedia.org/wiki/Extreme_programming) (XP) is a software development methodology intended to improve software quality and responsiveness to changing customer requirements. As a type of agile software development, it advocates frequent releases in short development cycles, intended to improve productivity and introduce checkpoints at which new customer requirements can be adopted.
 
@@ -12,24 +12,35 @@ Currently, I'm reading *XP Explained* by Kent Beck. The basic tenets are as foll
 * Other elements of XP include: programming in pairs, extensive code review (pairing is essentially continuous code review), not programming features until they are actually needed, a flat management structure, code simplicity and clarity, and frequent communication with the customer.
 * The methodology takes its name from the idea that the beneficial elements of traditional software engineering practices are taken to "extreme" levels.
 
-### Development Principles
+## Manifesto for Agile Development
 
-#### Don't Repeat Yourself (DRY)
+* https://agilemanifesto.org/
+* **Individuals and interactions** over processes and tools
+* **Working software** over comprehensive documentation
+* **Customer collaboration** over contract negotiation
+* **Responding to change** over following a plan
+
+> [!NOTE]
+> While there is value in the items on the right, we value the items on the left more.
+
+## Development Principles
+
+### Don't Repeat Yourself (DRY)
 * Extracting repeatable functions and logic to make them modular and reusable across your application.
 * *Goal:* Reduce technical debt by ensuring that a change in business logic only needs to be updated in one place.
 
-#### You Ain't Gonna Need It (YAGNI)
+### You Ain't Gonna Need It (YAGNI)
 * Write the minimum functionality POSSIBLE to accomplish the immediate goal.
 * **Lean slice:** Build strictly to the specifications of what is needed *right now*.
 * Skip building out "future-proof" features until there is an actual business requirement for them.
 * Write code for today's problems, not tomorrow's hypothetical problems.
 
-#### Tell - Don't Ask
+### Tell - Don't Ask
 * Tell objects what to do, don't ask them about their state to make decisions for them outside of the object.
 * Call methods that perform actions *inside* the objects themselves.
 * *Why:* It keeps data and the logic that operates on that data bound closely together, reducing loose coupling and massive `if-else` chains in your main application flow.
 
-#### SOLID Principles
+### SOLID Principles
 * **Single Responsibility Principle (SRP):** A class should only have one reason to change, splitting large classes into smaller, focused ones.
   * *E.g.,* If a class is over a certain amount of lines in length, or handles both database saves and UI rendering, split it.
   * *E.g.,* In Linked Lists: The `Node` class only cares about holding data and a pointer, while the `LinkedList` class handles the insertion/deletion logic.
@@ -42,19 +53,19 @@ Currently, I'm reading *XP Explained* by Kent Beck. The basic tenets are as foll
 * **Dependency Inversion Principle (DIP):** High-level modules should not depend on low-level modules; both should depend on abstractions (interfaces).
   * *E.g.,* Your `PaymentProcessor` class shouldn't depend directly on a hardcoded `StripeAPI` class. Instead, it should depend on a generic `PaymentGateway` interface. This makes it trivial to swap Stripe for PayPal later, or to mock the database/API during testing.
 
-### Pairing Practices
+# Pairing Practices
 
-#### What is Pairing?
+## What is Pairing?
 * Pair programming is an agile software development technique where two developers work together at a single workstation (or shared screen). One types the code while the other actively reviews, strategizes, and checks for defects. It is essentially real-time, continuous code review and knowledge sharing.
 
-#### Types of Pairing
+## Types of Pairing
 * **Discipline Pairing:** Pairing within your own discipline. Two people of the same role (e.g., two backend engineers) work on the same problem at the same time on the same machine.
 * **Cross-Discipline Pairing:** Pairing with people in different disciplines (e.g., a Developer pairing with a Product Designer, QA, or UI/UX engineer) to bridge the gap between design, testing, and implementation.
 
 > [!NOTE]
 > Pairing on a single feature is good, but rotating pairs across multiple features (Promiscuous Pairing) is better. The big issue with static pairs is the **lack of shared context**. Rotating developers ensures that knowledge of the codebase spreads across the entire team, preventing knowledge silos and single points of failure.
 
-#### Techniques to Try
+## Techniques to Try
 * **Driver and Navigator:** The standard setup. The **Driver** controls the keyboard and focuses on the micro (syntax, typing, immediate logic). The **Navigator** observes, focuses on the macro (architecture, spotting bugs, thinking about the next test), and guides the direction.
 * **Ping Pong:** Heavily tied to Test-Driven Development (TDD). Developer A writes a failing test (Red). Developer B takes the keyboard, writes the code to pass it (Green), and then writes the next failing test (Red) before passing the keyboard back. Keeps both devs highly engaged.
 * **Tour Guide:** A variation of Driver/Navigator usually meant for onboarding or domain exploration. The Navigator (a senior dev or domain expert) acts as a "tour guide," explicitly guiding the Driver (a junior dev or someone new to the codebase) step-by-step through a complex system.
@@ -64,10 +75,6 @@ Currently, I'm reading *XP Explained* by Kent Beck. The basic tenets are as foll
 > [!NOTE]
 > The best process is the process that works for your team!
 > The best technique is the one that works for you and your pair. Communicate early and often about what is and isn't working.
-
-**__START HERE__**
-
-(#Facilitation, #Pairing, #Metrics)
 
 # User Stories
 
@@ -119,9 +126,19 @@ Currently, I'm reading *XP Explained* by Kent Beck. The basic tenets are as foll
 
 # Balanced Team
 
+* A balanced team typically comprises includes a product manager (PM), designer, developer, and platform engineer (PE). Each provide different perspectives and contribute to the idea of a balanced and dynamic team.
+* The caveat here is that each role can be adopted/inherited by other roles, for example, a Platform Engineer is able to also assume PM duties in the event that the original PM is away or is unable to make a application decision.
+* There's another idea/heuristic of using **desire (designer)**, **technical feasibility (PE and developer)**, and **viability (PM)** to address specific aspects of the balanced team.
+* All aspects of the balanced team should work in tandem (e.g., Venn diagram )
+
 ## Designers
+* Focus on the UI/UX of the thing that you are building, the emphasis here is on the end user via user centered design (UCD) (identification of direct pain points that the user may face).
+* The goal of the designer is to hold the individual sacrosanct in the development process and ensure that the features that are being added discrete value to the end user above all else.
 
 ## PMs
+* Focus on the direction and larger picture of the application/product, their job is to see "the forest from the trees" and provide direction for the project.
+* The interact and are the direct touch point between the stakeholder, customer, and the balanced team.
+* They are the internal advocates for the team and work with external environment to safegaurd the team from excessive bureaucracy that adds unnecessary complexity to the development environment.
 
 ## Devs
 * Sanity check, provide feasibility and technical ability and feasibility.
@@ -135,7 +152,16 @@ Currently, I'm reading *XP Explained* by Kent Beck. The basic tenets are as foll
 * What am I doing today?
 * What blockers do I have?
 
-## Alt. as Pairs
+## Reviewing as Pairs
 * What did the pair accomplish yesterday?
 * What blockers did the pair have?
 * What is the pair planning to do today?
+
+# Estimating 
+
+# Discovery and Framing
+
+1. Problems
+2. Prioritize
+3. Solutions
+4. Prioritize
