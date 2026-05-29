@@ -3068,6 +3068,78 @@ function splitLogs(logs, word) {
 export { splitLogs };
 ```
 
+## Arrays
+
+### Destructuring
+
+```javascript
+function getPrimaryAndBackupMessages(messages) {
+  // Destructuring the array:
+  // 1. 'primary' gets the first element (index 0). 
+  //    If the array is empty, this is 'undefined'.
+  // 2. '...backups' (the rest operator) collects all remaining elements into a new array.
+  //    If there are no more elements, this becomes an empty array [].
+  const [primary, ...backups] = messages;
+
+  // We return an object using "Shorthand Property Names".
+  // { primary, backups } is equivalent to { primary: primary, backups: backups }.
+  return { primary, backups };
+}
+
+export { getPrimaryAndBackupMessages };
+```
+
+### Sets 
+
+#### Deduplication
+
+* Really simple way to de-duplicate information using a spread operator to access all the element in an array.
+* I just thought it was such a really elegant and dead simple way to solve the problem of duplication.
+
+```javascript
+function deduplicateEmails(emails) {
+  return [...new Set(emails)]
+}
+```
+
+#### Set Composition
+
+* Basically a list with examples of ways to manipulate, compare, combine, or modify sets of values.
+
+**Intersection**
+* `.intersection()` method returns a new set containing the elements that are in both sets.
+
+```javascript
+const heroes = new Set(["eren", "mikasa", "armin", "reiner"]);
+const villains = new Set(["eren", "reiner", "bertholdt", "annie"]);
+const samesies = heroes.intersection(villains);
+console.log(samesies);
+// Set { 'eren', 'reiner' }
+```
+
+**Difference**
+* `.difference()` method returns a new set containing the elements that are in the first set but not in the second set.
+```javascript
+const heroes = new Set(["eren", "mikasa", "armin", "reiner"]);
+const villains = new Set(["eren", "reiner", "bertholdt", "annie"]);
+const nonVillains = heroes.difference(villains);
+console.log(nonVillains);
+// Set { 'mikasa', 'armin' }
+```
+
+**Union**
+* `.union()` method returns a new set containing the elements that are in either set.
+
+```javascript
+const heroes = new Set(["eren", "mikasa", "armin", "reiner"]);
+const villains = new Set(["eren", "reiner", "bertholdt", "annie"]);
+const everyone = heroes.union(villains);
+console.log(everyone);
+// Set { 'eren', 'mikasa', 'armin', 'reiner', 'bertholdt', 'annie' }
+```
+
+### Maps
+
 # TypeScript
 
 * [TypeScript](https://www.typescriptlang.org/) is a typed superset of JavaScript that transpiles to plain JavaScript.
