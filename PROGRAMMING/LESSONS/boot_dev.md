@@ -3140,6 +3140,46 @@ console.log(everyone);
 
 ### Maps
 
+* Simple example of looping through an array, accessing the `fname` and `lname` element 
+
+```javascript
+function createUserMap(users, fname, lname) {
+  const map = new Map();
+  for (let user of users) {
+    let key = `${user.fname} ${user.lname}`
+    map.set(key, user)
+    }
+  return map;
+}
+
+export { createUserMap };
+```
+
+### Maps vs. Objects
+
+* When iterating over the `brokenMap`, each entry is destructured into a `[key, value]` pair. The Map's iteration protocol always yields entries in this `[key, value]` order, so the names are positional - not magic.
+
+* In this broken map, the `key` is not a primitive string but an object: `{ fname: "John", lname: "Doe", tags: [...] }`. Once the iteration binds that object to the name key, we can drill into it using dot notation (`key.fname`, `key.lname`) just like any other JavaScript object. 
+
+* The `value` (the user object) is passed through untouched - we only care about replacing the broken object key with a clean string key.
+
+```javascript
+function fixUserMap(brokenMap) {
+  let map = new Map();
+  for (const [key, value] of brokenMap) {
+    // key = { fname: "John", lname: "Doe", tags: [...] }
+    // value = the same user object we want to preserve
+
+    // drill into the key object to extract fname and lname then build a new string key using a template literal
+    let newKey = `${key.fname} ${key.lname}`; // "John Doe"
+
+    // store the user object under the new string key
+    map.set(newKey, value);
+  }
+  return map;
+}
+```
+
 # TypeScript
 
 * [TypeScript](https://www.typescriptlang.org/) is a typed superset of JavaScript that transpiles to plain JavaScript.
